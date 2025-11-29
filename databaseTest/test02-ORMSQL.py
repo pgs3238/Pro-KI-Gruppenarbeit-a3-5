@@ -56,3 +56,5 @@ print("Row inserted successfully!")
 all_people = session.query(Person).all()
 for person in all_people:
     print(person.Name, person.FamilyName, person.Birthday, person.Address)
+
+#----
