@@ -166,3 +166,4 @@ cython_debug/
 /databaseTest01.db
 /databaseTest02.db
 
+data/expenses.db

@@ -1,11 +1,11 @@
 # Beispiel: transaktionen lesen und filtern
-from src.database import SessionLocal, Transaction
+from src.database import SessionLocal, Transaktion
 
 def main():
     session = SessionLocal()
     
     try:
-        all_transactions = session.query(Transaction).all()
+        all_transactions = session.query(Transaktion).all()
         
         for trans in all_transactions:
             print(f"\nID: {trans.id}")
@@ -17,13 +17,13 @@ def main():
         print(f"Gesamt: {len(all_transactions)} Transaktionen")
         
         # Nur Ausgaben (negative Beträge)
-        ausgaben = session.query(Transaction).filter(Transaction.betrag < 0).all()
+        ausgaben = session.query(Transaktion).filter(Transaktion.betrag < 0).all()
         for trans in ausgaben:
             print(f"  {trans.buchungstag} | {trans.beguenstigter} | {trans.betrag} EUR")
         
         # Nur Einnahmen (positive Beträge)
         print("\n=== Nur Einnahmen ===")
-        einnahmen = session.query(Transaction).filter(Transaction.betrag > 0).all()
+        einnahmen = session.query(Transaktion).filter(Transaktion.betrag > 0).all()
         for trans in einnahmen:
             print(f"  {trans.buchungstag} | {trans.beguenstigter} | {trans.betrag} EUR")
         
