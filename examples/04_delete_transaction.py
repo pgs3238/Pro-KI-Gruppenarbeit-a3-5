@@ -1,12 +1,12 @@
 # Beispiel: Löschen einer Transaktion aus der Datenbank
-from src.database import SessionLocal, Transaction
+from src.database import SessionLocal, Transaktion
 
 def main():
     session = SessionLocal()
     
     try:
         # Transaktion mit ID 3 suchen
-        transaction = session.query(Transaction).filter(Transaction.id == 3).first()        
+        transaction = session.query(Transaktion).filter(Transaktion.id == 3).first()        
         if transaction:
             print(f"Zu löschen: {transaction.beguenstigter} | {transaction.betrag} EUR")
             # Löschen
@@ -17,7 +17,7 @@ def main():
             print("Transaktion nicht gefunden")
         
         # Überprüfen
-        count = session.query(Transaction).count()
+        count = session.query(Transaktion).count()
         print(f"\nVerbleibende Transaktionen: {count}")
         
     finally:

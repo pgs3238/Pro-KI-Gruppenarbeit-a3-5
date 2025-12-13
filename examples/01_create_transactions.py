@@ -1,5 +1,5 @@
 # Beisiel: Erstellen und Speichern von Transaktionen in der Datenbank
-from src.database import init_db, SessionLocal, Transaction # Hier Importieren wir die Datenbank, da sie als Package definiert ist
+from src.database import init_db, SessionLocal, Transaktion # Hier Importieren wir die Datenbank, da sie als Package definiert ist
 from datetime import date
 
 def main():
@@ -10,7 +10,7 @@ def main():
     
     try:
         # 3. Beispiel-Transaktionen erstellen
-        transaction1 = Transaction(
+        transaction1 = Transaktion(
             buchungstag=date(2024, 12, 10),
             beguenstigter="REWE Supermarkt",
             verwendungszweck="Lebensmitteleinkauf",
@@ -20,7 +20,7 @@ def main():
             beschreibung="Wocheneinkauf"
         )
         
-        transaction2 = Transaction(
+        transaction2 = Transaktion(
             buchungstag=date(2024, 12, 11),
             beguenstigter="Max Mustermann AG",
             verwendungszweck="Gehalt Dezember",
@@ -30,7 +30,7 @@ def main():
             beschreibung="Monatliches Gehalt"
         )
         
-        transaction3 = Transaction(
+        transaction3 = Transaktion(
             buchungstag=date(2024, 12, 12),
             beguenstigter="Deutsche Bahn",
             verwendungszweck="Bahnticket Berlin-München",

@@ -1,12 +1,12 @@
 # Beispiel: Eine bestehende Transaktion aktualisieren
-from src.database import SessionLocal, Transaction
+from src.database import SessionLocal, Transaktion
 
 def main():
     session = SessionLocal()
     
     try:
         # 1. Transaktion mit ID 1 suchen 
-        transaction1 = session.query(Transaction).filter(Transaction.id == 1).first() # .first() gibt das erste Ergebnis zurück oder None, wenn nichts gefunden wurde
+        transaction1 = session.query(Transaktion).filter(Transaktion.id == 1).first() # .first() gibt das erste Ergebnis zurück oder None, wenn nichts gefunden wurde
         
         if transaction1:
             print(f"Vorher: {transaction1.beschreibung}")
@@ -19,7 +19,7 @@ def main():
             print("Transaktion 1 nicht gefunden\n")
         
         # 2. Transaktion nach Verwendungszweck suchen
-        transaction2 = session.query(Transaction).filter(Transaction.verwendungszweck == "Gehalt Dezember").first()
+        transaction2 = session.query(Transaktion).filter(Transaktion.verwendungszweck == "Gehalt Dezember").first()
         if transaction2:
             print(f"Vorher: Betrag = {transaction2.betrag} EUR")
             # Betrag ändern
