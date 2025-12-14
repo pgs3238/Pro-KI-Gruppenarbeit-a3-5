@@ -23,22 +23,22 @@ body {
     width: 280px;
     background-color: #2a2a2a;
     padding: 30px 20px;
-    border-right: 3px solid #ffb800;
     overflow-y: auto;
 }
 
 .logo {
-    font-size: 28px;
+    font-size: 34px;
     font-weight: bold;
     color: #06d6a6;
     margin-bottom: 40px;
     display: flex;
     align-items: center;
     gap: 10px;
+    padding-left: 15px;
 }
 
 .logo span {
-    font-size: 24px;
+    font-size: 28px;
 }
 
 .nav-items {
@@ -67,7 +67,7 @@ body {
 }
 
 .nav-link:hover {
-    background-color: #333;
+    background-color: #1a1a1a;
     color: #fff;
 }
 
@@ -87,27 +87,16 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    background-color: #2a2a2a;
 }
 
 /* ============ HEADER ============ */
 .header {
-    background-color: #1a1a1a;
+    background-color: #2a2a2a;
     padding: 20px 40px;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
-    border-bottom: 1px solid #333;
-}
-
-.header-left h1 {
-    font-size: 32px;
-    color: #06d6a6;
-    margin-bottom: 5px;
-}
-
-.header-left p {
-    color: #888;
-    font-size: 14px;
 }
 
 .header-right {
@@ -121,13 +110,13 @@ body {
 }
 
 .search-box {
-    background-color: #2a2a2a;
-    border: 1px solid #444;
+    background-color: #1a1a1a;
     padding: 10px 15px 10px 40px;
     border-radius: 8px;
     color: #fff;
     width: 250px;
     font-size: 13px;
+    border: none;
 }
 
 .search-icon {
@@ -162,6 +151,23 @@ body {
     flex: 1;
     overflow-y: auto;
     padding: 40px;
+    background-color: #1a1a1a;
+    border-top-left-radius: 20px;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    font-size: 32px;
+    color: #06d6a6;
+    margin-bottom: 5px;
+}
+
+.page-header p {
+    color: #888;
+    font-size: 14px;
 }
 
 .cards-grid {
@@ -176,7 +182,6 @@ body {
     border-radius: 20px;
     padding: 30px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    border: 1px solid #3a3a3a;
 }
 
 .card-title {
@@ -194,11 +199,32 @@ body {
     flex-direction: column;
 }
 
+.balance-container {
+    display: flex;
+    align-items: baseline;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
 .total-balance {
     font-size: 48px;
     font-weight: bold;
     color: #fff;
-    margin-bottom: 10px;
+    margin-bottom: 0;
+}
+
+.balance-trend {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 0;
+}
+
+.balance-trend.positive {
+    color: #06d6a6;
+}
+
+.balance-trend.negative {
+    color: #ff6b6b;
 }
 
 .balance-label {
@@ -207,6 +233,10 @@ body {
     margin-bottom: 15px;
     text-transform: uppercase;
     letter-spacing: 1px;
+}
+
+.balance-trend.negative {
+    color: #ff6b6b;
 }
 
 .konten-list {
@@ -278,7 +308,7 @@ table td {
 }
 
 table tbody tr:hover {
-    background-color: #333;
+    background-color: #1a1a1a;
     transition: background-color 0.2s ease;
 }
 

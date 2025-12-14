@@ -57,10 +57,7 @@
         <div class="main">
             <!-- ============ HEADER ============ -->
             <header class="header">
-                <div class="header-left">
-                    <h1>Finanzübersicht</h1> <!-- Seitentitel -->
-                    <p>Anzeigen und Verwalten Sie Ihre Finanzen hier</p> <!-- Beschreibung -->
-                </div>
+
                 <div class="header-right">
                     <div class="search-wrapper"> <!-- Container für Suchfunktion -->
                         <span class="search-icon">🔍</span> <!-- Such Icon -->
@@ -72,11 +69,19 @@
 
             <!-- ============ CONTENT ============ -->
             <div class="content">
+                <div class="page-header">
+                    <h1>Finanzübersicht</h1> <!-- Seitentitel -->
+                    <p>Anzeigen und Verwalten Sie Ihre Finanzen hier</p> <!-- Beschreibung -->
+                </div>
                 <div class="cards-grid">
                     <!-- ============ MEINE KONTEN ============ -->
                     <div class="card konten-card">
                         <div class="card-title">Meine Konten</div> <!-- Überschrift der Karte "Meine Konten" -->
-                        <div class="total-balance" id="totalBalance">0,00€</div> <!-- Gesamtbetrag mit Anfangswert 0-->
+                        <div class="balance-container">
+                            <div class="total-balance" id="totalBalance">0,00€</div>
+                            <!-- Gesamtbetrag mit Anfangswert 0-->
+                            <div class="balance-trend" id="balanceTrend">+0,0%</div> <!-- Tendenz der Entwicklung -->
+                        </div>
                         <div class="balance-label">Gesamtbetrag</div> <!-- Beschriftung des Gesamtbetrags -->
                         <div class="konten-list" id="kontenList"> <!-- Liste der Konten -->
                             <!-- Wird mit JavaScript gefüllt -->
@@ -171,7 +176,8 @@
                 'Konto 1': 1500.00,
                 'Konto 2': 3000.00,
                 'Konto 3': 4500.00
-            }
+            },
+            previousMonthTotal: 8500.00  // Gesamtbetrag vom letzten Monat für Tendenzberechnung
         };
 
         // ============ FUNKTIONEN ============
@@ -180,6 +186,7 @@
         function loadKonten() {
             const kontenList = document.getElementById('kontenList');
             const totalBalance = document.getElementById('totalBalance');
+            const balanceTrend = document.getElementById('balanceTrend');
 
             let total = 0;
             kontenList.innerHTML = ''; // Leert die Liste einmal 
@@ -196,6 +203,23 @@
             }
 
             totalBalance.textContent = total.toFixed(2).replace('.', ',') + '€';
+
+            // Berechne Tendenz
+            const previousTotal = exampleData.previousMonthTotal;
+            const change = total - previousTotal;
+            const percentageChange = previousTotal !== 0 ? (change / previousTotal) * 100 : 0;
+
+            // Formatiere und zeige Tendenz
+            const sign = percentageChange >= 0 ? '+' : '';
+            balanceTrend.textContent = `${sign}${percentageChange.toFixed(1).replace('.', ',')}%`;
+
+            // Setze Farbe basierend auf Tendenz
+            balanceTrend.className = 'balance-trend';
+            if (percentageChange > 0) {
+                balanceTrend.classList.add('positive');
+            } else if (percentageChange < 0) {
+                balanceTrend.classList.add('negative');
+            }
         }
 
         // Lädt und zeigt die Transaktionen in der Tabelle
@@ -222,13 +246,23 @@
         function createBalanceChart() {
             const ctx = document.getElementById('balanceChart').getContext('2d');
 
+            // Berechne die letzten 6 Monate
+            const monthNames = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+            const today = new Date();
+            const last6Months = [];
+
+            for (let i = 5; i >= 0; i--) {
+                const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                last6Months.push(monthNames[date.getMonth()]);
+            }
+
             // Beispieldaten für das Diagramm
             const data = {
-                labels: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul'],
+                labels: last6Months,
                 datasets: [
                     {
                         label: 'Einnahmen',
-                        data: [3000, 2800, 3200, 3100, 3500, 3200, 3800],
+                        data: [3000, 2800, 3200, 3100, 3500, 3200],
                         backgroundColor: '#fff',
                         borderColor: '#fff',
                         borderWidth: 1,
@@ -236,7 +270,7 @@
                     },
                     {
                         label: 'Ausgaben',
-                        data: [1200, 1350, 1100, 1450, 1300, 1400, 1250],
+                        data: [1200, 1350, 1100, 1450, 1300, 1400],
                         backgroundColor: '#06d6a6',
                         borderColor: '#06d6a6',
                         borderWidth: 1,
@@ -251,6 +285,8 @@
                 plugins: {
                     legend: {
                         display: true,
+                        position: 'bottom',
+                        align: 'start',
                         labels: {
                             color: '#ccc',
                             padding: 20,
