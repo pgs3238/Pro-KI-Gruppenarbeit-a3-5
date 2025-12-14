@@ -1,0 +1,335 @@
+<!DOCTYPE html> <!-- Sagt dem Browser das diese Datei eine HTML Datei ist (muss immer ganz oben stehen) -->
+<html lang="de"> <!-- Öffnet das HTML Dokument und sagt dass es Deutsch ist -->
+
+<head> <!-- Kopf der Seite (unsichtbar); Quasi Anleitung für den User-->
+    <meta charset="UTF-8"> <!-- Anzeigen von Umlauten -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsives Design für Laptop/Handy -->
+    <title>FINLY - Finanzübersicht</title> <!-- Browser Tab Titel -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Bibliothek laden um Diagramme anzuzeigen -->
+    <link rel="stylesheet" href="./style.css"> <!-- Laden des CSS Stylings -->
+</head>
+
+<body> <!-- Körper der Seite (Alles was der Nutzer sieht steht hier-->
+    <div class="container">
+        <!-- Haupt Klasse container, die alles beinhaltet. Eigentlich nicht notwendig hier eine Klasse zu machen, ist aber Standard in der Web-Entwicklung -->
+        <!-- ============ SIDEBAR ============ -->
+        <aside class="sidebar">
+            <div class="logo"> <!-- Logo der App -->
+                <span>📊</span> <!-- Icon der App -->
+                <span>FINLY</span> <!-- Name der APP: FINLY als Text -->
+            </div>
+
+            <ul class="nav-items"> <!-- Navigations Liste -->
+                <li class="nav-item"> <!-- Listenelement für Navigations Item Übersicht -->
+                    <button class="nav-link active" id="nav-overview"> <!-- Interaktiven Button mit eindeutiger ID -->
+                        <span class="nav-icon">📈</span> <!-- Übersichts Icon -->
+                        <span>Übersicht</span> <!-- Name des Menupunktes "Übersicht" -->
+                    </button>
+                </li>
+                <li class="nav-item"> <!-- Listenelement für Navigations Item Transaktion -->
+                    <button class="nav-link" id="nav-transaction"> <!-- Interaktiven Button mit eindeutiger ID -->
+                        <span class="nav-icon">💳</span> <!-- Transaktions Icon -->
+                        <span>Transaktion erfassen</span> <!-- Name des Menupunktes "Transaktion erfassen" -->
+                    </button>
+                </li>
+                <li class="nav-item"> <!-- Listenelement für Navigations Item Kategorien -->
+                    <button class="nav-link" id="nav-categories"> <!-- Interaktiven Button mit eindeutiger ID -->
+                        <span class="nav-icon">🏷️</span> <!-- Kategorien Icon -->
+                        <span>Kategorien</span> <!-- Name des Menupunktes "Kategorien" -->
+                    </button>
+                </li>
+                <li class="nav-item"> <!-- Listenelement für Navigations Item Konten -->
+                    <button class="nav-link" id="nav-accounts"> <!-- Interaktiven Button mit eindeutiger ID -->
+                        <span class="nav-icon">🏦</span> <!-- Konten Icon -->
+                        <span>Konten</span> <!-- Name des Menupunktes "Konten" -->
+                    </button>
+                </li>
+                <li class="nav-item"> <!-- Listenelement für Navigations Item Zinsenprognose -->
+                    <button class="nav-link" id="nav-forecast"> <!-- Interaktiven Button mit eindeutiger ID -->
+                        <span class="nav-icon">📉</span> <!-- Zinsenprognose Icon -->
+                        <span>Zinsenfprognose</span> <!-- Name des Menupunktes "Zinsenprognose" -->
+                    </button>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- ============ HAUPTBEREICH ============ -->
+        <div class="main">
+            <!-- ============ HEADER ============ -->
+            <header class="header">
+                <div class="header-left">
+                    <h1>Finanzübersicht</h1> <!-- Seitentitel -->
+                    <p>Anzeigen und Verwalten Sie Ihre Finanzen hier</p> <!-- Beschreibung -->
+                </div>
+                <div class="header-right">
+                    <div class="search-wrapper"> <!-- Container für Suchfunktion -->
+                        <span class="search-icon">🔍</span> <!-- Such Icon -->
+                        <input type="text" class="search-box" id="searchBox" placeholder="Suche">
+                    </div>
+                    <button class="icon-btn">⚙️</button> <!-- Einstellungen Icon -->
+                </div>
+            </header>
+
+            <!-- ============ CONTENT ============ -->
+            <div class="content">
+                <div class="cards-grid">
+                    <!-- ============ MEINE KONTEN ============ -->
+                    <div class="card konten-card">
+                        <div class="card-title">Meine Konten</div> <!-- Überschrift der Karte "Meine Konten" -->
+                        <div class="total-balance" id="totalBalance">0,00€</div> <!-- Gesamtbetrag mit Anfangswert 0-->
+                        <div class="balance-label">Gesamtbetrag</div> <!-- Beschriftung des Gesamtbetrags -->
+                        <div class="konten-list" id="kontenList"> <!-- Liste der Konten -->
+                            <!-- Wird mit JavaScript gefüllt -->
+                        </div>
+                    </div>
+
+                    <!-- ============ BALANCE DIAGRAMM ============ -->
+                    <div class="card">
+                        <div class="card-title">Meine Bilanz</div> <!-- Überschrift der Karte "Bilanz" -->
+                        <div class="chart-container"> <!-- Container für das Diagramm -->
+                            <canvas id="balanceChart"></canvas> <!-- Darstellung des Diagramms -->
+                        </div>
+                    </div>
+
+                    <!-- ============ TRANSAKTIONEN TABELLE ============ -->
+                    <div class="card transactions-section">
+                        <div class="card-title">Letzten Transaktionen</div>
+                        <!-- Überschrift der Karte "Letzten Transaktionen" -->
+                        <div class="table-wrapper"> <!-- Container für die Tabelle -->
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Datum</th> <!-- Spalte Datum -->
+                                        <th>Begünstigter</th> <!-- Spalte Begünstigter -->
+                                        <th>Verwendungszweck</th> <!-- Spalte Verwendungszweck -->
+                                        <th>Kategorie</th> <!-- Spalte Kategorie -->
+                                        <th>Betrag</th> <!-- Spalte Betrag -->
+                                    </tr>
+                                </thead>
+                                <tbody id="transactionsTable">
+                                    <!-- Wird mit JavaScript gefüllt -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ BEISPIELDATEN (SPÄTER DURCH API ERSETZEN) ============
+        const exampleData = {
+            transactions: [
+                {
+                    id: 1,
+                    buchungstag: '2025-12-14',
+                    beguenstigter: 'Amazon',
+                    verwendungszweck: 'Online Shopping',
+                    kategorie: 'Shopping',
+                    betrag: -29.99,
+                    waehrung: 'EUR'
+                },
+                {
+                    id: 2,
+                    buchungstag: '2025-12-13',
+                    beguenstigter: 'Gehalt',
+                    verwendungszweck: 'Dezember Einkommen',
+                    kategorie: 'Gehalt',
+                    betrag: 2500.00,
+                    waehrung: 'EUR'
+                },
+                {
+                    id: 3,
+                    buchungstag: '2025-12-12',
+                    beguenstigter: 'Edeka',
+                    verwendungszweck: 'Lebensmittel',
+                    kategorie: 'Lebensmittel',
+                    betrag: -45.67,
+                    waehrung: 'EUR'
+                },
+                {
+                    id: 4,
+                    buchungstag: '2025-12-11',
+                    beguenstigter: 'Netflix',
+                    verwendungszweck: 'Abo',
+                    kategorie: 'Unterhaltung',
+                    betrag: -12.99,
+                    waehrung: 'EUR'
+                },
+                {
+                    id: 5,
+                    buchungstag: '2025-12-10',
+                    beguenstigter: 'DKB Bank',
+                    verwendungszweck: 'Zinsen',
+                    kategorie: 'Zinsen',
+                    betrag: 5.00,
+                    waehrung: 'EUR'
+                }
+            ],
+            konten: {
+                'Konto 1': 1500.00,
+                'Konto 2': 3000.00,
+                'Konto 3': 4500.00
+            }
+        };
+
+        // ============ FUNKTIONEN ============
+
+        // Lädt und zeigt die Konten an
+        function loadKonten() {
+            const kontenList = document.getElementById('kontenList');
+            const totalBalance = document.getElementById('totalBalance');
+
+            let total = 0;
+            kontenList.innerHTML = ''; // Leert die Liste einmal 
+
+            for (const [kontoName, betrag] of Object.entries(exampleData.konten)) {
+                total += betrag;
+                const kontoItem = document.createElement('div');
+                kontoItem.className = 'konto-item';
+                kontoItem.innerHTML = `
+                    <div class="konto-label">${kontoName}</div>
+                    <div class="konto-betrag">${betrag.toFixed(2).replace('.', ',')}€</div>
+                `;
+                kontenList.appendChild(kontoItem);
+            }
+
+            totalBalance.textContent = total.toFixed(2).replace('.', ',') + '€';
+        }
+
+        // Lädt und zeigt die Transaktionen in der Tabelle
+        function loadTransactions() {
+            const table = document.getElementById('transactionsTable');
+            table.innerHTML = '';
+
+            exampleData.transactions.forEach(t => {
+                const row = table.insertRow();
+                const betragClass = t.betrag >= 0 ? 'betrag-positiv' : 'betrag-negativ';
+                const betragText = (t.betrag >= 0 ? '+' : '') + t.betrag.toFixed(2).replace('.', ',') + '€';
+
+                row.innerHTML = `
+                    <td>${new Date(t.buchungstag).toLocaleDateString('de-DE')}</td>
+                    <td>${t.beguenstigter}</td>
+                    <td>${t.verwendungszweck || '-'}</td>
+                    <td>${t.kategorie || '-'}</td>
+                    <td class="${betragClass}">${betragText}</td>
+                `;
+            });
+        }
+
+        // Erstellt das Balance-Diagramm
+        function createBalanceChart() {
+            const ctx = document.getElementById('balanceChart').getContext('2d');
+
+            // Beispieldaten für das Diagramm
+            const data = {
+                labels: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul'],
+                datasets: [
+                    {
+                        label: 'Einnahmen',
+                        data: [3000, 2800, 3200, 3100, 3500, 3200, 3800],
+                        backgroundColor: '#fff',
+                        borderColor: '#fff',
+                        borderWidth: 1,
+                        borderRadius: 5
+                    },
+                    {
+                        label: 'Ausgaben',
+                        data: [1200, 1350, 1100, 1450, 1300, 1400, 1250],
+                        backgroundColor: '#06d6a6',
+                        borderColor: '#06d6a6',
+                        borderWidth: 1,
+                        borderRadius: 5
+                    }
+                ]
+            };
+
+            const options = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            color: '#ccc',
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#888'
+                        },
+                        grid: {
+                            color: '#333',
+                            drawBorder: false
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#888'
+                        },
+                        grid: {
+                            color: 'transparent',
+                            drawBorder: false
+                        }
+                    }
+                }
+            };
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: data,
+                options: options
+            });
+        }
+
+        // Navigation Handler
+        function setupNavigation() {
+            const navItems = document.querySelectorAll('.nav-link');
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    navItems.forEach(i => i.classList.remove('active'));
+                    e.currentTarget.classList.add('active');
+                });
+            });
+        }
+
+        // Suchfunktion
+        function setupSearch() {
+            const searchBox = document.getElementById('searchBox');
+            const searchIcon = document.querySelector('.search-icon');
+
+            // Icon verschwindet beim Tippen
+            searchBox.addEventListener('input', (e) => {
+                searchIcon.style.display = e.target.value ? 'none' : 'block';
+            });
+
+            // Filterfunktion
+            searchBox.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const rows = document.querySelectorAll('#transactionsTable tr');
+
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(searchTerm) ? '' : 'none';
+                });
+            });
+        }
+
+        // ============ INITIALISIERUNG ============
+        document.addEventListener('DOMContentLoaded', () => {  // Wird ausgeführt wenn HTML geladen ist
+            loadKonten(); // Lädt die Konten
+            loadTransactions(); // Lädt und zeigt die Transaktionen an
+            createBalanceChart(); // Erstellt das Balkendiagramm
+            setupNavigation(); // Setzt die Navigation
+            setupSearch(); // Aktiviert die Suchfunktion
+        });
+    </script>
+</body>
+
+</html>
