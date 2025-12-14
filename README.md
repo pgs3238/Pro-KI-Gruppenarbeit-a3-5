@@ -167,9 +167,113 @@ finally:
     session.close()
 ```
 
+## 🌐 REST API
+
+Das Projekt bietet eine **FastAPI REST API** zur Kommunikation zwischen Frontend und Backend.
+
+### API starten
+
+**Mit dem Startskript:**
+```powershell
+python examples\05_start_api_server.py
+```
+
+**Oder direkt mit uvicorn:**
+```powershell
+uvicorn src.api:app --reload --host 0.0.0.0 --port 8000
+```
+
+Nach dem Start ist die API verfügbar unter:
+- **API Base URL**: http://localhost:8000
+- **Interaktive Dokumentation**: http://localhost:8000/docs
+- **Alternative Dokumentation**: http://localhost:8000/redoc
+
+### API Endpunkte
+
+| Method | Endpoint | Beschreibung |
+|--------|----------|--------------|
+| GET | `/` | API-Status und Informationen |
+| GET | `/transactions` | Alle Transaktionen abrufen |
+| GET | `/transactions/{id}` | Einzelne Transaktion nach ID |
+| POST | `/transactions` | Neue Transaktion erstellen |
+| PUT | `/transactions/{id}` | Transaktion aktualisieren |
+| DELETE | `/transactions/{id}` | Transaktion löschen |
+| GET | `/transactions/filter/date-range` | Filtern nach Datumsbereich |
+| GET | `/transactions/stats/summary` | Statistik (Einnahmen, Ausgaben, Saldo) |
+
+### Beispiele für API-Aufrufe
+
+#### Alle Transaktionen abrufen (JavaScript)
+```javascript
+fetch('http://localhost:8000/transactions')
+    .then(response => response.json())
+    .then(data => console.log(data));
+```
+
+#### Neue Transaktion erstellen (JavaScript)
+```javascript
+fetch('http://localhost:8000/transactions', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+        buchungstag: '2024-12-14',
+        beguenstigter: 'REWE',
+        verwendungszweck: 'Lebensmittel',
+        iban_kontonummer: 'DE89370400440532013000',
+        betrag: -45.67,
+        waehrung: 'EUR',
+        beschreibung: 'Wocheneinkauf'
+    })
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+#### Transaktion löschen (JavaScript)
+```javascript
+fetch('http://localhost:8000/transactions/1', {
+    method: 'DELETE'
+})
+.then(response => {
+    if (response.ok) {
+        console.log('Transaktion gelöscht');
+    }
+});
+```
+
+#### Statistik abrufen (JavaScript)
+```javascript
+fetch('http://localhost:8000/transactions/stats/summary')
+    .then(response => response.json())
+    .then(data => {
+        console.log('Einnahmen:', data.total_income);
+        console.log('Ausgaben:', data.total_expenses);
+        console.log('Saldo:', data.balance);
+    });
+```
+
+### API Test Interface
+
+Eine fertige HTML-Testseite zum Ausprobieren der API:
+```powershell
+# Öffne examples\api_test.html im Browser
+```
+
+Die Datei `examples\api_test.html` enthält ein vollständiges Frontend-Beispiel mit:
+- Verbindungstest zur API
+- Formular zum Erstellen neuer Transaktionen
+- Liste aller Transaktionen
+- Löschen von Transaktionen
+- Statistik-Anzeige
+
 ## 📦 Dependencies
 
 - Python >= 3.8
 - SQLAlchemy == 2.0.44
+- FastAPI >= 0.104.0
+- Uvicorn >= 0.24.0
+- Pydantic >= 2.0.0
 
 
