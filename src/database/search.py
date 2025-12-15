@@ -23,7 +23,6 @@ def search_transaktionen(
     # Transaktionen werden dynamisch durchsucht
     # Es werden nur die Filter angewendet, in denen eine Eingabe vorliegt.
 
-
     query = session.query(Transaktion)
 
     if buchungstag is not None:
@@ -38,14 +37,14 @@ def search_transaktionen(
     if iban_kontonummer is not None:
         query = query.filter(Transaktion.iban_kontonummer == iban_kontonummer)
 
-    # Diese Überprüfung wird aus code sicht nicht benötigt, da die SQL abfrage keine Ergebnisse liefern würde wenn der minimalbetrag größer als der maximalbetrag ist. 
+    # Diese Überprüfung wird aus code sicht nicht benötigt, da die SQL abfrage keine Ergebnisse liefern würde wenn der Minimalbetrag größer als der Maximalbetrag ist. 
     # Diese Überprüfung dient lediglich dazu eine Fehlermeldung an das User Interface zu übergeben. 
     if betrag_min is not None and betrag_max is not None:
         if betrag_min > betrag_max:
             raise ValueError("betrag_min cannot be greater than betrag_max")
     
-    # Alte Abfrage. Werte können zwischen -unendlich und + unendlich eingegeben werden. 
-    # Problem: betrag_min bei negativen zahlen heißt bspw. zwischen -50 und plus unendlich | betrag_max bei negativen zahlen zwischen -50 und - unendlich
+    # Alte Abfrage. Werte können zwischen - unendlich und + unendlich eingegeben werden. 
+    # Problem: betrag_min bei Negativen zahlen heißt bspw. zwischen -50 und plus unendlich | betrag_max bei negativen Zahlen zwischen -50 und - unendlich
     if betrag_min is not None:
         query = query.filter(Transaktion.betrag >= betrag_min)
 
@@ -58,7 +57,7 @@ def search_transaktionen(
     elif typ == "income":
         query = query.filter(Transaktion.betrag > 0)
 
-    # Diese Überprüfung wird aus code sicht nicht benötigt, da die SQL abfrage keine Ergebnisse liefern würde wenn der minimalbetrag größer als der maximalbetrag ist. 
+    # Diese Überprüfung wird aus code sicht nicht benötigt, da die SQL abfrage keine Ergebnisse liefern würde wenn der Minimalbetrag größer als der Maximalbetrag ist. 
     # Diese Überprüfung dient lediglich dazu eine Fehlermeldung an das User Interface zu übergeben.
     if betrag_min_abs is not None and betrag_max_abs is not None:
         if betrag_min_abs > betrag_max_abs:
@@ -72,8 +71,6 @@ def search_transaktionen(
 
     if betrag_max_abs is not None:
         query = query.filter(func.abs(Transaktion.betrag) <= betrag_max_abs)
-
-
 
     if waehrung is not None:
         query = query.filter(Transaktion.waehrung == waehrung)
