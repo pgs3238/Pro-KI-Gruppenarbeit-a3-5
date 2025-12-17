@@ -14,7 +14,7 @@ class Transaktion(Base): # Erbt von Base und repräsentiert die "transaktionen" 
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     buchungstag = Column(Date, nullable=False)
-    beguenstigter = Column(String(200), nullable=False)
+    beguenstigter = Column(String(200), nullable=True)
     verwendungszweck = Column(String(500))
     iban_kontonummer = Column(String(34))
     betrag = Column(Float, nullable=False)
