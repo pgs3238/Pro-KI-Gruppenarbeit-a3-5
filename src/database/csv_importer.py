@@ -1,6 +1,6 @@
 import csv
 from datetime import datetime
-from models import Transaktion
+from .models import Transaktion
 
 CSV_TO_MODEL_MAPPING = {
     "Buchungstag": "buchungstag",
@@ -16,11 +16,11 @@ class CSVTransaktionImporter:
         self.session = session
 
     def parse_date(self, value):
-        # Adjust format if your bank uses a different one
         return datetime.strptime(value, "%d.%m.%Y").date()
 
     def parse_float(self, value):
         # Handle German number format: "1.234,56"
+        # SQLite can not handle german number format, this replaces german number format with english number format. 
         value = value.replace(".", "").replace(",", ".")
         return float(value)
 
@@ -29,7 +29,7 @@ class CSVTransaktionImporter:
             reader = csv.DictReader(csvfile, delimiter=';')
 
             for row in reader:
-                print(row)  # <-- DEBUG
+                # print(row)  # <-- DEBUG
                 data = {}
 
                 for csv_col, model_col in CSV_TO_MODEL_MAPPING.items():
@@ -49,18 +49,3 @@ class CSVTransaktionImporter:
                 self.session.add(transaktion)
 
             self.session.commit()
-
-# # 3. Usage Example
-
-# from sqlalchemy import create_engine
-# from sqlalchemy.orm import sessionmaker
-# from models import Base
-
-# engine = create_engine("sqlite:///database.db")
-# Session = sessionmaker(bind=engine)
-# session = Session()
-
-# Base.metadata.create_all(engine)
-
-# importer = CSVTransaktionImporter(session)
-# importer.import_csv("transaktionen.csv")
