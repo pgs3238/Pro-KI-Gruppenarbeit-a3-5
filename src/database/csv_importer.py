@@ -2,6 +2,8 @@ import csv
 from datetime import datetime
 from .models import Transaktion
 
+
+# CSV-Feldzuordnung: Hier werden Felder in der CSV-Datei mit den Feldern der Datenbank zugeordnet. 
 CSV_TO_MODEL_MAPPING = {
     "Buchungstag": "buchungstag",
     "Begünstigter / Auftraggeber": "beguenstigter",
@@ -11,6 +13,7 @@ CSV_TO_MODEL_MAPPING = {
     "Währung": "waehrung",
 }
 
+# Klasse zum Einlesen von CSV-Transaktionen, Konvertieren und Speichern dieser in die Datenbank.
 class CSVTransaktionImporter:
     def __init__(self, session):
         self.session = session
@@ -19,13 +22,14 @@ class CSVTransaktionImporter:
         return datetime.strptime(value, "%d.%m.%Y").date()
 
     def parse_float(self, value):
-        # Handle German number format: "1.234,56"
-        # SQLite can not handle german number format, this replaces german number format with english number format. 
+        # Umgang mit deutschem Zahlenformat: "1.234,56"
+        # SQLite kann das deutsche Zahlenformat nicht verarbeiten, daher wird es hier in das englische Zahlenformat umgewandelt.
         value = value.replace(".", "").replace(",", ".")
         return float(value)
 
     def import_csv(self, file_path):
         with open(file_path, newline="", encoding="utf-8-sig") as csvfile:
+            # Delimiter = Zeichen, das in der CSV-Datei die einzelnen Spalten voneinander trennt.
             reader = csv.DictReader(csvfile, delimiter=';')
 
             for row in reader:
