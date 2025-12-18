@@ -1,4 +1,4 @@
-# Definiotn der Datenbankmodelle für die Anwendung
+# Definition der Datenbankmodelle für die Anwendung
 
 from sqlalchemy import (
     Column,
