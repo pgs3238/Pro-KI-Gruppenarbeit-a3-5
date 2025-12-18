@@ -35,6 +35,11 @@ class CategoryManager:
                 session.commit()
 
     def add_category(self, name: str, category_type: str):
+        valid_types = ["Ausgabe", "Einnahme"]
+        if category_type not in valid_types:
+            raise ValueError(
+                f"Invalid category_type '{category_type}'. Must be one of: {', '.join(valid_types)}"
+            )
         with SessionLocal() as session:
             existing = session.query(Category).filter_by(name=name).first()
             if existing:
