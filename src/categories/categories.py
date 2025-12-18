@@ -3,6 +3,7 @@ from src.database import SessionLocal, Category
 
 class CategoryManager:
     _instance = None
+    VALID_CATEGORY_TYPES = ["Ausgabe", "Einnahme"]
 
     def __init__(self):
         self._check_and_load_defaults()
@@ -35,10 +36,13 @@ class CategoryManager:
                 session.commit()
 
     def add_category(self, name: str, category_type: str):
-        valid_types = ["Ausgabe", "Einnahme"]
-        if category_type not in valid_types:
+        if category_type is None:
             raise ValueError(
-                f"Invalid category_type '{category_type}'. Must be one of: {', '.join(valid_types)}"
+                f"category_type cannot be None. Must be one of: {', '.join(self.VALID_CATEGORY_TYPES)}"
+            )
+        if category_type not in self.VALID_CATEGORY_TYPES:
+            raise ValueError(
+                f"Invalid category_type '{category_type}'. Must be one of: {', '.join(self.VALID_CATEGORY_TYPES)}"
             )
         with SessionLocal() as session:
             existing = session.query(Category).filter_by(name=name).first()
