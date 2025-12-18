@@ -1,30 +1,10 @@
-from pathlib import Path
-import sys
-from sqlalchemy import Column, Integer, String
-
-
-base_path = Path(__file__).parent.parent.parent
-sys.path.append(str(base_path))  # Removed for proper package structure
-from local_test.db_handler import SessionLocal, Base
-
-
-class Category(Base):
-    __tablename__ = "categories"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String, nullable=False, unique=True)
-    category_type = Column(String, nullable=False)
-
-    def __repr__(self):
-        return f"<Category(name='{self.name}', category_type='{self.category_type}')>"
+from src.database import SessionLocal, Category
 
 
 class CategoryManager:
     _instance = None
 
     def __init__(self):
-        with SessionLocal() as session:
-            Category.__table__.create(bind=session.bind, checkfirst=True)
         self._check_and_load_defaults()
 
     @classmethod
