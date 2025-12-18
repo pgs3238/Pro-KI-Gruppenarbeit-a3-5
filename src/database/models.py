@@ -7,6 +7,7 @@ from sqlalchemy import (
     Float,
     Date,
     DateTime,
+    Enum,
 )  # Importiere notwendige SQLAlchemy Datentypen
 from sqlalchemy.orm import declarative_base  # Basisklasse für ORM-Modelle
 from datetime import datetime
@@ -41,8 +42,11 @@ class Category(Base):
     __tablename__ = "categories"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String, nullable=False, unique=True)
-    category_type = Column(String, nullable=False)
+    name = Column(String(100), nullable=False, unique=True)
+    category_type = Column(
+        Enum("Ausgabe", "Einnahme", name="category_type_enum", validate_strings=True),
+        nullable=False,
+    )
 
     def __repr__(self):
         return f"<Category(name='{self.name}', category_type='{self.category_type}')>"
