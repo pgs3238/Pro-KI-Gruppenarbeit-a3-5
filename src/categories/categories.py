@@ -35,6 +35,8 @@ class CategoryManager:
                 session.commit()
 
     def add_category(self, name: str, category_type: str):
+        if name is None or not str(name).strip():
+            raise ValueError("Category name must not be empty or whitespace-only")
         with SessionLocal() as session:
             existing = session.query(Category).filter_by(name=name).first()
             if existing:
