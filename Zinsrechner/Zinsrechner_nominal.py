@@ -3,7 +3,7 @@ import gradio as gr
 from Funktionen import zeitberechnung, berechne_zinsen, erstelle_plot, erstelle_vergleichs_plot
 from database import erstelle_datenbank, loesche_alle_kontostaende
 from datetime import datetime
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 # Liste der verwendeten Datenbanken
 db_list = []
@@ -25,12 +25,13 @@ def zinsrechner(kontostand, zinssatz, einzahlungsintervall, einzahlung, kontoaus
     # Führe Zinseszinsberechnung durch
     ergebnis = berechne_zinsen(kontostand, float(zinssatz), einzahlungsintervall, einzahlung, jahre, heute, kontoauswahl, 'kontostände.db')
     
-    # Erstelle Plot
-    plot = erstelle_plot('kontostände.db')
+    # Erstelle Plot mit Endergebnis
+    plot = erstelle_plot('kontostände.db', endergebnis=ergebnis, laufzeit=jahre)
     
-    # Gib formatiertes Ergebnis und Plot zurück
-    text_ausgabe = f"Endgültiger Kontostand nach {jahre:.2f} Jahren: {ergebnis:.2f} EUR\n(Alle Zwischenstände in Datenbank gespeichert)"
-    return text_ausgabe, plot
+    # Status-Nachricht
+    status = f"Berechnung abgeschlossen: {ergebnis:.2f} EUR nach {jahre:.2f} Jahren"
+    
+    return plot, get_szenario_liste(), status
 
 def vergleich_hinzufuegen(kontostand, zinssatz, einzahlungsintervall, einzahlung, kontoauswahl, zieldatum):
     """
@@ -39,7 +40,7 @@ def vergleich_hinzufuegen(kontostand, zinssatz, einzahlungsintervall, einzahlung
     global db_list
     
     if len(db_list) >= 4:
-        return "Maximale Anzahl (5 Szenarien) erreicht!", erstelle_vergleichs_plot(['kontostände.db'] + db_list)
+        return erstelle_vergleichs_plot(['kontostände.db'] + db_list), get_szenario_liste(), "Maximale Anzahl (5 Szenarien) erreicht!"
     
     # Erstelle neue Datenbank für Vergleich
     db_name = f'vergleich_{len(db_list) + 1}.db'
@@ -55,8 +56,73 @@ def vergleich_hinzufuegen(kontostand, zinssatz, einzahlungsintervall, einzahlung
     # Erstelle Vergleichsplot mit allen Szenarien
     plot = erstelle_vergleichs_plot(['kontostände.db'] + db_list)
     
-    text = f"Szenario {len(db_list) + 1} hinzugefügt! Endergebnis: {ergebnis:.2f} EUR"
-    return text, plot
+    status = f"Szenario {len(db_list) + 1} hinzugefügt! Endergebnis: {ergebnis:.2f} EUR"
+    return plot, get_szenario_liste(), status
+
+def loesche_szenario(szenario_nr):
+    """
+    Löscht ein einzelnes Szenario aus dem Vergleich
+    """
+    global db_list
+    
+    if szenario_nr == 1:
+        # Hauptberechnung löschen
+        loesche_alle_kontostaende('kontostände.db')
+        if db_list:
+            plot = erstelle_vergleichs_plot(db_list)
+        else:
+            fig = go.Figure()
+            fig.add_annotation(
+                text='Keine Daten - bitte Berechnung starten',
+                xref="paper", yref="paper",
+                x=0.5, y=0.5, showarrow=False,
+                font=dict(size=14)
+            )
+            fig.update_layout(xaxis_visible=False, yaxis_visible=False, height=600)
+            plot = fig
+        return plot, get_szenario_liste(), f"Szenario 1 gelöscht"
+    elif szenario_nr > 1 and szenario_nr <= len(db_list) + 1:
+        # Vergleichsszenario löschen
+        db_index = szenario_nr - 2
+        db_to_delete = db_list[db_index]
+        loesche_alle_kontostaende(db_to_delete)
+        db_list.pop(db_index)
+        
+        # Erstelle neuen Plot mit verbleibenden Szenarien
+        if db_list:
+            plot = erstelle_vergleichs_plot(['kontostände.db'] + db_list)
+        else:
+            plot = erstelle_plot('kontostände.db')
+        
+        return plot, get_szenario_liste(), f"Szenario {szenario_nr} gelöscht"
+    else:
+        # Aktuellen Plot beibehalten
+        if db_list:
+            plot = erstelle_vergleichs_plot(['kontostände.db'] + db_list)
+        else:
+            plot = erstelle_plot('kontostände.db')
+        return plot, get_szenario_liste(), "Ungültige Szenario-Nummer"
+
+def get_szenario_liste():
+    """
+    Gibt eine formatierte Liste aller aktiven Szenarien zurück
+    """
+    from database import hole_parameter
+    
+    szenarien = []
+    
+    # Hauptszenario
+    params = hole_parameter('kontostände.db')
+    if params:
+        szenarien.append(f"Szenario 1: {params['zinssatz']:.2f}% | {params['einzahlungsintervall']}: {params['einzahlung']:.0f}€")
+    
+    # Vergleichsszenarien
+    for idx, db_name in enumerate(db_list, start=2):
+        params = hole_parameter(db_name)
+        if params:
+            szenarien.append(f"Szenario {idx}: {params['zinssatz']:.2f}% | {params['einzahlungsintervall']}: {params['einzahlung']:.0f}€")
+    
+    return "\n".join(szenarien) if szenarien else "Keine aktiven Szenarien"
 
 def reset_eingaben():
     """
@@ -73,15 +139,17 @@ def reset_eingaben():
     db_list = []
     
     # Erstelle leeren Plot
-    fig, ax = plt.subplots(figsize=(12, 6))
-    ax.text(0.5, 0.5, 'Keine Daten - bitte Berechnung starten', 
-            horizontalalignment='center', verticalalignment='center', fontsize=14)
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1)
-    ax.axis('off')
+    fig = go.Figure()
+    fig.add_annotation(
+        text='Keine Daten - bitte Berechnung starten',
+        xref="paper", yref="paper",
+        x=0.5, y=0.5, showarrow=False,
+        font=dict(size=14)
+    )
+    fig.update_layout(xaxis_visible=False, yaxis_visible=False, height=600)
     
-    # Rückgabe: kontostand, zinssatz, einzahlungsintervall, einzahlung, kontoauswahl, zieldatum, output, plot_output
-    return 0, "", "Monatlich", 0, None, "", "", fig
+    # Rückgabe: kontostand, zinssatz, einzahlungsintervall, einzahlung, kontoauswahl, zieldatum, plot_output, szenario_liste, status
+    return 0, "", "Monatlich", 0, None, "", fig, "Keine aktiven Szenarien", "Zurückgesetzt"
 
 # Initialisiere die Datenbanken beim Start
 erstelle_datenbank('kontostände.db')
@@ -109,8 +177,15 @@ with gr.Blocks() as demo:
                 reset_btn = gr.Button("Zurücksetzen", variant="stop")
     
     # Output-Felder
-    output = gr.Textbox(label="Ergebnis")
-    plot_output = gr.Plot(label="Kontoverlauf")
+    with gr.Row():
+        with gr.Column(scale=3):
+            plot_output = gr.Plot(label="Kontoverlauf")
+        with gr.Column(scale=1):
+            gr.Markdown("### Aktive Szenarien")
+            szenario_liste = gr.Textbox(label="Szenarien", value="Keine aktiven Szenarien", lines=8, interactive=False)
+            szenario_nr_input = gr.Number(label="Szenario-Nr. zum Löschen", value=1, minimum=1, maximum=5, step=1)
+            loesche_btn = gr.Button("Szenario löschen", variant="secondary")
+            status_output = gr.Textbox(label="Status", lines=2, interactive=False)
     
     def update_label(intervall):
         """Aktualisiert das Label des Einzahlungs-Sliders"""
@@ -126,14 +201,18 @@ with gr.Blocks() as demo:
     
     submit_btn.click(fn=zinsrechner, 
                      inputs=[kontostand, zinssatz, einzahlungsintervall, einzahlung, kontoauswahl, zieldatum], 
-                     outputs=[output, plot_output])
+                     outputs=[plot_output, szenario_liste, status_output])
     
     vergleich_btn.click(fn=vergleich_hinzufuegen,
                         inputs=[kontostand, zinssatz, einzahlungsintervall, einzahlung, kontoauswahl, zieldatum],
-                        outputs=[output, plot_output])
+                        outputs=[plot_output, szenario_liste, status_output])
+    
+    loesche_btn.click(fn=loesche_szenario,
+                      inputs=[szenario_nr_input],
+                      outputs=[plot_output, szenario_liste, status_output])
     
     reset_btn.click(fn=reset_eingaben,
-                    outputs=[kontostand, zinssatz, einzahlungsintervall, einzahlung, kontoauswahl, zieldatum, output, plot_output])
+                    outputs=[kontostand, zinssatz, einzahlungsintervall, einzahlung, kontoauswahl, zieldatum, plot_output, szenario_liste, status_output])
 
 # Starte Gradio-Webinterface
 demo.launch()

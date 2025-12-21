@@ -22,6 +22,18 @@ def erstelle_datenbank(db_name='kontostände.db'):
         )
     ''')
     
+    # Erstelle Tabelle für Berechnungsparameter
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS parameter (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            zinssatz REAL NOT NULL,
+            einzahlung REAL NOT NULL,
+            einzahlungsintervall TEXT NOT NULL,
+            startkapital REAL NOT NULL,
+            zeitstempel TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
     conn.commit()
     conn.close()
 
@@ -103,9 +115,62 @@ def loesche_alle_kontostaende(db_name='kontostände.db'):
     cursor = conn.cursor()
     
     cursor.execute('DELETE FROM kontostände')
+    cursor.execute('DELETE FROM parameter')
     
     conn.commit()
     conn.close()
+
+def speichere_parameter(zinssatz, einzahlung, einzahlungsintervall, startkapital, db_name='kontostände.db'):
+    """
+    Speichert die Berechnungsparameter in der Datenbank
+    
+    Parameter:
+    - zinssatz: Zinssatz in Prozent
+    - einzahlung: Regelmäßige Einzahlung
+    - einzahlungsintervall: Intervall der Einzahlung
+    - startkapital: Anfangskapital
+    - db_name: Name der Datenbankdatei
+    """
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+    
+    # Lösche alte Parameter
+    cursor.execute('DELETE FROM parameter')
+    
+    cursor.execute('''
+        INSERT INTO parameter (zinssatz, einzahlung, einzahlungsintervall, startkapital)
+        VALUES (?, ?, ?, ?)
+    ''', (zinssatz, einzahlung, einzahlungsintervall, startkapital))
+    
+    conn.commit()
+    conn.close()
+
+def hole_parameter(db_name='kontostände.db'):
+    """
+    Gibt die gespeicherten Parameter zurück
+    
+    Parameter:
+    - db_name: Name der Datenbankdatei
+    
+    Returns:
+    - Dictionary mit Parametern oder None
+    """
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+    
+    cursor.execute('SELECT zinssatz, einzahlung, einzahlungsintervall, startkapital FROM parameter ORDER BY id DESC LIMIT 1')
+    ergebnis = cursor.fetchone()
+    
+    conn.close()
+    
+    if ergebnis:
+        return {
+            'zinssatz': ergebnis[0],
+            'einzahlung': ergebnis[1],
+            'einzahlungsintervall': ergebnis[2],
+            'startkapital': ergebnis[3]
+        }
+    return None
 
 # Initialisiere die Hauptdatenbank beim Import
 erstelle_datenbank()
