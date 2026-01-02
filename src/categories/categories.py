@@ -3,7 +3,7 @@ Modul zur Verwaltung von Ausgabe- und Einnahmekategorien für Transaktionen.
 Bietet Funktionen zum Hinzufügen, Entfernen und Abrufen von Kategorien.
 """
 
-from src.database import SessionLocal, Category
+from src.database import SessionLocal, Category, CategoryRules
 
 
 # Flag, ob die Standard-Kategorien bereits geladen wurden
@@ -29,8 +29,31 @@ def _check_and_load_defaults_categories():
                 Category(name="Miete", category_type="Ausgabe"),
                 Category(name="Gehalt", category_type="Einnahme"),
                 Category(name="Freizeit", category_type="Ausgabe"),
+                Category(name="Versicherung", category_type="Ausgabe"),
+                Category(name="Transport", category_type="Ausgabe"),
+                Category(name="Strom & Gas", category_type="Ausgabe"),
+                Category(name="Internet & Telefon", category_type="Ausgabe"),
+                Category(name="Abos & Mitgliedschaften", category_type="Ausgabe"),
+                Category(name="Rücklagen", category_type="Ausgabe"),
             ]
             session.add_all(default_categories)
+            session.commit()
+
+        rules_count = session.query(CategoryRules).count()
+        if rules_count == 0:
+            # Lade Standard-Kategorisierungsregeln aus rules.py
+            from src.categories.rules import DEFAULT_CATEGORIZATION_RULES
+
+            for category_name, rule_data in DEFAULT_CATEGORIZATION_RULES.items():
+                rule = CategoryRules(
+                    category_name=category_name,
+                    keywords=",".join(rule_data["keywords"]),
+                    amount_range_min=rule_data["betrag_range"][0],
+                    amount_range_max=rule_data["betrag_range"][1],
+                    priority=rule_data["priority"],
+                    source="default",
+                )
+                session.add(rule)
             session.commit()
 
     _defaults_loaded = True
