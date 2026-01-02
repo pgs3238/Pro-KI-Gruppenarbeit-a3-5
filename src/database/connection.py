@@ -5,7 +5,6 @@ from sqlalchemy import (
 )  # SQLAlchemy nutzen wir um ORM mit SQLite zu verbinden
 from sqlalchemy.orm import sessionmaker, Session
 from pathlib import Path
-from src.categories.categories import _check_and_load_defaults_categories
 
 
 # Datenbankpfad relativ zum Projekt-Root
@@ -40,4 +39,6 @@ def init_db():
     print(f"✓ Datenbank initialisiert: {DB_PATH}")
 
     # Lade Standard-Kategorien, falls die Datenbank leer ist
+    from src.categories.categories import _check_and_load_defaults_categories
+
     _check_and_load_defaults_categories()
