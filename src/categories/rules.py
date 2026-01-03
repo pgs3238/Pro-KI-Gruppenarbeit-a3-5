@@ -15,7 +15,6 @@ DEFAULT_CATEGORIZATION_RULES = {
             "bonus",
             "provision",
         ],
-        "priority": 10,
     },
     "Miete": {
         "keywords": [
@@ -26,7 +25,6 @@ DEFAULT_CATEGORIZATION_RULES = {
             "kaltmiete",
             "wohnungsmiete",
         ],
-        "priority": 10,
     },
     "Versicherung": {
         "keywords": [
@@ -38,7 +36,6 @@ DEFAULT_CATEGORIZATION_RULES = {
             "kfz-versicherung",
             "lebensversicherung",
         ],
-        "priority": 9,
     },
     "Lebensmittel": {
         "keywords": [
@@ -52,7 +49,6 @@ DEFAULT_CATEGORIZATION_RULES = {
             "supermarkt",
             "bio",
         ],
-        "priority": 5,
     },
     "Transport": {
         "keywords": [
@@ -70,7 +66,6 @@ DEFAULT_CATEGORIZATION_RULES = {
             "ticket",
             "tanken",
         ],
-        "priority": 6,
     },
     "Freizeit": {
         "keywords": [
@@ -86,7 +81,6 @@ DEFAULT_CATEGORIZATION_RULES = {
             "museum",
             "hobby",
         ],
-        "priority": 3,
     },
     "Strom & Gas": {
         "keywords": [
@@ -98,7 +92,6 @@ DEFAULT_CATEGORIZATION_RULES = {
             "vattenfall",
             "rwe",
         ],
-        "priority": 8,
     },
     "Internet & Telefon": {
         "keywords": [
@@ -110,7 +103,6 @@ DEFAULT_CATEGORIZATION_RULES = {
             "internet",
             "mobilfunk",
         ],
-        "priority": 7,
     },
     "Abos & Mitgliedschaften": {
         "keywords": [
@@ -124,7 +116,6 @@ DEFAULT_CATEGORIZATION_RULES = {
             "mitgliedschaft",
             "abo",
         ],
-        "priority": 4,
     },
     "Rücklagen": {
         "keywords": [
@@ -135,6 +126,5 @@ DEFAULT_CATEGORIZATION_RULES = {
             "sparbuch",
             "tagesgeld",
         ],
-        "priority": 2,
     },
 }

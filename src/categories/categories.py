@@ -48,7 +48,6 @@ def _check_and_load_defaults_categories():
                 rule = CategoryRules(
                     category_name=category_name,
                     keywords=",".join(rule_data["keywords"]),
-                    priority=rule_data["priority"],
                 )
                 session.add(rule)
             session.commit()

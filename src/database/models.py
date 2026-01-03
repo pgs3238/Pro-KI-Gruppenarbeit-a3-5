@@ -84,7 +84,6 @@ class CategoryRules(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     category_name = Column(String(100), ForeignKey("categories.name"), nullable=False)
     keywords = Column(String(1000), nullable=False)
-    priority = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.now)
 
     # Relationship

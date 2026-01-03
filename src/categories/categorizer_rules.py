@@ -13,7 +13,7 @@ class Categorizer:
     """
     Engine für automatische Kategorisierung von Transaktionen.
 
-    Die Klasse verwendet regelbasierte Kategorisierung mit Keywords und Betragsbereichen.
+    Die Klasse verwendet regelbasierte Kategorisierung durch Keywords.
     """
 
     def __init__(self):
@@ -40,7 +40,6 @@ class Categorizer:
                         .filter_by(name=rule.category_name)
                         .first(),
                         "keywords": rule.keywords,
-                        "priority": rule.priority,
                         "created_at": rule.created_at,
                     }
 
@@ -79,7 +78,7 @@ class Categorizer:
             True wenn die Transaktion zur Regel passt, sonst False
         """
         # Prüfe Keywords
-        keywords = [kw.strip().lower() for kw in rule["keywords"].split(",")]
+        keywords = [self._clean_keyword(kw) for kw in rule["keywords"].split(",")]
         if not any(kw in search_text for kw in keywords):
             return False
 
@@ -98,11 +97,7 @@ class Categorizer:
         rules = self._get_rules()
         search_text = self._prepare_search_text(transaction)
 
-        sorted_rules = dict(
-            sorted(rules.items(), key=lambda item: item[1]["priority"], reverse=True)
-        )
-
-        for rule in sorted_rules.values():
+        for rule in rules.values():
             if self._matches_rule(transaction, rule, search_text):
                 return rule["category"]
         return None
@@ -173,6 +168,7 @@ class Categorizer:
                     kw.strip() for kw in rule.keywords.split(",") if kw.strip()
                 ]
                 for new_keyword in new_keywords:
+                    new_keyword = self._clean_keyword(new_keyword)
                     if new_keyword not in existing_keywords:
                         existing_keywords.append(new_keyword)
                 rule.keywords = ", ".join(existing_keywords)
@@ -207,9 +203,6 @@ class Categorizer:
         self,
         category_name: str,
         keywords: str,
-        min_amount: float | None = None,
-        max_amount: float | None = None,
-        priority: int = 0,
     ):
         """
         Fügt eine neue Kategorisierungsregel hinzu.
@@ -217,17 +210,11 @@ class Categorizer:
         Args:
             category_name: Name der Kategorie, zu der die Regel gehört
             keywords: Kommagetrennte Schlüsselwörter für die Regel
-            min_amount: Minimaler Betrag für die Regel (optional)
-            max_amount: Maximaler Betrag für die Regel (optional)
-            priority: Priorität der Regel (höher = wichtiger)
         """
         with SessionLocal() as session:
             new_rule = CategoryRules(
                 category_name=category_name,
                 keywords=keywords,
-                amount_range_min=min_amount,
-                amount_range_max=max_amount,
-                priority=priority,
             )
             session.add(new_rule)
             session.commit()
@@ -258,42 +245,113 @@ class Categorizer:
     def learn_from_categorized_transactions(self, min_occurrences: int = 3):
         """
         Lernt neue Kategorisierungsregeln basierend auf bereits kategorisierten Transaktionen.
+        Berücksichtigt nur Keywords, die eindeutig einer Kategorie zugeordnet werden können.
 
         Args:
             min_occurrences: Minimale Anzahl von Vorkommen eines Schlüsselworts, um eine Regel zu erstellen
         """
 
+        STOPWORDS = {
+            "vielen",
+            "dank",
+            "mfg",
+            "mit",
+            "freundlichen",
+            "grüßen",
+            "der",
+            "die",
+            "das",
+            "und",
+            "für",
+            "von",
+            "zu",
+            "den",
+            "ich",
+            "sie",
+            "wir",
+            "bei",
+            "auf",
+            "im",
+            "am",
+            "an",
+            "bitte",
+            "danke",
+            "freundliche",
+            "",
+        }
+
         rules = self._get_rules()
+
         with SessionLocal() as session:
             categorized_transactions = (
                 session.query(Transaktion)
                 .filter(Transaktion.kategorie_id is not None)
                 .all()
             )
-            keyword_map = {}
+
+            keyword_categories = {}
+
             for transaction in categorized_transactions:
                 if transaction.kategorie is None:
                     continue
+
                 search_text = self._prepare_search_text(transaction)
                 keywords = set(search_text.split())
-                existing_keywords = rules.get(transaction.kategorie.name, {}).get(
-                    "keywords", ""
-                )
                 category_name = transaction.kategorie.name
-
-                if category_name not in keyword_map:
-                    keyword_map[category_name] = {}
+                existing_keywords = rules.get(category_name, {}).get("keywords", "")
 
                 for kw in keywords:
-                    if kw in existing_keywords:
+                    kw = self._clean_keyword(kw)
+                    if (
+                        kw.lower() in STOPWORDS
+                        or len(kw) < 3
+                        or kw in existing_keywords
+                    ):
                         continue
-                    keyword_map[category_name][kw] = (
-                        keyword_map[category_name].get(kw, 0) + 1
+
+                    if kw not in keyword_categories:
+                        keyword_categories[kw] = {}
+
+                    keyword_categories[kw][category_name] = (
+                        keyword_categories[kw].get(category_name, 0) + 1
                     )
 
-            for category_name, kw_counts in keyword_map.items():
-                keywords_to_add = [
-                    kw for kw, count in kw_counts.items() if count >= min_occurrences
-                ]
+            category_keywords = {}
+
+            for kw, categories in keyword_categories.items():
+                if len(categories) == 1:
+                    category = list(categories.keys())[0]
+                    count = categories[category]
+
+                    if count >= min_occurrences:
+                        if category not in category_keywords:
+                            category_keywords[category] = []
+                        category_keywords[category].append(kw)
+
+            for category_name, keywords_to_add in category_keywords.items():
                 if keywords_to_add:
                     self.add_keyword_to_rule(category_name, keywords_to_add)
+
+    def _clean_keyword(self, keyword: str) -> str:
+        """
+        Bereinigt ein einzelnes Keyword von Leerzeichen und Satzzeichen.
+
+        Args:
+            keyword: Das zu bereinigende Keyword
+
+        Returns:
+            Bereinigtes Keyword in Kleinbuchstaben
+        """
+        import string
+
+        # Entferne Leerzeichen und Satzzeichen am Anfang und Ende
+        cleaned = keyword.strip()
+        cleaned = cleaned.strip(string.punctuation + string.whitespace)
+
+        # Ersetze mehrfache Leerzeichen durch ein einzelnes
+        cleaned = " ".join(cleaned.split())
+
+        # Konvertiere zu Kleinbuchstaben
+        cleaned = cleaned.lower()
+
+        return cleaned
