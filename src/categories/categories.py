@@ -48,10 +48,7 @@ def _check_and_load_defaults_categories():
                 rule = CategoryRules(
                     category_name=category_name,
                     keywords=",".join(rule_data["keywords"]),
-                    amount_range_min=rule_data["betrag_range"][0],
-                    amount_range_max=rule_data["betrag_range"][1],
                     priority=rule_data["priority"],
-                    source="default",
                 )
                 session.add(rule)
             session.commit()

@@ -72,29 +72,23 @@ class Category(Base):  # Erbt von Base und repräsentiert die "categories" Tabel
     def __repr__(self):
         return f"<Category(name='{self.name}', category_type='{self.category_type}')>"
 
-    class CategoryRules(Base):
-        """
-        Kategorisierungsregeln für automatische Zuordnung von Transaktionen zu Kategorien basierend auf Schlüsselwörtern.
-        Erweitert oder überschreibt Standard-Regeld aus dem Code.
-        """
 
-        __tablename__ = "category_rules"
+class CategoryRules(Base):
+    """
+    Kategorisierungsregeln für automatische Zuordnung von Transaktionen zu Kategorien basierend auf Schlüsselwörtern.
+    Erweitert oder überschreibt Standard-Regeld aus dem Code.
+    """
 
-        id = Column(Integer, primary_key=True, autoincrement=True)
-        category_name = Column(
-            String(100), ForeignKey("categories.name"), nullable=False
-        )
-        keywords = Column(String(1000), nullable=False)
-        amount_range_min = Column(Float, nullable=True)
-        amount_range_max = Column(Float, nullable=True)
-        priority = Column(Integer, default=0)
-        source = Column(
-            Enum("user", "default", "learned", name="rule_source"), default="user"
-        )
-        created_at = Column(DateTime, default=datetime.now)
+    __tablename__ = "category_rules"
 
-        # Relationship
-        category = relationship("Category", backref="rules")
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    category_name = Column(String(100), ForeignKey("categories.name"), nullable=False)
+    keywords = Column(String(1000), nullable=False)
+    priority = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.now)
 
-        def __repr__(self):
-            return f"<CategoryRules(category='{self.category.name}', keyword='{self.keyword}', source='{self.source}')>"
+    # Relationship
+    category = relationship("Category", backref="rules")
+
+    def __repr__(self):
+        return f"<CategoryRules(category='{self.category.name}', keyword='{self.keyword}', source='{self.source}')>"

@@ -1,7 +1,7 @@
 """
 Regelkonfigurationen für regelbasierte automatische Kategorisierung von Transaktionen.
 
-Diese Regeln definieren, welche Keywords und Betragsbereichne zu welchen Kategorien gehören.
+Diese Regeln definieren, welche Keywords zu welchen Kategorien gehören.
 Regeln werden nach Priorität sortiert (höhere Werte zuerst).
 """
 
@@ -15,7 +15,6 @@ DEFAULT_CATEGORIZATION_RULES = {
             "bonus",
             "provision",
         ],
-        "betrag_range": (0, 10000),
         "priority": 10,
     },
     "Miete": {
@@ -27,7 +26,6 @@ DEFAULT_CATEGORIZATION_RULES = {
             "kaltmiete",
             "wohnungsmiete",
         ],
-        "betrag_range": (-3000, 0),
         "priority": 10,
     },
     "Versicherung": {
@@ -40,7 +38,6 @@ DEFAULT_CATEGORIZATION_RULES = {
             "kfz-versicherung",
             "lebensversicherung",
         ],
-        "betrag_range": (-1000, 0),
         "priority": 9,
     },
     "Lebensmittel": {
@@ -55,7 +52,6 @@ DEFAULT_CATEGORIZATION_RULES = {
             "supermarkt",
             "bio",
         ],
-        "betrag_range": (-500, 0),
         "priority": 5,
     },
     "Transport": {
@@ -74,7 +70,6 @@ DEFAULT_CATEGORIZATION_RULES = {
             "ticket",
             "tanken",
         ],
-        "betrag_range": (-500, 0),
         "priority": 6,
     },
     "Freizeit": {
@@ -91,7 +86,6 @@ DEFAULT_CATEGORIZATION_RULES = {
             "museum",
             "hobby",
         ],
-        "betrag_range": (-300, 0),
         "priority": 3,
     },
     "Strom & Gas": {
@@ -104,7 +98,6 @@ DEFAULT_CATEGORIZATION_RULES = {
             "vattenfall",
             "rwe",
         ],
-        "betrag_range": (-300, 0),
         "priority": 8,
     },
     "Internet & Telefon": {
@@ -117,7 +110,6 @@ DEFAULT_CATEGORIZATION_RULES = {
             "internet",
             "mobilfunk",
         ],
-        "betrag_range": (-100, 0),
         "priority": 7,
     },
     "Abos & Mitgliedschaften": {
@@ -132,7 +124,6 @@ DEFAULT_CATEGORIZATION_RULES = {
             "mitgliedschaft",
             "abo",
         ],
-        "betrag_range": (-100, 0),
         "priority": 4,
     },
     "Rücklagen": {
@@ -144,7 +135,6 @@ DEFAULT_CATEGORIZATION_RULES = {
             "sparbuch",
             "tagesgeld",
         ],
-        "betrag_range": (-5000, 0),
         "priority": 2,
     },
 }
