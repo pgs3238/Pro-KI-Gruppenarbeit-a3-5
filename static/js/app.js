@@ -154,13 +154,7 @@ function setupSearch() {
     
     const searchIcon = document.querySelector('.search-icon');
 
-    // Icon verschwindet beim Tippen
-    searchBox.addEventListener('input', (e) => {
-        if (searchIcon) {
-            searchIcon.style.display = e.target.value ? 'none' : 'block';
-        }
-    });
-
+    
     // Filterfunktion
     searchBox.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
