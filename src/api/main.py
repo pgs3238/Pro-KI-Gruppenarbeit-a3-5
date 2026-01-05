@@ -9,32 +9,30 @@ from datetime import date
 from ..database import init_db, SessionLocal, Transaktion
 from .schemas import TransaktionCreate, TransaktionUpdate, TransaktionResponse
 
-# FastAPI App initialisieren
+# ==================== SETUP ====================
+
 app = FastAPI(
     title="Ausgabenverwaltung API",
     description="REST API für die Verwaltung von Finanztransaktionen",
     version="1.0.0"
 )
 
-# CORS Middleware für Frontend-Kommunikation
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In Produktion spezifische Origins angeben
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Datenbank initialisieren beim Start
 @app.on_event("startup")
 def startup_event():
     init_db()
-    print("✓ API gestartet und Datenbank initialisiert")
+    print("✓ API gestartet")
 
 
-# Dependency für Datenbank-Session
 def get_db():
-    """Erstellt eine Datenbank-Session für jeden Request"""
+    """Datenbank-Session für jeden Request"""
     db = SessionLocal()
     try:
         yield db
@@ -42,49 +40,41 @@ def get_db():
         db.close()
 
 
-# ==================== API ENDPUNKTE ====================
+# ==================== HILFSFUNKTIONEN ====================
 
-@app.get("/")
-def root():
-    """Basis-Endpunkt zur Überprüfung der API"""
-    return {
-        "message": "Ausgabenverwaltung API",
-        "version": "1.0.0",
-        "docs": "/docs"
-    }
-
-
-@app.get("/transactions", response_model=List[TransaktionResponse])
-def get_transactions(
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db)
-):
-    """
-    Gibt alle Transaktionen zurück
-    
-    - **skip**: Anzahl der Einträge zum Überspringen (Pagination)
-    - **limit**: Maximale Anzahl der zurückzugebenden Einträge
-    """
-    transactions = db.query(Transaktion).offset(skip).limit(limit).all()
-    return transactions
-
-
-@app.get("/transactions/{transaction_id}", response_model=TransaktionResponse)
-def get_transaction(transaction_id: int, db: Session = Depends(get_db)):
-    """Gibt eine einzelne Transaktion anhand der ID zurück"""
+def get_transaction_or_404(transaction_id: int, db: Session):
+    """Transaktion laden oder 404 werfen"""
     transaction = db.query(Transaktion).filter(Transaktion.id == transaction_id).first()
     if not transaction:
         raise HTTPException(status_code=404, detail="Transaktion nicht gefunden")
     return transaction
 
 
+# ==================== ENDPUNKTE: BASIC ====================
+
+@app.get("/")
+def root():
+    """API Status"""
+    return {"message": "Ausgabenverwaltung API", "version": "1.0.0", "docs": "/docs"}
+
+
+# ==================== ENDPUNKTE: CRUD ====================
+
+@app.get("/transactions", response_model=List[TransaktionResponse])
+def get_transactions(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """Alle Transaktionen (mit Pagination)"""
+    return db.query(Transaktion).offset(skip).limit(limit).all()
+
+
+@app.get("/transactions/{transaction_id}", response_model=TransaktionResponse)
+def get_transaction(transaction_id: int, db: Session = Depends(get_db)):
+    """Eine Transaktion abrufen"""
+    return get_transaction_or_404(transaction_id, db)
+
+
 @app.post("/transactions", response_model=TransaktionResponse, status_code=201)
-def create_transaction(
-    transaction: TransaktionCreate,
-    db: Session = Depends(get_db)
-):
-    """Erstellt eine neue Transaktion"""
+def create_transaction(transaction: TransaktionCreate, db: Session = Depends(get_db)):
+    """Neue Transaktion erstellen"""
     db_transaction = Transaktion(**transaction.model_dump())
     db.add(db_transaction)
     db.commit()
@@ -98,12 +88,9 @@ def update_transaction(
     transaction_update: TransaktionUpdate,
     db: Session = Depends(get_db)
 ):
-    """Aktualisiert eine bestehende Transaktion"""
-    db_transaction = db.query(Transaktion).filter(Transaktion.id == transaction_id).first()
-    if not db_transaction:
-        raise HTTPException(status_code=404, detail="Transaktion nicht gefunden")
+    """Transaktion aktualisieren"""
+    db_transaction = get_transaction_or_404(transaction_id, db)
     
-    # Nur die Felder aktualisieren, die übergeben wurden
     update_data = transaction_update.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(db_transaction, key, value)
@@ -115,15 +102,13 @@ def update_transaction(
 
 @app.delete("/transactions/{transaction_id}", status_code=204)
 def delete_transaction(transaction_id: int, db: Session = Depends(get_db)):
-    """Löscht eine Transaktion"""
-    db_transaction = db.query(Transaktion).filter(Transaktion.id == transaction_id).first()
-    if not db_transaction:
-        raise HTTPException(status_code=404, detail="Transaktion nicht gefunden")
-    
+    """Transaktion löschen"""
+    db_transaction = get_transaction_or_404(transaction_id, db)
     db.delete(db_transaction)
     db.commit()
-    return None
 
+
+# ==================== ENDPUNKTE: FILTER & STATISTIKEN ====================
 
 @app.get("/transactions/filter/date-range", response_model=List[TransaktionResponse])
 def get_transactions_by_date_range(
@@ -131,33 +116,24 @@ def get_transactions_by_date_range(
     end_date: date,
     db: Session = Depends(get_db)
 ):
-    """Filtert Transaktionen nach Datumsbereich"""
-    transactions = db.query(Transaktion).filter(
+    """Transaktionen nach Datumsbereich filtern"""
+    return db.query(Transaktion).filter(
         Transaktion.buchungstag >= start_date,
         Transaktion.buchungstag <= end_date
     ).all()
-    return transactions
 
 
 @app.get("/transactions/stats/summary")
 def get_transaction_summary(db: Session = Depends(get_db)):
-    """
-    Gibt eine Zusammenfassung der Transaktionen zurück
-    - Gesamtsumme Einnahmen
-    - Gesamtsumme Ausgaben
-    - Saldo
-    - Anzahl Transaktionen
-    """
-    all_transactions = db.query(Transaktion).all()
+    """Finanz-Zusammenfassung"""
+    transactions = db.query(Transaktion).all()
     
-    total_income = sum(t.betrag for t in all_transactions if t.betrag > 0)
-    total_expenses = sum(abs(t.betrag) for t in all_transactions if t.betrag < 0)
-    balance = total_income - total_expenses
-    count = len(all_transactions)
+    total_income = sum(t.betrag for t in transactions if t.betrag > 0)
+    total_expenses = sum(abs(t.betrag) for t in transactions if t.betrag < 0)
     
     return {
         "total_income": round(total_income, 2),
         "total_expenses": round(total_expenses, 2),
-        "balance": round(balance, 2),
-        "transaction_count": count
+        "balance": round(total_income - total_expenses, 2),
+        "transaction_count": len(transactions)
     }
