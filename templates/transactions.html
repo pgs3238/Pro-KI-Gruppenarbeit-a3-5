@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FINLY - Transaktionen</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- ============ SIDEBAR ============ -->
+        <aside class="sidebar">
+            <div class="logo">
+                <span>📊</span>
+                <span>FINLY</span>
+            </div>
+
+            <ul class="nav-items">
+                <li class="nav-item">
+                    <button class="nav-link" id="nav-overview" onclick="window.location.href='index.html'">
+                        <span class="nav-icon">📈</span>
+                        <span>Übersicht</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link active" id="nav-transaction">
+                        <span class="nav-icon">💳</span>
+                        <span>Transaktion</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="nav-categories">
+                        <span class="nav-icon">🏷️</span>
+                        <span>Kategorien</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="nav-accounts">
+                        <span class="nav-icon">🏦</span>
+                        <span>Konten</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="nav-forecast">
+                        <span class="nav-icon">📉</span>
+                        <span>Zinsenfprognose</span>
+                    </button>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- ============ HAUPTBEREICH ============ -->
+        <div class="main">
+            <!-- ============ HEADER ============ -->
+            <header class="header">
+                <div class="header-right">
+                    <div class="search-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="search-box" id="searchBox" placeholder="Suche">
+                    </div>
+                    <button class="icon-btn">⚙️</button>
+                </div>
+            </header>
+
+            <!-- ============ CONTENT ============ -->
+            <div class="content">
+                <div class="page-header">
+                    <h1>Transaktionen</h1>
+                    <p>Historie Ihrer Buchungen</p>
+                </div>
+
+                <!-- Tabelle -->
+                <div class="card">
+                    <div class="card-title">Letzten Transaktionen</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Datum</th>
+                                    <th>Begünstigter</th>
+                                    <th>Verwendungszweck</th>
+                                    <th>Kategorie</th>
+                                    <th>Betrag</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsTable">
+                                <!-- Wird mit JavaScript gefüllt -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- FAB Button -->
+                <button class="fab-btn" onclick="openModal()">+</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL ============ -->
+    <div class="modal-overlay" id="transactionModal">
+        <div class="modal-content">
+            <div class="card-title" style="border-bottom: 1px solid #444; padding-bottom: 15px; margin-bottom: 25px;">
+                Transaktion erfassen</div>
+            <form id="transactionForm">
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <label class="form-label">Datum</label>
+                        <input type="date" required class="form-control">
+                    </div>
+                    <div class="form-col">
+                        <label class="form-label">Art</label>
+                        <select class="form-control">
+                            <option value="ausgabe">Ausgabe</option>
+                            <option value="einnahme">Einnahme</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Begünstigter / Sender</label>
+                    <input type="text" placeholder="z.B. Supermarkt, Arbeitgeber" required class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Verwendungszweck</label>
+                    <input type="text" placeholder="Beschreibung der Transaktion" class="form-control">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <label class="form-label">Kategorie</label>
+                        <select class="form-control">
+                            <option value="">Bitte wählen...</option>
+                            <option value="wohnen">Wohnen & Energie</option>
+                            <option value="lebensmittel">Lebensmittel</option>
+                            <option value="shopping">Shopping</option>
+                            <option value="verkehr">Verkehr</option>
+                            <option value="unterhaltung">Unterhaltung</option>
+                            <option value="gehalt">Gehalt</option>
+                            <option value="sonstiges">Sonstiges</option>
+                        </select>
+                    </div>
+                    <div class="form-col">
+                        <label class="form-label">Betrag (€)</label>
+                        <input type="number" step="0.01" placeholder="0,00" required class="form-control">
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="reset" class="btn-cancel" onclick="closeModal()">Abbrechen</button>
+                    <button type="submit" class="btn-save">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ============ BEISPIELDATEN ============
+        const exampleData = {
+            transactions: [
+                {
+                    id: 1,
+                    buchungstag: '2025-12-14',
+                    beguenstigter: 'Amazon',
+                    verwendungszweck: 'Online Shopping',
+                    kategorie: 'Shopping',
+                    betrag: -29.99,
+                    waehrung: 'EUR'
+                },
+                {
+                    id: 2,
+                    buchungstag: '2025-12-13',
+                    beguenstigter: 'Gehalt',
+                    verwendungszweck: 'Dezember Einkommen',
+                    kategorie: 'Gehalt',
+                    betrag: 2500.00,
+                    waehrung: 'EUR'
+                },
+                {
+                    id: 3,
+                    buchungstag: '2025-12-12',
+                    beguenstigter: 'Edeka',
+                    verwendungszweck: 'Lebensmittel',
+                    kategorie: 'Lebensmittel',
+                    betrag: -45.67,
+                    waehrung: 'EUR'
+                },
+                {
+                    id: 4,
+                    buchungstag: '2025-12-11',
+                    beguenstigter: 'Netflix',
+                    verwendungszweck: 'Abo',
+                    kategorie: 'Unterhaltung',
+                    betrag: -12.99,
+                    waehrung: 'EUR'
+                },
+                {
+                    id: 5,
+                    buchungstag: '2025-12-10',
+                    beguenstigter: 'DKB Bank',
+                    verwendungszweck: 'Zinsen',
+                    kategorie: 'Zinsen',
+                    betrag: 5.00,
+                    waehrung: 'EUR'
+                }
+            ]
+        };
+
+        // Lädt und zeigt die Transaktionen in der Tabelle
+        function loadTransactions() {
+            const table = document.getElementById('transactionsTable');
+            table.innerHTML = '';
+
+            exampleData.transactions.forEach(t => {
+                const row = table.insertRow();
+                const betragClass = t.betrag >= 0 ? 'betrag-positiv' : 'betrag-negativ';
+                const betragText = (t.betrag >= 0 ? '+' : '') + t.betrag.toFixed(2).replace('.', ',') + '€';
+
+                row.innerHTML = `
+                    <td>${new Date(t.buchungstag).toLocaleDateString('de-DE')}</td>
+                    <td>${t.beguenstigter}</td>
+                    <td>${t.verwendungszweck || '-'}</td>
+                    <td>${t.kategorie || '-'}</td>
+                    <td class="${betragClass}">${betragText}</td>
+                `;
+            });
+        }
+
+        // Initial laden
+        loadTransactions();
+
+        // Einfache Interaktion für das Menü
+        document.querySelectorAll('.nav-link').forEach(item => {
+            item.addEventListener('click', (e) => {
+                // Hier könnten wir Navigation simulieren
+                if (item.id === 'nav-overview') window.location.href = 'index.html';
+            });
+        });
+
+        // ============ MODAL LOGIC ============
+        const modal = document.getElementById('transactionModal');
+        const selects = document.querySelectorAll('select.form-control');
+
+        function openModal() {
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        document.getElementById('transactionForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Transaktion erfolgreich gespeichert! (Simulation)');
+            e.target.reset(); // Reset form
+            closeModal();
+            // Hier könnte man die Transaktion in die Tabelle einfügen (Simulation)
+        });
+
+        // Suchfeld Logik & Filter
+        const searchBox = document.getElementById('searchBox');
+        const searchIcon = document.querySelector('.search-icon');
+        if (searchBox && searchIcon) {
+            searchBox.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+
+                // Toggle Icon
+                searchIcon.style.display = searchTerm ? 'none' : 'block';
+
+                // Filter Table
+                const rows = document.querySelectorAll('#transactionsTable tr');
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(searchTerm) ? '' : 'none';
+                });
+            });
+        }
+
+        // Select Placeholder Logik
+        function updateSelectColor(select) {
+            if (select.value === "") {
+                select.classList.add('empty');
+            } else {
+                select.classList.remove('empty');
+            }
+        }
+
+        selects.forEach(select => {
+            updateSelectColor(select); // Initial Check
+            select.addEventListener('change', () => updateSelectColor(select));
+        });
+
+        // Reset Handler für Styling
+        document.getElementById('transactionForm').addEventListener('reset', () => {
+            setTimeout(() => {
+                selects.forEach(select => updateSelectColor(select));
+            }, 0);
+        });
+    </script>
+</body>
+
+</html>
