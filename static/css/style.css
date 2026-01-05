@@ -659,6 +659,50 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
+/* ============ FAB BUTTON & MENU ============ */
+.fab-container {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 15px;
+}
+
+.fab-menu {
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.fab-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 25px;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    white-space: nowrap;
+}
+
+.fab-menu-item:hover {
+    background: #3a3a3a;
+    border-color: #06d6a6;
+    transform: translateX(-5px);
+}
+
+.menu-icon {
+    font-size: 18px;
+}
+
 .fab-btn {
     display: flex;
     justify-content: center;
@@ -669,21 +713,25 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     color: #1a1a1a;
     border-radius: 50%;
     font-size: 35px;
-    line-height: 1;/* Sicherstellen der vertikalen Zentrierung */
-    padding: 0;/* Reset padding */
+    line-height: 1;
+    padding: 0;
     font-weight: bold;
     border: none;
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(6, 214, 166, 0.4);
-    transition: transform 0.2s;
-
-    /* Positionierung unten rechts */
-    position: fixed;
-    bottom: 40px;
-    right: 40px;
-    z-index: 90;
+    transition: all 0.3s ease;
 }
 
 .fab-btn:hover {
+    transform: scale(1.1);
+}
+
+button.fab-btn.active {
+    background: #ff4757 !important;
+    box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4) !important;
+}
+
+button.fab-btn.active:hover {
+    background: #ee3647 !important;
     transform: scale(1.1);
 }
