@@ -9,6 +9,9 @@ description = "Ausgabenverwaltung mit SQLite und SQLAlchemy"
 requires-python = ">=3.8"
 dependencies = [
     "SQLAlchemy==2.0.44",
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "pydantic>=2.0.0",
 ]
 
 [tool.setuptools.packages.find]
