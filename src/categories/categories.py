@@ -1,6 +1,5 @@
 from src.database import SessionLocal, Category
 
-
 class CategoryManager:
     _instance = None
     _initialized = False
