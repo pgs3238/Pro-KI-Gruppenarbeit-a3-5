@@ -86,6 +86,15 @@
                                     <th>Betrag</th>
                                     <th>Aktionen</th>
                                 </tr>
+                                <tr class="filter-row">
+                                    <th><input type="text" class="filter-input" placeholder="Filter..."></th>
+                                    <th><input type="text" class="filter-input" placeholder="Filter..."></th>
+                                    <th><input type="text" class="filter-input" placeholder="Filter..."></th>
+                                    <th><input type="text" class="filter-input" placeholder="Filter..."></th>
+                                    <th><input type="text" class="filter-input" placeholder="Filter..."></th>
+                                    <th><input type="text" class="filter-input" placeholder="Filter..."></th>
+                                    <th></th>
+                                </tr>
                             </thead>
                             <tbody id="transactionsTable">
                                 <!-- Wird mit JavaScript gefüllt -->
@@ -171,7 +180,8 @@
                     </div>
                     <div class="form-col">
                         <label class="form-label">Betrag (€)</label>
-                        <input type="number" name="betrag" step="0.01" placeholder="0,00" required class="form-control">
+                        <input type="number" name="betrag" step="0.01" placeholder="z.B. -50.0 oder +50.0" required class="form-control">
+                        <small class="form-hint">💡 Negativ für Ausgaben (-50), Positiv für Einnahmen (+100)</small>
                     </div>
                 </div>
 
