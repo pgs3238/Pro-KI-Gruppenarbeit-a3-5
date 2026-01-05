@@ -95,28 +95,6 @@
                             <canvas id="balanceChart"></canvas> <!-- Darstellung des Diagramms -->
                         </div>
                     </div>
-
-                    <!-- ============ TRANSAKTIONEN TABELLE ============ -->
-                    <div class="card transactions-section">
-                        <div class="card-title">Letzten Transaktionen</div>
-                        <!-- Überschrift der Karte "Letzten Transaktionen" -->
-                        <div class="table-wrapper"> <!-- Container für die Tabelle -->
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Datum</th> <!-- Spalte Datum -->
-                                        <th>Begünstigter</th> <!-- Spalte Begünstigter -->
-                                        <th>Verwendungszweck</th> <!-- Spalte Verwendungszweck -->
-                                        <th>Kategorie</th> <!-- Spalte Kategorie -->
-                                        <th>Betrag</th> <!-- Spalte Betrag -->
-                                    </tr>
-                                </thead>
-                                <tbody id="transactionsTable">
-                                    <!-- Wird mit JavaScript gefüllt -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -220,26 +198,6 @@
             } else if (percentageChange < 0) {
                 balanceTrend.classList.add('negative');
             }
-        }
-
-        // Lädt und zeigt die Transaktionen in der Tabelle
-        function loadTransactions() {
-            const table = document.getElementById('transactionsTable');
-            table.innerHTML = '';
-
-            exampleData.transactions.forEach(t => {
-                const row = table.insertRow();
-                const betragClass = t.betrag >= 0 ? 'betrag-positiv' : 'betrag-negativ';
-                const betragText = (t.betrag >= 0 ? '+' : '') + t.betrag.toFixed(2).replace('.', ',') + '€';
-
-                row.innerHTML = `
-                    <td>${new Date(t.buchungstag).toLocaleDateString('de-DE')}</td>
-                    <td>${t.beguenstigter}</td>
-                    <td>${t.verwendungszweck || '-'}</td>
-                    <td>${t.kategorie || '-'}</td>
-                    <td class="${betragClass}">${betragText}</td>
-                `;
-            });
         }
 
         // Erstellt das Balance-Diagramm
@@ -360,7 +318,6 @@
         // ============ INITIALISIERUNG ============
         document.addEventListener('DOMContentLoaded', () => {  // Wird ausgeführt wenn HTML geladen ist
             loadKonten(); // Lädt die Konten
-            loadTransactions(); // Lädt und zeigt die Transaktionen an
             createBalanceChart(); // Erstellt das Balkendiagramm
             setupNavigation(); // Setzt die Navigation
             setupSearch(); // Aktiviert die Suchfunktion
