@@ -143,6 +143,74 @@ function setupNavigation() {
 }
 
 
+// ==================== SANKEY DIAGRAMM ====================
+
+/**
+ * Lädt und erstellt das Sankey-Diagramm
+ */
+async function createSankeyChart() {
+    const sankeyElement = document.getElementById('sankeyChart');
+    if (!sankeyElement) return; // Abbrechen wenn Element nicht existiert
+
+    try {
+        // Lade Sankey-Daten von der API
+        const response = await fetch(`${API_BASE_URL}/transactions/sankey-data`);
+        const data = await response.json();
+        
+        if (!data.nodes || data.nodes.length === 0) {
+            sankeyElement.innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">Keine Daten verfügbar</div>';
+            return;
+        }
+
+        // Prepare data for Plotly
+        const nodeNames = data.nodes.map(n => n.name);
+        const nodeColors = data.nodes.map(n => n.color || '#1f77b4');
+        
+        const trace = {
+            type: "sankey",
+            node: {
+                pad: 15,
+                thickness: 20,
+                line: {
+                    color: "black",
+                    width: 0.5
+                },
+                label: nodeNames,
+                color: nodeColors
+            },
+            link: {
+                source: data.links.map(l => l.source),
+                target: data.links.map(l => l.target),
+                value: data.links.map(l => l.value)
+            }
+        };
+
+        const layout = {
+            title: {
+                text: "Geldfluss nach Kategorien",
+                font: { color: "#ccc", size: 16 }
+            },
+            font: {
+                size: 12,
+                color: "#888"
+            },
+            plot_bgcolor: "transparent",
+            paper_bgcolor: "#222",
+            margin: { l: 50, r: 50, t: 50, b: 50 }
+        };
+
+        const config = {
+            responsive: true,
+            displayModeBar: false
+        };
+
+        Plotly.newPlot(sankeyElement, [trace], layout, config);
+        console.log('✓ Sankey-Diagramm geladen');
+    } catch (error) {
+        console.error('✗ Fehler beim Laden des Sankey-Diagramms:', error);
+        sankeyElement.innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">Fehler beim Laden des Diagramms</div>';
+    }
+}
 // ==================== SEARCH ====================
 
 /**
@@ -361,6 +429,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('📱 Website geladen - lade Daten...');
     loadKonten();
     createBalanceChart();
+    createSankeyChart();
     setupNavigation();
     setupSearch();
     setupFilterInputs();

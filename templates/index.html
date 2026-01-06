@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsives Design für Laptop/Handy -->
     <title>FINLY - Finanzübersicht</title> <!-- Browser Tab Titel -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Bibliothek laden um Diagramme anzuzeigen -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Plotly.js für Sankey -->
     <link rel="stylesheet" href="../static/css/style.css"> <!-- Laden des CSS Stylings -->
 </head>
 
@@ -93,6 +94,14 @@
                         <div class="card-title">Meine Bilanz</div> <!-- Überschrift der Karte "Bilanz" -->
                         <div class="chart-container"> <!-- Container für das Diagramm -->
                             <canvas id="balanceChart"></canvas> <!-- Darstellung des Diagramms -->
+                        </div>
+                    </div>
+
+                    <!-- ============ SANKEY DIAGRAMM ============ -->
+                    <div class="card sankey-card" style="grid-column: 1 / -1;">
+                        <div class="card-title">Geldfluss nach Kategorien</div> <!-- Überschrift der Karte "Sankey" -->
+                        <div class="chart-container"> <!-- Container für das Sankey-Diagramm -->
+                            <div id="sankeyChart"></div> <!-- Darstellung des Sankey-Diagramms -->
                         </div>
                     </div>
                 </div>
