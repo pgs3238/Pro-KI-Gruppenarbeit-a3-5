@@ -244,4 +244,406 @@ document.addEventListener('DOMContentLoaded', function() {
     setupNavigation();
     setupSearch();
     loadTransactions();
+    setupTransactionModal();
 });
+
+
+// ==================== TRANSACTIONS (transactions.html) ====================
+
+/**
+ * Lädt die letzten 30 Transaktionen von der API und zeigt sie in der Tabelle
+ */
+async function loadTransactions() {
+    const table = document.getElementById('transactionsTable');
+    if (!table) return;
+    
+    table.innerHTML = '<tr><td colspan="7" style="text-align: center;">⏳ Laden...</td></tr>';
+
+    try {
+        // API aufrufen: GET /transactions?limit=30
+        const response = await fetch(`${API_BASE_URL}/transactions?limit=30`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`API-Fehler: ${response.status}`);
+        }
+
+        const transactions = await response.json();
+        
+        table.innerHTML = '';
+
+        if (transactions.length === 0) {
+            table.innerHTML = '<tr><td colspan="7" style="text-align: center;">Keine Transaktionen gefunden</td></tr>';
+            return;
+        }
+
+        // Umgekehrte Reihenfolge (neueste zuerst)
+        transactions.reverse().forEach(t => {
+            const row = table.insertRow();
+            const betragClass = t.betrag >= 0 ? 'betrag-positiv' : 'betrag-negativ';
+            const betragText = (t.betrag >= 0 ? '+' : '') + t.betrag.toFixed(2).replace('.', ',') + '€';
+            
+            // Formatiere Datum als dd.mm.yyyy
+            const date = new Date(t.buchungstag);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const formattedDate = `${day}.${month}.${year}`;
+
+            row.innerHTML = `
+                <td>${formattedDate}</td>
+                <td>${t.beguenstigter}</td>
+                <td>${t.iban_kontonummer || '-'}</td>
+                <td>${t.verwendungszweck || '-'}</td>
+                <td>${t.beschreibung || '-'}</td>
+                <td class="${betragClass}">${betragText}</td>
+                <td>
+                    <button class="action-btn edit-btn" onclick="editTransaction(${t.id})" title="Bearbeiten">✏️</button>
+                    <button class="action-btn delete-btn" onclick="deleteTransaction(${t.id})" title="Löschen">🗑️</button>
+                </td>
+            `;
+        });
+
+        console.log('✓ Transaktionen geladen:', transactions.length);
+    } catch (error) {
+        console.error('✗ Fehler beim Laden der Transaktionen:', error);
+        table.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Fehler beim Laden der Transaktionen</td></tr>`;
+    }
+}
+
+/**
+ * Transaktion bearbeiten
+ */
+async function editTransaction(id) {
+    try {
+        // Lade Transaktion von der API
+        const response = await fetch(`${API_BASE_URL}/transactions/${id}`);
+        if (!response.ok) throw new Error('Transaktion nicht gefunden');
+        
+        const transaction = await response.json();
+
+        // Konvertiere ISO Datum zu deutschem Format
+        const date = new Date(transaction.buchungstag);
+        const germanDate = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
+        
+        // Speichere Datum-Informationen
+        window.selectedDate = date;
+        window.currentMonth = new Date(date);
+
+        // Formular mit Daten befüllen
+        document.querySelector('input[name="datum"]').value = germanDate;
+        document.querySelector('input[name="beguenstigter"]').value = transaction.beguenstigter;
+        document.querySelector('input[name="iban"]').value = transaction.iban_kontonummer || '';
+        document.querySelector('input[name="verwendungszweck"]').value = transaction.verwendungszweck || '';
+        document.querySelector('select[name="kategorie"]').value = transaction.beschreibung || '';
+        document.querySelector('input[name="betrag"]').value = transaction.betrag;
+
+        // Modal-Titel ändern und ID speichern
+        document.querySelector('.modal-title').textContent = 'Transaktion bearbeiten';
+        document.getElementById('transactionForm').dataset.editId = id;
+
+        openModal();
+    } catch (error) {
+        console.error('✗ Fehler beim Laden der Transaktion:', error);
+        alert('Transaktion konnte nicht geladen werden');
+    }
+}
+
+/**
+ * Transaktion löschen
+ */
+async function deleteTransaction(id) {
+    if (!confirm('Möchten Sie diese Transaktion wirklich löschen?')) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/transactions/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) throw new Error('Fehler beim Löschen');
+
+        alert('Transaktion erfolgreich gelöscht!');
+        loadTransactions();
+    } catch (error) {
+        console.error('✗ Fehler beim Löschen der Transaktion:', error);
+        alert('Transaktion konnte nicht gelöscht werden');
+    }
+}
+
+/**
+ * Modal öffnen
+ */
+function openModal() {
+    const modal = document.getElementById('transactionModal');
+    if (!modal) return;
+    
+    modal.classList.add('active');
+    setCurrentDate();
+}
+
+/**
+ * Modal schließen
+ */
+function closeModal() {
+    const modal = document.getElementById('transactionModal');
+    if (!modal) return;
+    
+    modal.classList.remove('active');
+    // Formular zurücksetzen
+    document.getElementById('transactionForm').reset();
+    document.querySelector('.modal-title').textContent = 'Transaktion erfassen';
+    delete document.getElementById('transactionForm').dataset.editId;
+}
+
+/**
+ * Setze aktuelles Datum als Standardwert
+ */
+function setCurrentDate() {
+    const datumInput = document.getElementById('datumInput');
+    if (!datumInput) return;
+    
+    const today = new Date();
+    window.selectedDate = today;
+    window.currentMonth = new Date(today);
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const year = today.getFullYear();
+    datumInput.value = `${day}.${month}.${year}`;
+}
+
+/**
+ * Calendar Toggle
+ */
+function toggleCalendar() {
+    const calendar = document.getElementById('customCalendar');
+    if (!calendar) return;
+    calendar.style.display = calendar.style.display === 'none' ? 'block' : 'none';
+    if (calendar.style.display === 'block') {
+        renderCalendar();
+    }
+}
+
+/**
+ * Wechsel Monat im Kalender
+ */
+function changeMonth(direction) {
+    if (!window.currentMonth) window.currentMonth = new Date();
+    window.currentMonth.setMonth(window.currentMonth.getMonth() + direction);
+    renderCalendar();
+}
+
+/**
+ * Rendere Kalender
+ */
+function renderCalendar() {
+    if (!window.currentMonth) window.currentMonth = new Date();
+    
+    const year = window.currentMonth.getFullYear();
+    const month = window.currentMonth.getMonth();
+    
+    // Update header
+    const monthNames = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 
+                       'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+    const monthYear = document.getElementById('calendarMonthYear');
+    if (monthYear) monthYear.textContent = `${monthNames[month]} ${year}`;
+    
+    // Calculate days
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1;
+    
+    const calendarDays = document.getElementById('calendarDays');
+    if (!calendarDays) return;
+    
+    calendarDays.innerHTML = '';
+    
+    // Empty cells for days before month starts
+    for (let i = 0; i < adjustedFirstDay; i++) {
+        calendarDays.innerHTML += '<span class="calendar-day empty"></span>';
+    }
+    
+    // Days of month
+    const today = new Date();
+    for (let day = 1; day <= daysInMonth; day++) {
+        const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+        const isSelected = day === (window.selectedDate?.getDate?.()) && month === window.selectedDate?.getMonth?.() && year === window.selectedDate?.getFullYear?.();
+        const classes = `calendar-day${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}`;
+        calendarDays.innerHTML += `<span class="${classes}" onclick="selectDate(${day})">${day}</span>`;
+    }
+}
+
+/**
+ * Wähle Datum im Kalender
+ */
+function selectDate(day) {
+    if (!window.currentMonth) window.currentMonth = new Date();
+    window.selectedDate = new Date(window.currentMonth.getFullYear(), window.currentMonth.getMonth(), day);
+    const formattedDate = `${String(day).padStart(2, '0')}.${String(window.currentMonth.getMonth() + 1).padStart(2, '0')}.${window.currentMonth.getFullYear()}`;
+    const datumInput = document.getElementById('datumInput');
+    if (datumInput) datumInput.value = formattedDate;
+    const calendar = document.getElementById('customCalendar');
+    if (calendar) calendar.style.display = 'none';
+}
+
+/**
+ * Richte Transaction Modal Setup ein
+ */
+function setupTransactionModal() {
+    const modal = document.getElementById('transactionModal');
+    const datumInput = document.getElementById('datumInput');
+    const transactionForm = document.getElementById('transactionForm');
+    const selects = document.querySelectorAll('select.form-control');
+    const ibanInput = document.querySelector('input[name="iban"]');
+    
+    if (!modal) return;
+    
+    // Initialize date variables
+    if (!window.selectedDate) window.selectedDate = new Date();
+    if (!window.currentMonth) window.currentMonth = new Date();
+
+    // Modal click handler
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    // Form submit handler
+    if (transactionForm) {
+        transactionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const editId = form.dataset.editId;
+
+            // Konvertiere deutsches Datum zu ISO Format
+            const datumParts = (datumInput?.value || '').split('.');
+            const isoDate = `${datumParts[2]}-${datumParts[1]}-${datumParts[0]}`;
+
+            // Formulardaten auslesen
+            const transactionData = {
+                buchungstag: isoDate,
+                beguenstigter: document.querySelector('input[name="beguenstigter"]')?.value || '',
+                iban_kontonummer: document.querySelector('input[name="iban"]')?.value || '',
+                verwendungszweck: document.querySelector('input[name="verwendungszweck"]')?.value || '',
+                beschreibung: document.querySelector('select[name="kategorie"]')?.value || '',
+                betrag: parseFloat(document.querySelector('input[name="betrag"]')?.value || 0),
+                waehrung: 'EUR'
+            };
+
+            try {
+                if (editId) {
+                    // Bestehende Transaktion aktualisieren
+                    const response = await fetch(`${API_BASE_URL}/transactions/${editId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(transactionData)
+                    });
+
+                    if (!response.ok) throw new Error('Fehler beim Aktualisieren');
+                    alert('Transaktion erfolgreich aktualisiert!');
+                } else {
+                    // Neue Transaktion hinzufügen
+                    const response = await fetch(`${API_BASE_URL}/transactions`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(transactionData)
+                    });
+
+                    if (!response.ok) throw new Error('Fehler beim Speichern');
+                    alert('Transaktion erfolgreich gespeichert!');
+                }
+
+                loadTransactions();
+                closeModal();
+            } catch (error) {
+                console.error('✗ Fehler bei der Transaktion:', error);
+                alert('Fehler beim Speichern der Transaktion: ' + error.message);
+            }
+        });
+
+        // Reset handler
+        transactionForm.addEventListener('reset', () => {
+            setTimeout(() => {
+                selects.forEach(select => updateSelectColor(select));
+            }, 0);
+        });
+    }
+
+    // Datum Input Handler
+    if (datumInput) {
+        datumInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.slice(0, 2) + '.' + value.slice(2);
+            }
+            if (value.length >= 5) {
+                value = value.slice(0, 5) + '.' + value.slice(5, 9);
+            }
+            e.target.value = value;
+        });
+
+        datumInput.addEventListener('blur', (e) => {
+            const value = e.target.value;
+            const dateRegex = /^(\d{2})\.(\d{2})\.(\d{4})$/;
+            const match = value.match(dateRegex);
+            
+            if (match) {
+                const day = parseInt(match[1]);
+                const month = parseInt(match[2]);
+                const year = parseInt(match[3]);
+                
+                const date = new Date(year, month - 1, day);
+                if (date.getDate() === day && date.getMonth() === month - 1 && date.getFullYear() === year) {
+                    window.selectedDate = date;
+                    window.currentMonth = new Date(date);
+                } else {
+                    e.target.setCustomValidity('Bitte geben Sie ein gültiges Datum ein.');
+                }
+            }
+        });
+
+        datumInput.addEventListener('input', () => {
+            datumInput.setCustomValidity('');
+        });
+
+        datumInput.addEventListener('focus', (e) => {
+            e.target.select();
+        });
+
+        datumInput.addEventListener('click', (e) => {
+            e.target.select();
+        });
+    }
+
+    // Close calendar on outside click
+    document.addEventListener('click', (e) => {
+        const calendar = document.getElementById('customCalendar');
+        const dateWrapper = document.querySelector('.date-input-wrapper');
+        if (dateWrapper && !dateWrapper.contains(e.target) && calendar?.style.display === 'block') {
+            calendar.style.display = 'none';
+        }
+    });
+
+    // Select color update handler
+    function updateSelectColor(select) {
+        if (select.value === "") {
+            select.classList.add('empty');
+        } else {
+            select.classList.remove('empty');
+        }
+    }
+
+    selects.forEach(select => {
+        updateSelectColor(select);
+        select.addEventListener('change', () => updateSelectColor(select));
+    });
+}
