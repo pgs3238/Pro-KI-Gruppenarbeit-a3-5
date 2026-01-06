@@ -168,6 +168,126 @@ function setupSearch() {
 }
 
 
+/**
+ * Setzt die Filter-Inputs in der Transaktions-Tabelle auf
+ */
+function setupFilterInputs() {
+    const filterInputs = document.querySelectorAll('.filter-input');
+    
+    filterInputs.forEach((input, index) => {
+        input.addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                await performSearch();
+            }
+        });
+    });
+}
+
+
+/**
+ * Führt die Suche basierend auf Filter-Inputs durch
+ */
+async function performSearch() {
+    const table = document.getElementById('transactionsTable');
+    if (!table) return;
+
+    // Sammle alle Filter-Werte
+    const filterInputs = document.querySelectorAll('.filter-input');
+    
+    const searchParams = {
+        buchungstag: filterInputs[0].value || null,
+        beguenstigter: filterInputs[1].value || null,
+        iban_kontonummer: filterInputs[2].value || null,
+        verwendungszweck: filterInputs[3].value || null,
+        beschreibung: filterInputs[4].value || null,
+        betrag_str: filterInputs[5].value || null
+    };
+
+    table.innerHTML = '<tr><td colspan="7" style="text-align: center;">⏳ Suche läuft...</td></tr>';
+
+    try {
+        // Baue den Request Body
+        const requestBody = {};
+        
+        if (searchParams.buchungstag) {
+            requestBody.buchungstag = searchParams.buchungstag;
+        }
+        if (searchParams.beguenstigter) {
+            requestBody.beguenstigter = searchParams.beguenstigter;
+        }
+        if (searchParams.iban_kontonummer) {
+            requestBody.iban_kontonummer = searchParams.iban_kontonummer;
+        }
+        if (searchParams.verwendungszweck) {
+            requestBody.verwendungszweck = searchParams.verwendungszweck;
+        }
+        if (searchParams.betrag_str) {
+            const betrag = parseFloat(searchParams.betrag_str);
+            if (!isNaN(betrag)) {
+                requestBody.betrag_min = betrag;
+                requestBody.betrag_max = betrag;
+            }
+        }
+
+        // API aufrufen: POST /transactions/search
+        const response = await fetch(`${API_BASE_URL}/transactions/search`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) {
+            throw new Error(`API-Fehler: ${response.status}`);
+        }
+
+        const transactions = await response.json();
+        
+        table.innerHTML = '';
+
+        if (transactions.length === 0) {
+            table.innerHTML = '<tr><td colspan="7" style="text-align: center;">Keine Transaktionen gefunden</td></tr>';
+            return;
+        }
+
+        // Zeige Suchergebnisse an
+        transactions.forEach(t => {
+            const row = table.insertRow();
+            const betragClass = t.betrag >= 0 ? 'betrag-positiv' : 'betrag-negativ';
+            const betragText = (t.betrag >= 0 ? '+' : '') + t.betrag.toFixed(2).replace('.', ',') + '€';
+            
+            const date = new Date(t.buchungstag);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const formattedDate = `${day}.${month}.${year}`;
+            
+            const kategorie = t.beschreibung ? t.beschreibung.charAt(0).toUpperCase() + t.beschreibung.slice(1) : '-';
+
+            row.innerHTML = `
+                <td>${formattedDate}</td>
+                <td>${t.beguenstigter}</td>
+                <td>${t.iban_kontonummer || '-'}</td>
+                <td>${t.verwendungszweck || '-'}</td>
+                <td>${kategorie}</td>
+                <td class="${betragClass}">${betragText}</td>
+                <td style="display: flex; gap: 8px;">
+                    <button class="action-btn edit-btn" onclick="editTransaction(${t.id})" title="Bearbeiten">✏️</button>
+                    <button class="action-btn delete-btn" onclick="deleteTransaction(${t.id})" title="Löschen">🗑️</button>
+                </td>
+            `;
+        });
+
+        console.log('✓ Suchergebnisse:', transactions.length);
+    } catch (error) {
+        console.error('✗ Fehler bei der Suche:', error);
+        table.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Fehler bei der Suche</td></tr>`;
+    }
+}
+
+
 // ==================== TRANSACTIONS ====================
 
 /**
@@ -243,6 +363,7 @@ document.addEventListener('DOMContentLoaded', function() {
     createBalanceChart();
     setupNavigation();
     setupSearch();
+    setupFilterInputs();
     loadTransactions();
     setupTransactionModal();
 });

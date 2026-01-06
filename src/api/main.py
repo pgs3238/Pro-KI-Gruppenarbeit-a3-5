@@ -3,11 +3,12 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional, Literal
 from datetime import date
 
 from ..database import init_db, SessionLocal, Transaktion
-from .schemas import TransaktionCreate, TransaktionUpdate, TransaktionResponse
+from ..database.search import search_transaktionen
+from .schemas import TransaktionCreate, TransaktionUpdate, TransaktionResponse, TransaktionSearch
 
 # ==================== SETUP ====================
 
@@ -137,3 +138,26 @@ def get_transaction_summary(db: Session = Depends(get_db)):
         "balance": round(total_income - total_expenses, 2),
         "transaction_count": len(transactions)
     }
+
+
+# ==================== ENDPUNKTE: SEARCH ====================
+
+@app.post("/transactions/search", response_model=List[TransaktionResponse])
+def search_transactions(
+    search_params: TransaktionSearch,
+    db: Session = Depends(get_db)
+):
+    """Transaktionen mit erweiterten Suchfiltern"""
+    return search_transaktionen(
+        session=db,
+        buchungstag=search_params.buchungstag,
+        beguenstigter=search_params.beguenstigter,
+        verwendungszweck=search_params.verwendungszweck,
+        iban_kontonummer=search_params.iban_kontonummer,
+        betrag_min=search_params.betrag_min,
+        betrag_max=search_params.betrag_max,
+        typ=search_params.typ,
+        betrag_min_abs=search_params.betrag_min_abs,
+        betrag_max_abs=search_params.betrag_max_abs,
+        waehrung=search_params.waehrung,
+    )

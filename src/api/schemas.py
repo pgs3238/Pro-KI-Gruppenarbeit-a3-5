@@ -39,3 +39,17 @@ class TransaktionResponse(TransaktionBase):
     
     class Config:
         from_attributes = True  # Ermöglicht die Konvertierung von SQLAlchemy-Modellen
+
+
+class TransaktionSearch(BaseModel):
+    """Schema für die Suche nach Transaktionen"""
+    buchungstag: Optional[date] = None
+    beguenstigter: Optional[str] = None
+    verwendungszweck: Optional[str] = None
+    iban_kontonummer: Optional[str] = None
+    betrag_min: Optional[float] = None
+    betrag_max: Optional[float] = None
+    typ: Optional[str] = None
+    betrag_min_abs: Optional[float] = None
+    betrag_max_abs: Optional[float] = None
+    waehrung: Optional[str] = None
