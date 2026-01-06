@@ -65,16 +65,16 @@ function createBalanceChart() {
             {
                 label: 'Einnahmen',
                 data: [3000, 2800, 3200, 3100, 3500, 3200],
-                backgroundColor: '#fff',
-                borderColor: '#fff',
+                backgroundColor: '#06d6a6',
+                borderColor: '#06d6a6',
                 borderWidth: 1,
                 borderRadius: 5
             },
             {
                 label: 'Ausgaben',
                 data: [1200, 1350, 1100, 1450, 1300, 1400],
-                backgroundColor: '#06d6a6',
-                borderColor: '#06d6a6',
+                backgroundColor: '#fff',
+                borderColor: '#fff',
                 borderWidth: 1,
                 borderRadius: 5
             }
