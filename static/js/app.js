@@ -293,15 +293,18 @@ async function loadTransactions() {
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = date.getFullYear();
             const formattedDate = `${day}.${month}.${year}`;
+            
+            // Kategorie mit großem Anfangsbuchstaben
+            const kategorie = t.beschreibung ? t.beschreibung.charAt(0).toUpperCase() + t.beschreibung.slice(1) : '-';
 
             row.innerHTML = `
                 <td>${formattedDate}</td>
                 <td>${t.beguenstigter}</td>
                 <td>${t.iban_kontonummer || '-'}</td>
                 <td>${t.verwendungszweck || '-'}</td>
-                <td>${t.beschreibung || '-'}</td>
+                <td>${kategorie}</td>
                 <td class="${betragClass}">${betragText}</td>
-                <td>
+                <td style="display: flex; gap: 8px;">
                     <button class="action-btn edit-btn" onclick="editTransaction(${t.id})" title="Bearbeiten">✏️</button>
                     <button class="action-btn delete-btn" onclick="deleteTransaction(${t.id})" title="Löschen">🗑️</button>
                 </td>
