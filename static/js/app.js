@@ -375,68 +375,7 @@ async function performSearch() {
 }
 
 
-// ==================== TRANSACTIONS ====================
 
-/**
- * Lädt die letzten 30 Transaktionen von der API
- */
-async function loadTransactions() {
-    const tableElement = document.getElementById('transactionsTable');
-    if (!tableElement) return; // Funktion wird auf dieser Seite nicht benötigt
-
-    try {
-        // API aufrufen: /transactions mit limit=30
-        const response = await fetch(`${API_BASE_URL}/transactions?limit=30`);
-        const transactions = await response.json();
-        
-        // Tabelle leeren
-        tableElement.innerHTML = '';
-        
-        // Transaktionen in Tabelle einfügen (neueste zuerst)
-        transactions.reverse().forEach(t => {
-            const row = tableElement.insertRow();
-            const betragClass = t.betrag >= 0 ? 'betrag-positiv' : 'betrag-negativ';
-            const betragText = (t.betrag >= 0 ? '+' : '') + t.betrag.toFixed(2).replace('.', ',') + '€';
-            const datum = new Date(t.buchungstag).toLocaleDateString('de-DE');
-            
-            row.innerHTML = `
-                <td>${datum}</td>
-                <td>${t.beguenstigter}</td>
-                <td>${t.verwendungszweck || '-'}</td>
-                <td>-</td>
-                <td class="${betragClass}">${betragText}</td>
-            `;
-        });
-        
-        console.log('✓ Transaktionen geladen:', transactions.length);
-    } catch (error) {
-        console.error('✗ Fehler beim Laden der Transaktionen:', error);
-        tableElement.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Fehler beim Laden der Transaktionen</td></tr>';
-    }
-}
-
-
-// ==================== MODAL ====================
-
-/**
- * Öffnet das Transaktions-Modal
- */
-function openModal() {
-    const modal = document.getElementById('transactionModal');
-    if (modal) {
-        modal.classList.add('active');
-    }
-}
-
-/**
- * Schließt das Transaktions-Modal
- */
-function closeModal() {
-    const modal = document.getElementById('transactionModal');
-    if (modal) {
-        modal.classList.remove('active');
-    }
-}
 
 
 // ==================== PAGE INITIALIZATION ====================
