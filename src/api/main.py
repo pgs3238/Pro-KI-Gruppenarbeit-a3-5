@@ -3,11 +3,12 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional, Literal
 from datetime import date
 
 from ..database import init_db, SessionLocal, Transaktion
-from .schemas import TransaktionCreate, TransaktionUpdate, TransaktionResponse
+from ..database.search import search_transaktionen
+from .schemas import TransaktionCreate, TransaktionUpdate, TransaktionResponse, TransaktionSearch
 
 # ==================== SETUP ====================
 
@@ -136,4 +137,86 @@ def get_transaction_summary(db: Session = Depends(get_db)):
         "total_expenses": round(total_expenses, 2),
         "balance": round(total_income - total_expenses, 2),
         "transaction_count": len(transactions)
+    }
+
+
+# ==================== ENDPUNKTE: SEARCH ====================
+
+@app.post("/transactions/search", response_model=List[TransaktionResponse])
+def search_transactions(
+    search_params: TransaktionSearch,
+    db: Session = Depends(get_db)
+):
+    """Transaktionen mit erweiterten Suchfiltern"""
+    return search_transaktionen(
+        session=db,
+        buchungstag=search_params.buchungstag,
+        beguenstigter=search_params.beguenstigter,
+        verwendungszweck=search_params.verwendungszweck,
+        iban_kontonummer=search_params.iban_kontonummer,
+        betrag_min=search_params.betrag_min,
+        betrag_max=search_params.betrag_max,
+        typ=search_params.typ,
+        betrag_min_abs=search_params.betrag_min_abs,
+        betrag_max_abs=search_params.betrag_max_abs,
+        waehrung=search_params.waehrung,
+    )
+
+# ==================== ENDPUNKTE: SANKEY DIAGRAMM ====================
+
+@app.get("/transactions/sankey-data")
+def get_sankey_data(db: Session = Depends(get_db)):
+    """Liefert Daten für ein Sankey-Diagramm: Kategorien → Einnahmen/Ausgaben"""
+    transactions = db.query(Transaktion).all()
+    
+    if not transactions:
+        return {"nodes": [], "links": []}
+    
+    # Sammle Kategorien und Beträge
+    category_flows = {}  # {kategorie: {expense: betrag, income: betrag}}
+    
+    for t in transactions:
+        category = t.beschreibung or "Sonstiges"
+        if category not in category_flows:
+            category_flows[category] = {"expense": 0, "income": 0}
+        
+        if t.betrag < 0:
+            category_flows[category]["expense"] += abs(t.betrag)
+        else:
+            category_flows[category]["income"] += t.betrag
+    
+    # Definiere Node-Namen
+    node_names = ["Kategorien"]
+    node_names.extend(sorted(category_flows.keys()))
+    node_names.extend(["Ausgaben", "Einnahmen"])
+    
+    # Erstelle Links (Kategorien → Ausgaben/Einnahmen)
+    links = []
+    
+    for idx, (category, flows) in enumerate(sorted(category_flows.items()), 1):
+        # Ausgaben-Link
+        if flows["expense"] > 0:
+            links.append({
+                "source": idx,
+                "target": len(node_names) - 2,  # Index von "Ausgaben"
+                "value": round(flows["expense"], 2)
+            })
+        
+        # Einnahmen-Link
+        if flows["income"] > 0:
+            links.append({
+                "source": idx,
+                "target": len(node_names) - 1,  # Index von "Einnahmen"
+                "value": round(flows["income"], 2)
+            })
+    
+    # Erstelle Nodes mit Farben
+    node_colors = ["#1f77b4"]  # Kategorien - Blau
+    node_colors.extend(["#aec7e8"] * len(category_flows))  # Kategorien - Hellblau
+    node_colors.append("#ff7f0e")  # Ausgaben - Orange
+    node_colors.append("#2ca02c")  # Einnahmen - Grün
+    
+    return {
+        "nodes": [{"name": name, "color": color} for name, color in zip(node_names, node_colors)],
+        "links": links
     }
