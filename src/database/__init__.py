@@ -10,7 +10,9 @@ from .models import (
     Transaktion,
     Category,
     CategoryRules,
+    Konto,
 )  # Importiere die ORM-Modelle aus models.py
+from .konto_manager import KontoManager  # Importiere den KontoManager
 
 __all__ = [  # Definiert, welche Objekte beim Importieren des Packages sichtbar sind, diese kommen aus den importierten Modulen, also connection.py und models.py
     "engine",  # Verbindungsobjekt zur Datenbank
@@ -20,4 +22,6 @@ __all__ = [  # Definiert, welche Objekte beim Importieren des Packages sichtbar 
     "Transaktion",  # ORM-Modell für Transaktionen
     "Category",  # ORM-Modell für Kategorien
     "CategoryRules",  # ORM-Modell für Kategorisierungsregeln
+    "Konto",  # ORM-Modell für Konten
+    "KontoManager",  # Manager-Klasse für Konto-Operationen
 ]

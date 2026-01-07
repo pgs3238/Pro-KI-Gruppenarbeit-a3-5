@@ -21,6 +21,30 @@ Base = (
 )  # Basisklasse für alle ORM-Modelle um Tabellen in der Datenbank zu repräsentieren
 
 
+class Konto(Base):  # Erbt von Base und repräsentiert die "konten" Tabelle in der Datenbank
+    """Bankkonto mit Kontostand und Kontoinformationen"""
+
+    __tablename__ = "konten"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    kontoname = Column(String(100), nullable=False, unique=True)  # z.B. "Girokonto", "Sparkonto"
+    kontonummer = Column(String(34), nullable=False, unique=True)  # IBAN
+    bankname = Column(String(200), nullable=True)  # z.B. "Sparkasse München"
+    kontostand = Column(Float, nullable=False, default=0.0)  # Aktueller Kontostand
+    waehrung = Column(String(3), default="EUR")  # Währung
+    kontotyp = Column(String(50), nullable=False)  # z.B. "Girokonto", "Sparkonto", "Kreditkarte"
+    iban = Column(String(34), nullable=False)  # IBAN für Transaktionen
+    bic = Column(String(11), nullable=True)  # BIC/SWIFT Code
+    erstellt_am = Column(DateTime, default=datetime.now)  # Erstellungsdatum
+    aktualisiert_am = Column(DateTime, default=datetime.now, onupdate=datetime.now)  # Aktualisierungsdatum
+
+    # Relationship: Gibt dir Zugriff auf alle Transaktionen dieses Kontos
+    transaktionen = relationship("Transaktion", back_populates="konto")
+
+    def __repr__(self):
+        return f"<Konto(id={self.id}, kontoname='{self.kontoname}', kontostand={self.kontostand}€, iban='{self.iban}')>"
+
+
 class Transaktion(
     Base
 ):  # Erbt von Base und repräsentiert die "transaktionen" Tabelle in der Datenbank
@@ -29,6 +53,7 @@ class Transaktion(
     __tablename__ = "transaktionen"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    konto_id = Column(Integer, ForeignKey("konten.id"), nullable=True)  # Fremdschlüssel zum Konto
     buchungstag = Column(Date, nullable=False)
     beguenstigter = Column(String(200), nullable=True)
     verwendungszweck = Column(String(500))
@@ -41,8 +66,9 @@ class Transaktion(
     )  # Fremdschlüssel zur Kategorie
     created_at = Column(DateTime, default=datetime.now)
 
-    # Relationship: Gibt dir Zugriff auf das Category-Objekt
+    # Relationships: Gibt dir Zugriff auf das Konto und die Kategorie
     # back_populates erstellt die bidirektionale Verbindung
+    konto = relationship("Konto", back_populates="transaktionen")
     kategorie = relationship("Category", back_populates="transaktionen")
 
     def __repr__(self):
