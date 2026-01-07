@@ -167,7 +167,7 @@ function deleteAccount(id) {
         if (index !== -1) {
             accountsData.splice(index, 1);
             loadAccounts();
-            alert('Konto erfolgreich gelöscht!');
+            showToast('Konto erfolgreich gelöscht!', 'success');
         }
     }
 }
@@ -212,7 +212,7 @@ document.getElementById('accountForm').addEventListener('submit', (e) => {
         const account = accountsData.find(a => a.id === parseInt(editId));
         if (account) {
             Object.assign(account, accountData);
-            alert('Konto erfolgreich aktualisiert!');
+            showToast('Konto erfolgreich aktualisiert!', 'success');
         }
     } else {
         const newId = Math.max(...accountsData.map(a => a.id), 0) + 1;
@@ -220,7 +220,7 @@ document.getElementById('accountForm').addEventListener('submit', (e) => {
             id: newId,
             ...accountData
         });
-        alert('Konto erfolgreich hinzugefügt!');
+        showToast('Konto erfolgreich hinzugefügt!', 'success');
     }
 
     loadAccounts();
@@ -288,3 +288,33 @@ if (searchBox && searchIcon) {
 
 // Initial laden
 loadAccounts();
+
+// ============ TOAST NOTIFICATIONS ============
+
+function showToast(message, type = 'success', duration = 10000) {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icons = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️'
+    };
+    
+    toast.innerHTML = `
+        <div class="toast-icon">${icons[type] || icons.info}</div>
+        <div class="toast-content">
+            <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+    `;
+    
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('removing');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}

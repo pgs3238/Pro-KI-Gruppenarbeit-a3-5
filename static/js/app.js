@@ -1,6 +1,38 @@
 // ==================== KONFIGURATION ====================
 const API_BASE_URL = 'http://localhost:8000';
 
+// ==================== TOAST NOTIFICATIONS ====================
+
+function showToast(message, type = 'success', duration = 10000) {
+    const container = document.getElementById('toastContainer');
+    if (!container) return; // Falls Container nicht existiert
+    
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icons = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️'
+    };
+    
+    toast.innerHTML = `
+        <div class="toast-icon">${icons[type] || icons.info}</div>
+        <div class="toast-content">
+            <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+    `;
+    
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('removing');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+
 
 // ==================== ACCOUNT BALANCE ====================
 
@@ -500,7 +532,7 @@ async function editTransaction(id) {
         openModal();
     } catch (error) {
         console.error('✗ Fehler beim Laden der Transaktion:', error);
-        alert('Transaktion konnte nicht geladen werden');
+        showToast('Transaktion konnte nicht geladen werden', 'error');
     }
 }
 
@@ -520,11 +552,11 @@ async function deleteTransaction(id) {
 
         if (!response.ok) throw new Error('Fehler beim Löschen');
 
-        alert('Transaktion erfolgreich gelöscht!');
+        showToast('Transaktion erfolgreich gelöscht!', 'success');
         loadTransactions();
     } catch (error) {
         console.error('✗ Fehler beim Löschen der Transaktion:', error);
-        alert('Transaktion konnte nicht gelöscht werden');
+        showToast('Transaktion konnte nicht gelöscht werden', 'error');
     }
 }
 
@@ -698,7 +730,7 @@ function setupTransactionModal() {
                     });
 
                     if (!response.ok) throw new Error('Fehler beim Aktualisieren');
-                    alert('Transaktion erfolgreich aktualisiert!');
+                    showToast('Transaktion erfolgreich aktualisiert!', 'success');
                 } else {
                     // Neue Transaktion hinzufügen
                     const response = await fetch(`${API_BASE_URL}/transactions`, {
@@ -710,14 +742,14 @@ function setupTransactionModal() {
                     });
 
                     if (!response.ok) throw new Error('Fehler beim Speichern');
-                    alert('Transaktion erfolgreich gespeichert!');
+                    showToast('Transaktion erfolgreich gespeichert!', 'success');
                 }
 
                 loadTransactions();
                 closeModal();
             } catch (error) {
                 console.error('✗ Fehler bei der Transaktion:', error);
-                alert('Fehler beim Speichern der Transaktion: ' + error.message);
+                showToast('Fehler beim Speichern der Transaktion: ' + error.message, 'error');
             }
         });
 

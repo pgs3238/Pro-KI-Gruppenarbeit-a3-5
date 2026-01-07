@@ -74,7 +74,7 @@
                 <!-- Statistik-Übersicht -->
                 <div class="stats-overview">
                     <div class="stat-box total">
-                        <div class="stat-icon">📊</div>
+                        <div class="stat-icon">🏷️</div>
                         <div class="stat-content">
                             <div class="stat-value" id="totalCategories">0</div>
                             <div class="stat-label">Kategorien gesamt</div>
@@ -85,14 +85,14 @@
                             <div class="stat-icon">💸</div>
                             <div class="stat-content">
                                 <div class="stat-value" id="ausgabenCategories">0</div>
-                                <div class="stat-label">Ausgaben</div>
+                                <div class="stat-label">Ausgaben Kategorien</div>
                             </div>
                         </div>
                         <div class="stat-box einnahmen">
                             <div class="stat-icon">💰</div>
                             <div class="stat-content">
                                 <div class="stat-value" id="einnahmenCategories">0</div>
-                                <div class="stat-label">Einnahmen</div>
+                                <div class="stat-label">Einnahmen Kategorien</div>
                             </div>
                         </div>
                     </div>
@@ -103,7 +103,7 @@
                     <!-- Ausgaben Section -->
                     <div class="category-section">
                         <div class="section-header ausgaben-header">
-                            <h2>💸 Ausgaben-Kategorien</h2>
+                            <h2>💸 Ausgaben Kategorien</h2>
                             <span class="section-count" id="ausgabenCount">0</span>
                         </div>
                         <div class="category-list" id="ausgabenList">
@@ -114,7 +114,7 @@
                     <!-- Einnahmen Section -->
                     <div class="category-section">
                         <div class="section-header einnahmen-header">
-                            <h2>💰 Einnahmen-Kategorien</h2>
+                            <h2>💰 Einnahmen Kategorien</h2>
                             <span class="section-count" id="einnahmenCount">0</span>
                         </div>
                         <div class="category-list" id="einnahmenList">
@@ -130,6 +130,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
 
     <!-- ============ MODAL ============ -->
     <div class="modal-overlay" id="categoryModal">

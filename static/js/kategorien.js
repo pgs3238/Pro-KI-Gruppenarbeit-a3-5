@@ -148,7 +148,7 @@ function deleteCategory(id) {
         if (index !== -1) {
             categoriesData.splice(index, 1);
             loadCategories();
-            alert('Kategorie erfolgreich gelöscht!');
+            showToast('Kategorie erfolgreich gelöscht!', 'success');
         }
     }
 }
@@ -191,7 +191,7 @@ document.getElementById('categoryForm').addEventListener('submit', (e) => {
         const category = categoriesData.find(c => c.id === parseInt(editId));
         if (category) {
             Object.assign(category, categoryData);
-            alert('Kategorie erfolgreich aktualisiert!');
+            showToast('Kategorie erfolgreich aktualisiert!', 'success');
         }
     } else {
         const newId = Math.max(...categoriesData.map(c => c.id), 0) + 1;
@@ -199,7 +199,7 @@ document.getElementById('categoryForm').addEventListener('submit', (e) => {
             id: newId,
             ...categoryData
         });
-        alert('Kategorie erfolgreich hinzugefügt!');
+        showToast('Kategorie erfolgreich hinzugefügt!', 'success');
     }
 
     loadCategories();
@@ -247,6 +247,36 @@ if (searchBox && searchIcon) {
 
 // Initial laden
 loadCategories();
+
+// ============ TOAST NOTIFICATIONS ============
+
+function showToast(message, type = 'success', duration = 10000) {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icons = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️'
+    };
+    
+    toast.innerHTML = `
+        <div class="toast-icon">${icons[type] || icons.info}</div>
+        <div class="toast-content">
+            <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+    `;
+    
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('removing');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
 
 // ============ REGELN MODAL ============
 
@@ -310,7 +340,7 @@ function addKeyword() {
     const keyword = input.value.trim().toLowerCase();
     
     if (!keyword) {
-        alert('Bitte geben Sie ein Schlüsselwort ein!');
+        showToast('Bitte geben Sie ein Schlüsselwort ein!', 'warning');
         return;
     }
     
@@ -319,7 +349,7 @@ function addKeyword() {
     }
     
     if (categoryRules[currentRulesCategory].includes(keyword)) {
-        alert('Dieses Schlüsselwort existiert bereits!');
+        showToast('Dieses Schlüsselwort existiert bereits!', 'warning');
         return;
     }
     
@@ -342,11 +372,11 @@ function removeKeyword(keyword) {
 function testRules() {
     const keywords = categoryRules[currentRulesCategory] || [];
     if (keywords.length === 0) {
-        alert('Keine Regeln zum Testen vorhanden!');
+        showToast('Keine Regeln zum Testen vorhanden!', 'warning');
         return;
     }
     
-    alert(`Diese Kategorie wird verwendet, wenn eine Transaktion eines der folgenden Schlüsselwörter enthält:\n\n${keywords.join(', ')}\n\nBeispiel: "REWE Supermarkt" → Kategorie wird automatisch zugewiesen`);
+    showToast(`Diese Kategorie wird bei folgenden Schlüsselwörtern verwendet: ${keywords.join(', ')}`, 'info', 15000);
 }
 
 // Modal Click Outside
