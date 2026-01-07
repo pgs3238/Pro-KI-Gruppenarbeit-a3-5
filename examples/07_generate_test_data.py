@@ -7,8 +7,13 @@ Erstellt zufällige Transaktionen mit passenden Werten
 """
 
 import random
+import sys
+from pathlib import Path
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
+
+# Füge das Parent-Verzeichnis (Projekt-Root) zu sys.path hinzu
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.database import SessionLocal, Transaktion, init_db
 
