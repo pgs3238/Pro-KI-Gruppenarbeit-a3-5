@@ -229,6 +229,53 @@
         </div>
     </div>
 
+    <!-- ============ REGELN MODAL ============ -->
+    <div class="modal-overlay" id="rulesModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-title" style="border-bottom: 1px solid #444; padding-bottom: 15px; margin-bottom: 25px; font-size: 18px; font-weight: bold; color: #fff;">
+                Kategorisierungs-Regeln
+            </div>
+            
+            <div class="rules-category-info">
+                <span class="rules-category-icon" id="rulesCategoryIcon">🏷️</span>
+                <span class="rules-category-name" id="rulesCategoryName">Kategorie</span>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Aktive Schlüsselwörter</label>
+                <p class="form-hint">Transaktionen werden automatisch dieser Kategorie zugeordnet, wenn sie eines dieser Schlüsselwörter enthalten.</p>
+                <div class="keywords-list" id="keywordsList">
+                    <!-- Wird mit JavaScript gefüllt -->
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Neues Schlüsselwort hinzufügen</label>
+                <div class="keyword-input-group">
+                    <input type="text" 
+                           id="newKeywordInput" 
+                           placeholder="z.B. REWE, Supermarkt, Edeka" 
+                           class="form-control"
+                           onkeypress="if(event.key === 'Enter') addKeyword()">
+                    <button type="button" class="btn-add-keyword" onclick="addKeyword()">+</button>
+                </div>
+                <small class="form-hint">Groß-/Kleinschreibung wird ignoriert. Drücken Sie Enter zum Hinzufügen.</small>
+            </div>
+            
+            <div class="rules-stats">
+                <div class="stat-item">
+                    <span class="stat-icon">🔤</span>
+                    <span class="stat-text"><span id="keywordsCount">0</span> Schlüsselwörter</span>
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button type="button" class="btn-cancel" onclick="closeRulesModal()">Schließen</button>
+                <button type="button" class="btn-save" onclick="testRules()">Regeln testen</button>
+            </div>
+        </div>
+    </div>
+
     <script src="../static/js/kategorien.js"></script>
 </body>
 

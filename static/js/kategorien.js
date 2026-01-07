@@ -6,8 +6,7 @@ const categoriesData = [
         typ: 'ausgabe',
         icon: '🍔',
         farbe: '#06d6a6',
-        beschreibung: 'Essen und Trinken',
-        anzahlTransaktionen: 45
+        beschreibung: 'Essen und Trinken'
     },
     {
         id: 2,
@@ -15,8 +14,7 @@ const categoriesData = [
         typ: 'ausgabe',
         icon: '🏠',
         farbe: '#3b82f6',
-        beschreibung: 'Miete, Nebenkosten, Energie',
-        anzahlTransaktionen: 12
+        beschreibung: 'Miete, Nebenkosten, Energie'
     },
     {
         id: 3,
@@ -24,8 +22,7 @@ const categoriesData = [
         typ: 'ausgabe',
         icon: '🚗',
         farbe: '#8b5cf6',
-        beschreibung: 'Auto, ÖPNV, Benzin',
-        anzahlTransaktionen: 28
+        beschreibung: 'Auto, ÖPNV, Benzin'
     },
     {
         id: 4,
@@ -33,8 +30,7 @@ const categoriesData = [
         typ: 'ausgabe',
         icon: '🎮',
         farbe: '#f59e0b',
-        beschreibung: 'Freizeit, Hobbys, Streaming',
-        anzahlTransaktionen: 34
+        beschreibung: 'Freizeit, Hobbys, Streaming'
     },
     {
         id: 5,
@@ -42,8 +38,7 @@ const categoriesData = [
         typ: 'einnahme',
         icon: '💼',
         farbe: '#ef4444',
-        beschreibung: 'Monatliches Einkommen',
-        anzahlTransaktionen: 3
+        beschreibung: 'Monatliches Einkommen'
     },
     {
         id: 6,
@@ -51,8 +46,7 @@ const categoriesData = [
         typ: 'ausgabe',
         icon: '🛒',
         farbe: '#ec4899',
-        beschreibung: 'Kleidung, Elektronik',
-        anzahlTransaktionen: 19
+        beschreibung: 'Kleidung, Elektronik'
     }
 ];
 
@@ -66,8 +60,8 @@ function loadCategories() {
     document.getElementById('totalCategories').textContent = categoriesData.length;
     document.getElementById('ausgabenCategories').textContent = ausgaben.length;
     document.getElementById('einnahmenCategories').textContent = einnahmen.length;
-    document.getElementById('ausgabenCount').textContent = ausgaben.length;
-    document.getElementById('einnahmenCount').textContent = einnahmen.length;
+    document.getElementById('ausgabenCount').textContent = `${ausgaben.length} Kategorien`;
+    document.getElementById('einnahmenCount').textContent = `${einnahmen.length} Kategorien`;
 
     // Ausgaben-Liste
     const ausgabenList = document.getElementById('ausgabenList');
@@ -110,13 +104,10 @@ function createCategoryItem(category) {
             </div>
         </div>
         <div class="category-item-right">
-            <div class="category-item-stats">
-                <span class="transaction-count">
-                    <span class="count-icon">📊</span>
-                    <span class="count-number">${category.anzahlTransaktionen}</span>
-                </span>
-            </div>
             <div class="category-item-actions">
+                <button class="action-btn-round rules" onclick="openRulesModal(${category.id}, '${category.name}')" title="Regeln">
+                    <span>⚙️</span>
+                </button>
                 <button class="action-btn-round edit" onclick="editCategory(${category.id})" title="Bearbeiten">
                     <span>✏️</span>
                 </button>
@@ -193,8 +184,7 @@ document.getElementById('categoryForm').addEventListener('submit', (e) => {
         typ: document.querySelector('select[name="typ"]').value,
         icon: document.querySelector('input[name="icon"]:checked').value,
         farbe: document.querySelector('input[name="farbe"]:checked').value,
-        beschreibung: document.querySelector('textarea[name="beschreibung"]').value || '',
-        anzahlTransaktionen: 0
+        beschreibung: document.querySelector('textarea[name="beschreibung"]').value || ''
     };
 
     if (editId) {
@@ -257,3 +247,109 @@ if (searchBox && searchIcon) {
 
 // Initial laden
 loadCategories();
+
+// ============ REGELN MODAL ============
+
+let currentRulesCategory = null;
+
+// Beispiel-Regeln (sollten später vom Backend kommen)
+const categoryRules = {
+    1: ['rewe', 'edeka', 'aldi', 'lidl', 'supermarkt', 'lebensmittel'],
+    2: ['miete', 'nebenkosten', 'strom', 'gas', 'wasser'],
+    3: ['tankstelle', 'öpnv', 'bahn', 'bus', 'benzin', 'diesel'],
+    4: ['netflix', 'spotify', 'kino', 'streaming'],
+    5: ['gehalt', 'lohn'],
+    6: ['amazon', 'zalando', 'ebay', 'kleidung']
+};
+
+function openRulesModal(categoryId, categoryName) {
+    currentRulesCategory = categoryId;
+    const category = categoriesData.find(c => c.id === categoryId);
+    
+    if (category) {
+        document.getElementById('rulesCategoryIcon').textContent = category.icon;
+        document.getElementById('rulesCategoryName').textContent = category.name;
+        
+        loadKeywords(categoryId);
+        
+        document.getElementById('rulesModal').classList.add('active');
+    }
+}
+
+function closeRulesModal() {
+    document.getElementById('rulesModal').classList.remove('active');
+    document.getElementById('newKeywordInput').value = '';
+    currentRulesCategory = null;
+}
+
+function loadKeywords(categoryId) {
+    const keywords = categoryRules[categoryId] || [];
+    const keywordsList = document.getElementById('keywordsList');
+    
+    keywordsList.innerHTML = '';
+    
+    if (keywords.length === 0) {
+        keywordsList.innerHTML = '<div class="empty-state">Keine Schlüsselwörter definiert</div>';
+    } else {
+        keywords.forEach(keyword => {
+            const tag = document.createElement('div');
+            tag.className = 'keyword-tag';
+            tag.innerHTML = `
+                <span class="keyword-text">${keyword}</span>
+                <button class="keyword-remove" onclick="removeKeyword('${keyword}')" title="Entfernen">×</button>
+            `;
+            keywordsList.appendChild(tag);
+        });
+    }
+    
+    document.getElementById('keywordsCount').textContent = keywords.length;
+}
+
+function addKeyword() {
+    const input = document.getElementById('newKeywordInput');
+    const keyword = input.value.trim().toLowerCase();
+    
+    if (!keyword) {
+        alert('Bitte geben Sie ein Schlüsselwort ein!');
+        return;
+    }
+    
+    if (!categoryRules[currentRulesCategory]) {
+        categoryRules[currentRulesCategory] = [];
+    }
+    
+    if (categoryRules[currentRulesCategory].includes(keyword)) {
+        alert('Dieses Schlüsselwort existiert bereits!');
+        return;
+    }
+    
+    categoryRules[currentRulesCategory].push(keyword);
+    loadKeywords(currentRulesCategory);
+    input.value = '';
+    input.focus();
+}
+
+function removeKeyword(keyword) {
+    if (confirm(`Schlüsselwort "${keyword}" wirklich entfernen?`)) {
+        const index = categoryRules[currentRulesCategory].indexOf(keyword);
+        if (index !== -1) {
+            categoryRules[currentRulesCategory].splice(index, 1);
+            loadKeywords(currentRulesCategory);
+        }
+    }
+}
+
+function testRules() {
+    const keywords = categoryRules[currentRulesCategory] || [];
+    if (keywords.length === 0) {
+        alert('Keine Regeln zum Testen vorhanden!');
+        return;
+    }
+    
+    alert(`Diese Kategorie wird verwendet, wenn eine Transaktion eines der folgenden Schlüsselwörter enthält:\n\n${keywords.join(', ')}\n\nBeispiel: "REWE Supermarkt" → Kategorie wird automatisch zugewiesen`);
+}
+
+// Modal Click Outside
+document.getElementById('rulesModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'rulesModal') closeRulesModal();
+});

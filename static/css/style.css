@@ -1006,11 +1006,16 @@ button.fab-btn.active:hover {
 }
 
 /* Category Sections */
+.categories-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
 .category-section {
     background: #2a2a2a;
     border-radius: 15px;
     padding: 25px;
-    margin-bottom: 25px;
 }
 
 .section-header {
@@ -1172,6 +1177,10 @@ button.fab-btn.active:hover {
     background: #06d6a6;
 }
 
+.action-btn-round.rules:hover {
+    background: #f59e0b;
+}
+
 .action-btn-round.delete:hover {
     background: #ff4757;
 }
@@ -1182,6 +1191,137 @@ button.fab-btn.active:hover {
     color: #666;
     font-size: 14px;
     font-style: italic;
+}
+
+/* ============ REGELN MODAL ============ */
+
+.rules-category-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 20px;
+    background: #1a1a1a;
+    border-radius: 12px;
+    margin-bottom: 25px;
+}
+
+.rules-category-icon {
+    font-size: 32px;
+}
+
+.rules-category-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.keywords-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 15px;
+    background: #1a1a1a;
+    border-radius: 12px;
+    min-height: 100px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.keyword-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #06d6a6;
+    color: #1a1a1a;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.keyword-text {
+    user-select: none;
+}
+
+.keyword-remove {
+    background: none;
+    border: none;
+    color: #1a1a1a;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.keyword-remove:hover {
+    background: rgba(0, 0, 0, 0.2);
+    transform: scale(1.2);
+}
+
+.keyword-input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.keyword-input-group .form-control {
+    flex: 1;
+}
+
+.btn-add-keyword {
+    width: 45px;
+    height: 45px;
+    background: #06d6a6;
+    border: none;
+    border-radius: 10px;
+    color: #1a1a1a;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-add-keyword:hover {
+    background: #05b389;
+    transform: scale(1.05);
+}
+
+.rules-stats {
+    display: flex;
+    gap: 20px;
+    padding: 15px;
+    background: #1a1a1a;
+    border-radius: 12px;
+    margin-top: 20px;
+}
+
+.rules-stats .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rules-stats .stat-icon {
+    font-size: 18px;
+}
+
+.rules-stats .stat-text {
+    font-size: 14px;
+    color: #aaa;
+}
+
+.rules-stats #keywordsCount {
+    color: #06d6a6;
+    font-weight: bold;
 }
 
 .stat-item {
