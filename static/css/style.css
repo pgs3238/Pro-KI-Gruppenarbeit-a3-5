@@ -987,7 +987,18 @@ button.fab-btn.active:hover {
 
 .stat-box.ausgaben {
     border-color: transparent;
-    border-top: 3px solid #ff6b6b;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-box.ausgaben::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 12px;
+    background: linear-gradient(180deg, #ff6b6b 0%, #ff4757 100%);
 }
 
 .stat-box.ausgaben .stat-icon {
@@ -1000,7 +1011,18 @@ button.fab-btn.active:hover {
 
 .stat-box.einnahmen {
     border-color: transparent;
-    border-top: 3px solid #06d6a6;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-box.einnahmen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 12px;
+    background: linear-gradient(180deg, #06d6a6 0%, #05b389 100%);
 }
 
 .stat-box.einnahmen .stat-icon {
