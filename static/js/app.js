@@ -236,9 +236,28 @@ function setupSearch() {
 }
 
 
+// ==================== FAB MENU ====================
+
 /**
- * Setzt die Filter-Inputs in der Transaktions-Tabelle auf
+ * Schaltet das FAB-Menü (Floating Action Button) ein/aus
  */
+function toggleFabMenu() {
+    const fabMenu = document.getElementById('fabMenu');
+    const fabBtn = document.querySelector('.fab-btn');
+    
+    if (fabMenu.style.display === 'none') {
+        fabMenu.style.display = 'flex';
+        fabBtn.innerHTML = '×';
+        fabBtn.classList.add('active');
+    } else {
+        fabMenu.style.display = 'none';
+        fabBtn.innerHTML = '+';
+        fabBtn.classList.remove('active');
+    }
+}
+
+
+// ==================== SEARCH ====================
 function setupFilterInputs() {
     const filterInputs = document.querySelectorAll('.filter-input');
     

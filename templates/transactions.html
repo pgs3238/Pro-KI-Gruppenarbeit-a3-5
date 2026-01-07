@@ -103,8 +103,20 @@
                     </div>
                 </div>
 
-                <!-- FAB Button -->
-                <button class="fab-btn" onclick="openModal()">+</button>
+                <!-- FAB Button mit Menü -->
+                <div class="fab-container">
+                    <div class="fab-menu" id="fabMenu" style="display: none;">
+                        <button class="fab-menu-item" onclick="openModal(); toggleFabMenu();">
+                            <span class="menu-icon">✏️</span>
+                            <span>Transaktion erfassen</span>
+                        </button>
+                        <button class="fab-menu-item" onclick="toggleFabMenu();">
+                            <span class="menu-icon">📎</span>
+                            <span>Transaktion importieren</span>
+                        </button>
+                    </div>
+                    <button class="fab-btn" onclick="toggleFabMenu()">+</button>
+                </div>
             </div>
         </div>
     </div>
