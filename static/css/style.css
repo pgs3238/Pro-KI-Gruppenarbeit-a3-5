@@ -735,3 +735,210 @@ button.fab-btn.active:hover {
     background: #ee3647 !important;
     transform: scale(1.1);
 }
+
+/* ============ KONTEN GRID ============ */
+.accounts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+}
+
+.account-card {
+    background: #2a2a2a;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.account-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.account-card-header {
+    padding: 25px;
+    background: linear-gradient(135deg, #06d6a6 0%, #05b389 100%);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.account-icon {
+    font-size: 36px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.account-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.account-card:hover .account-actions {
+    opacity: 1;
+}
+
+.account-action-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.account-action-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.account-card-body {
+    padding: 25px;
+}
+
+.account-name {
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 12px;
+}
+
+.account-balance {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.account-balance.positive {
+    color: #06d6a6;
+}
+
+.account-balance.negative {
+    color: #ff6b6b;
+}
+
+.account-balance-large {
+    font-size: 36px;
+    font-weight: bold;
+    color: #fff;
+    margin: 15px 0;
+}
+
+.account-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #aaa;
+}
+
+.detail-label {
+    color: #888;
+}
+
+.detail-value {
+    color: #fff;
+    font-weight: 500;
+}
+
+.account-badge {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Übersichtskarte */
+.summary-card {
+    grid-column: 1 / -1;
+}
+
+.summary-card .account-card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.summary-card .account-balance-large {
+    text-align: center;
+}
+
+.summary-card .account-details {
+    flex-direction: row;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Color Picker */
+.color-picker {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.color-picker input[type="radio"] {
+    display: none;
+}
+
+.color-option {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.color-option:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.color-picker input[type="radio"]:checked + .color-option {
+    border-color: #fff;
+    box-shadow: 0 0 0 2px #06d6a6;
+}
+
+.color-picker input[type="radio"]:checked + .color-option::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 20px;
+    font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .accounts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .summary-card {
+        grid-column: 1;
+    }
+}

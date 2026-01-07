@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FINLY - Konten</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- ============ SIDEBAR ============ -->
+        <aside class="sidebar">
+            <div class="logo">
+                <span>📊</span>
+                <span>FINLY</span>
+            </div>
+
+            <ul class="nav-items">
+                <li class="nav-item">
+                    <button class="nav-link" id="nav-overview" onclick="window.location.href='index.html'">
+                        <span class="nav-icon">📈</span>
+                        <span>Übersicht</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="nav-transaction" onclick="window.location.href='transactions.html'">
+                        <span class="nav-icon">💳</span>
+                        <span>Transaktionen</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="nav-categories">
+                        <span class="nav-icon">🏷️</span>
+                        <span>Kategorien</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link active" id="nav-accounts">
+                        <span class="nav-icon">🏦</span>
+                        <span>Konten</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="nav-forecast">
+                        <span class="nav-icon">📉</span>
+                        <span>Zinsprognose</span>
+                    </button>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- ============ HAUPTBEREICH ============ -->
+        <div class="main">
+            <!-- ============ HEADER ============ -->
+            <header class="header">
+                <div class="header-right">
+                    <div class="search-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="search-box" id="searchBox" placeholder="Suche">
+                    </div>
+                    <button class="icon-btn">⚙️</button>
+                </div>
+            </header>
+
+            <!-- ============ CONTENT ============ -->
+            <div class="content">
+                <div class="page-header">
+                    <h1>Konten</h1>
+                    <p>Verwalten Sie Ihre Bankkonten und Finanzübersicht</p>
+                </div>
+
+                <!-- Konten Grid -->
+                <div class="accounts-grid" id="accountsGrid">
+                    <!-- Wird mit JavaScript gefüllt -->
+                </div>
+            </div>
+
+            <!-- FAB Button -->
+            <div class="fab-container">
+                <button class="fab-btn" onclick="openAccountModal()">+</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL ============ -->
+    <div class="modal-overlay" id="accountModal">
+        <div class="modal-content">
+            <div class="modal-title" style="border-bottom: 1px solid #444; padding-bottom: 15px; margin-bottom: 25px; font-size: 18px; font-weight: bold; color: #fff;">
+                Konto hinzufügen
+            </div>
+            <form id="accountForm">
+                <div class="form-group">
+                    <label class="form-label">Kontoname</label>
+                    <input type="text" name="name" placeholder="z.B. Girokonto, Sparkonto" required class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Kontotyp</label>
+                    <select name="typ" class="form-control" required>
+                        <option value="">Bitte wählen...</option>
+                        <option value="girokonto">Girokonto</option>
+                        <option value="sparkonto">Sparkonto</option>
+                        <option value="kreditkarte">Kreditkarte</option>
+                        <option value="depot">Depot</option>
+                        <option value="bargeld">Bargeld</option>
+                        <option value="sonstiges">Sonstiges</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">IBAN (optional)</label>
+                    <input type="text" 
+                           name="iban" 
+                           placeholder="DE89 3704 0044 0532 0130 00" 
+                           pattern="[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}"
+                           maxlength="34"
+                           class="form-control iban-input">
+                    <small class="form-hint">Format: 2 Buchstaben (Land) + 2 Prüfziffern + Kontonummer</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Bank / Institut</label>
+                    <input type="text" name="bank" placeholder="z.B. Sparkasse, Deutsche Bank" class="form-control">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <label class="form-label">Aktueller Kontostand (€)</label>
+                        <input type="number" name="saldo" step="0.01" placeholder="0.00" required class="form-control">
+                    </div>
+                    <div class="form-col">
+                        <label class="form-label">Währung</label>
+                        <select name="waehrung" class="form-control" required>
+                            <option value="EUR" selected>EUR (€)</option>
+                            <option value="USD">USD ($)</option>
+                            <option value="GBP">GBP (£)</option>
+                            <option value="CHF">CHF (Fr)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Farbe</label>
+                    <div class="color-picker">
+                        <input type="radio" name="farbe" value="#06d6a6" id="color1" checked>
+                        <label for="color1" class="color-option" style="background-color: #06d6a6;"></label>
+                        
+                        <input type="radio" name="farbe" value="#3b82f6" id="color2">
+                        <label for="color2" class="color-option" style="background-color: #3b82f6;"></label>
+                        
+                        <input type="radio" name="farbe" value="#8b5cf6" id="color3">
+                        <label for="color3" class="color-option" style="background-color: #8b5cf6;"></label>
+                        
+                        <input type="radio" name="farbe" value="#f59e0b" id="color4">
+                        <label for="color4" class="color-option" style="background-color: #f59e0b;"></label>
+                        
+                        <input type="radio" name="farbe" value="#ef4444" id="color5">
+                        <label for="color5" class="color-option" style="background-color: #ef4444;"></label>
+                        
+                        <input type="radio" name="farbe" value="#ec4899" id="color6">
+                        <label for="color6" class="color-option" style="background-color: #ec4899;"></label>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="reset" class="btn-cancel" onclick="closeAccountModal()">Abbrechen</button>
+                    <button type="submit" class="btn-save">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../static/js/konten.js"></script>
+</body>
+
+</html>
