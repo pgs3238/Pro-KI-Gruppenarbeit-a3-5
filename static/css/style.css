@@ -986,11 +986,29 @@ button.fab-btn.active:hover {
 }
 
 .stat-box.ausgaben {
-    border-color: #ff6b6b;
+    border-color: transparent;
+    border-top: 3px solid #ff6b6b;
+}
+
+.stat-box.ausgaben .stat-icon {
+    color: #ff6b6b;
+}
+
+.stat-box.ausgaben .stat-value {
+    color: #fff;
 }
 
 .stat-box.einnahmen {
-    border-color: #4ecdc4;
+    border-color: transparent;
+    border-top: 3px solid #06d6a6;
+}
+
+.stat-box.einnahmen .stat-icon {
+    color: #06d6a6;
+}
+
+.stat-box.einnahmen .stat-value {
+    color: #fff;
 }
 
 .stat-icon {
@@ -1027,16 +1045,31 @@ button.fab-btn.active:hover {
 .category-section {
     background: #2a2a2a;
     border-radius: 15px;
-    padding: 25px;
+    overflow: hidden;
 }
 
 .section-header {
+    padding: 25px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.category-section:has(.ausgaben-header) .section-header {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
+}
+
+.category-section:has(.einnahmen-header) .section-header {
+    background: linear-gradient(135deg, #06d6a6 0%, #05b389 100%);
+}
+
+.section-header .section-title {
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.category-list {
+    padding: 25px;
 }
 
 .section-title {
@@ -1045,7 +1078,7 @@ button.fab-btn.active:hover {
     gap: 12px;
     font-size: 22px;
     font-weight: bold;
-    color: #fff;
+    color: #1a1a1a;
 }
 
 .section-icon {
