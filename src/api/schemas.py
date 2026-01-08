@@ -53,3 +53,43 @@ class TransaktionSearch(BaseModel):
     betrag_min_abs: Optional[float] = None
     betrag_max_abs: Optional[float] = None
     waehrung: Optional[str] = None
+
+# ==================== KONTO SCHEMAS ====================
+
+class KontoBase(BaseModel):
+    """Basis-Schema für Konten"""
+    kontoname: str = Field(..., max_length=100, description="Name des Kontos")
+    kontotyp: str = Field(..., description="Typ des Kontos (Girokonto, Sparkonto, etc.)")
+    bankname: Optional[str] = Field(None, max_length=200, description="Name der Bank")
+    kontonummer: str = Field(..., max_length=34, description="IBAN des Kontos")
+    kontostand: float = Field(0.0, description="Aktueller Kontostand")
+    waehrung: str = Field("EUR", max_length=3, description="Währungscode")
+    bic: Optional[str] = Field(None, max_length=11, description="BIC/SWIFT Code")
+    farbe: str = Field("#06d6a6", description="Farbe für die Darstellung")
+
+
+class KontoCreate(KontoBase):
+    """Schema für das Erstellen eines neuen Kontos"""
+    pass
+
+
+class KontoUpdate(BaseModel):
+    """Schema für das Aktualisieren eines Kontos"""
+    kontoname: Optional[str] = Field(None, max_length=100)
+    kontotyp: Optional[str] = None
+    bankname: Optional[str] = Field(None, max_length=200)
+    kontostand: Optional[float] = None
+    waehrung: Optional[str] = Field(None, max_length=3)
+    bic: Optional[str] = Field(None, max_length=11)
+    farbe: Optional[str] = None
+
+
+class KontoResponse(KontoBase):
+    """Schema für Konto-Responses"""
+    id: int
+    iban: str
+    erstellt_am: datetime
+    aktualisiert_am: datetime
+    
+    class Config:
+        from_attributes = True

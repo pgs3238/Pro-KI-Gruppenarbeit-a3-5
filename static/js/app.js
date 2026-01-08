@@ -1,38 +1,6 @@
 // ==================== KONFIGURATION ====================
 const API_BASE_URL = 'http://localhost:8000';
 
-// ==================== TOAST NOTIFICATIONS ====================
-
-function showToast(message, type = 'success', duration = 10000) {
-    const container = document.getElementById('toastContainer');
-    if (!container) return; // Falls Container nicht existiert
-    
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    
-    const icons = {
-        success: '✅',
-        error: '❌',
-        warning: '⚠️',
-        info: 'ℹ️'
-    };
-    
-    toast.innerHTML = `
-        <div class="toast-icon">${icons[type] || icons.info}</div>
-        <div class="toast-content">
-            <div class="toast-message">${message}</div>
-        </div>
-        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
-    `;
-    
-    container.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.classList.add('removing');
-        setTimeout(() => toast.remove(), 300);
-    }, duration);
-}
-
 
 // ==================== ACCOUNT BALANCE ====================
 

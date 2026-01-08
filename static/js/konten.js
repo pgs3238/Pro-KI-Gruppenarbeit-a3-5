@@ -1,58 +1,10 @@
-// ============ BEISPIELDATEN ============
-const accountsData = [
-    {
-        id: 1,
-        name: 'Hauptkonto',
-        typ: 'girokonto',
-        bank: 'Sparkasse',
-        iban: 'DE89370400440532013000',
-        saldo: 2450.67,
-        waehrung: 'EUR',
-        farbe: '#06d6a6'
-    },
-    {
-        id: 2,
-        name: 'Sparkonto',
-        typ: 'sparkonto',
-        bank: 'Deutsche Bank',
-        iban: 'DE75512108001245126199',
-        saldo: 15000.00,
-        waehrung: 'EUR',
-        farbe: '#3b82f6'
-    },
-    {
-        id: 3,
-        name: 'Kreditkarte',
-        typ: 'kreditkarte',
-        bank: 'Visa',
-        iban: 'DE44500105175407324931',
-        saldo: -342.50,
-        waehrung: 'EUR',
-        farbe: '#8b5cf6'
-    },
-    {
-        id: 4,
-        name: 'Depot',
-        typ: 'depot',
-        bank: 'Trade Republic',
-        iban: null,
-        saldo: 8750.25,
-        waehrung: 'EUR',
-        farbe: '#f59e0b'
-    },
-    {
-        id: 5,
-        name: 'Bargeld',
-        typ: 'bargeld',
-        bank: null,
-        iban: null,
-        saldo: 250.00,
-        waehrung: 'EUR',
-        farbe: '#ef4444'
-    }
-];
+// ============ API KONFIGURATION ============
+const API_BASE = 'http://localhost:8000';
 
-// Konten Icons basierend auf Typ
+// ============ BEISPIELDATEN (FALLBACK) ============
+let accountsData = [];
+
+// Account Icons basierend auf Typ
 const accountIcons = {
     'girokonto': '💳',
     'sparkonto': '💰',
@@ -62,7 +14,114 @@ const accountIcons = {
     'sonstiges': '🏦'
 };
 
-// Konten laden und anzeigen
+// ============ API FUNKTIONEN ============
+
+async function loadAccountsFromAPI() {
+    try {
+        const response = await fetch(`${API_BASE}/konten`);
+        if (!response.ok) throw new Error(`API Error: ${response.status}`);
+        
+        const konten = await response.json();
+        
+        // Konvertiere API-Daten ins Frontend-Format
+        accountsData = konten.map(konto => ({
+            id: konto.id,
+            name: konto.kontoname,
+            typ: konto.kontotyp.toLowerCase().replace('ä', 'ae').replace('ö', 'oe').replace('ü', 'ue'),
+            bank: konto.bankname || null,
+            iban: konto.kontonummer || null,
+            saldo: konto.kontostand,
+            waehrung: konto.waehrung,
+            farbe: konto.farbe || '#06d6a6'
+        }));
+        
+        loadAccounts();
+    } catch (error) {
+        console.error('Fehler beim Laden der Konten:', error);
+        // Fallback zu leeren Daten
+        accountsData = [];
+        loadAccounts();
+    }
+}
+
+async function createAccountAPI(accountData) {
+    try {
+        // Konvertiere Frontend-Daten ins API-Format
+        const apiData = {
+            kontoname: accountData.name,
+            kontotyp: accountData.typ.charAt(0).toUpperCase() + accountData.typ.slice(1),
+            bankname: accountData.bank || null,
+            kontonummer: accountData.iban || '',
+            kontostand: accountData.saldo,
+            waehrung: accountData.waehrung,
+            bic: null,
+            farbe: accountData.farbe
+        };
+        
+        const response = await fetch(`${API_BASE}/konten`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(apiData)
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Fehler beim Erstellen des Kontos');
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Fehler beim Erstellen des Kontos:', error);
+        throw error;
+    }
+}
+
+async function updateAccountAPI(konto_id, accountData) {
+    try {
+        const apiData = {
+            kontoname: accountData.name,
+            kontotyp: accountData.typ.charAt(0).toUpperCase() + accountData.typ.slice(1),
+            bankname: accountData.bank || null,
+            kontostand: accountData.saldo,
+            waehrung: accountData.waehrung,
+            farbe: accountData.farbe
+        };
+        
+        const response = await fetch(`${API_BASE}/konten/${konto_id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(apiData)
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Fehler beim Aktualisieren des Kontos');
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Fehler beim Aktualisieren des Kontos:', error);
+        throw error;
+    }
+}
+
+async function deleteAccountAPI(konto_id) {
+    try {
+        const response = await fetch(`${API_BASE}/konten/${konto_id}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Fehler beim Löschen des Kontos');
+        }
+    } catch (error) {
+        console.error('Fehler beim Löschen des Kontos:', error);
+        throw error;
+    }
+}
+
+// ============ KONTEN LADEN UND ANZEIGEN ============
 function loadAccounts() {
     const grid = document.getElementById('accountsGrid');
     grid.innerHTML = '';
@@ -117,18 +176,6 @@ function loadAccounts() {
 }
 
 // Hilfsfunktionen
-function formatCurrency(amount) {
-    return new Intl.NumberFormat('de-DE', {
-        style: 'currency',
-        currency: 'EUR'
-    }).format(amount);
-}
-
-function formatIBAN(iban) {
-    if (!iban) return '';
-    return iban.match(/.{1,4}/g).join(' ');
-}
-
 function formatAccountType(typ) {
     const types = {
         'girokonto': 'Girokonto',
@@ -163,12 +210,14 @@ function editAccount(id) {
 // Konto löschen
 function deleteAccount(id) {
     if (confirm('Möchten Sie dieses Konto wirklich löschen?')) {
-        const index = accountsData.findIndex(a => a.id === id);
-        if (index !== -1) {
-            accountsData.splice(index, 1);
-            loadAccounts();
-            showToast('Konto erfolgreich gelöscht!', 'success');
-        }
+        deleteAccountAPI(id)
+            .then(() => {
+                loadAccountsFromAPI();
+                showToast('Konto erfolgreich gelöscht!', 'success');
+            })
+            .catch(error => {
+                showToast(`Fehler beim Löschen: ${error.message}`, 'error');
+            });
     }
 }
 
@@ -209,22 +258,28 @@ document.getElementById('accountForm').addEventListener('submit', (e) => {
     };
 
     if (editId) {
-        const account = accountsData.find(a => a.id === parseInt(editId));
-        if (account) {
-            Object.assign(account, accountData);
-            showToast('Konto erfolgreich aktualisiert!', 'success');
-        }
+        // Aktualisierung
+        updateAccountAPI(parseInt(editId), accountData)
+            .then(() => {
+                loadAccountsFromAPI();
+                showToast('Konto erfolgreich aktualisiert!', 'success');
+                closeAccountModal();
+            })
+            .catch(error => {
+                showToast(`Fehler beim Aktualisieren: ${error.message}`, 'error');
+            });
     } else {
-        const newId = Math.max(...accountsData.map(a => a.id), 0) + 1;
-        accountsData.push({
-            id: newId,
-            ...accountData
-        });
-        showToast('Konto erfolgreich hinzugefügt!', 'success');
+        // Neue Konten erstellen
+        createAccountAPI(accountData)
+            .then(() => {
+                loadAccountsFromAPI();
+                showToast('Konto erfolgreich hinzugefügt!', 'success');
+                closeAccountModal();
+            })
+            .catch(error => {
+                showToast(`Fehler beim Erstellen: ${error.message}`, 'error');
+            });
     }
-
-    loadAccounts();
-    closeAccountModal();
 });
 
 // Select Placeholder Styling
@@ -251,11 +306,6 @@ document.getElementById('accountForm').addEventListener('reset', () => {
 
 // IBAN Formatierung
 const ibanInput = document.querySelector('input[name="iban"]');
-
-function formatIBANInput(iban) {
-    const cleaned = iban.replace(/\s/g, '').toUpperCase();
-    return cleaned.match(/.{1,4}/g)?.join(' ') || cleaned;
-}
 
 ibanInput.addEventListener('input', (e) => {
     const cursorPos = e.target.selectionStart;
@@ -287,11 +337,11 @@ if (searchBox && searchIcon) {
 }
 
 // Initial laden
-loadAccounts();
+loadAccountsFromAPI();
 
 // ============ TOAST NOTIFICATIONS ============
 
-function showToast(message, type = 'success', duration = 10000) {
+function showToast(message, type = 'success', duration = 4000) {
     const container = document.getElementById('toastContainer');
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
@@ -318,3 +368,5 @@ function showToast(message, type = 'success', duration = 10000) {
         setTimeout(() => toast.remove(), 300);
     }, duration);
 }
+// Initial laden
+loadAccountsFromAPI();
