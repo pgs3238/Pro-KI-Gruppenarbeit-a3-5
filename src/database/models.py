@@ -35,6 +35,7 @@ class Konto(Base):  # Erbt von Base und repräsentiert die "konten" Tabelle in d
     kontotyp = Column(String(50), nullable=False)  # z.B. "Girokonto", "Sparkonto", "Kreditkarte"
     iban = Column(String(34), nullable=False)  # IBAN für Transaktionen
     bic = Column(String(11), nullable=True)  # BIC/SWIFT Code
+    farbe = Column(String(7), default="#06d6a6")  # Farbe für Darstellung (Hex-Code)
     erstellt_am = Column(DateTime, default=datetime.now)  # Erstellungsdatum
     aktualisiert_am = Column(DateTime, default=datetime.now, onupdate=datetime.now)  # Aktualisierungsdatum
 

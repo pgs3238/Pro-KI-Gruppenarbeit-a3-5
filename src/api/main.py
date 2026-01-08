@@ -6,9 +6,13 @@ from sqlalchemy.orm import Session
 from typing import List, Optional, Literal
 from datetime import date
 
-from ..database import init_db, SessionLocal, Transaktion
+from ..database import init_db, SessionLocal, Transaktion, Konto
 from ..database.search import search_transaktionen
-from .schemas import TransaktionCreate, TransaktionUpdate, TransaktionResponse, TransaktionSearch
+from ..database.konto_manager import KontoManager
+from .schemas import (
+    TransaktionCreate, TransaktionUpdate, TransaktionResponse, TransaktionSearch,
+    KontoCreate, KontoUpdate, KontoResponse
+)
 
 # ==================== SETUP ====================
 
@@ -219,4 +223,116 @@ def get_sankey_data(db: Session = Depends(get_db)):
     return {
         "nodes": [{"name": name, "color": color} for name, color in zip(node_names, node_colors)],
         "links": links
+    }
+
+
+# ==================== ENDPUNKTE: KONTEN ====================
+
+def get_konto_or_404(konto_id: int, db: Session):
+    """Konto laden oder 404 werfen"""
+    konto = db.query(Konto).filter(Konto.id == konto_id).first()
+    if not konto:
+        raise HTTPException(status_code=404, detail="Konto nicht gefunden")
+    return konto
+
+
+@app.get("/konten", response_model=List[KontoResponse])
+def get_konten(db: Session = Depends(get_db)):
+    """Alle Konten abrufen"""
+    return db.query(Konto).all()
+
+
+@app.get("/konten/{konto_id}", response_model=KontoResponse)
+def get_konto(konto_id: int, db: Session = Depends(get_db)):
+    """Ein einzelnes Konto abrufen"""
+    return get_konto_or_404(konto_id, db)
+
+
+@app.post("/konten", response_model=KontoResponse, status_code=201)
+def create_konto(konto: KontoCreate, db: Session = Depends(get_db)):
+    """Neues Konto erstellen"""
+    # Prüfe ob Kontoname schon existiert
+    existing = db.query(Konto).filter(Konto.kontoname == konto.kontoname).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Kontoname existiert bereits")
+    
+    # Prüfe ob Kontonummer (IBAN) schon existiert
+    existing_iban = db.query(Konto).filter(Konto.kontonummer == konto.kontonummer).first()
+    if existing_iban:
+        raise HTTPException(status_code=400, detail="Kontonummer existiert bereits")
+    
+    new_konto = KontoManager.erstelle_konto(
+        session=db,
+        kontoname=konto.kontoname,
+        kontonummer=konto.kontonummer,
+        kontotyp=konto.kontotyp,
+        bankname=konto.bankname,
+        kontostand=konto.kontostand,
+        waehrung=konto.waehrung,
+        bic=konto.bic
+    )
+    
+    # Speichere die Farbe als zusätzliches Attribut
+    new_konto.farbe = konto.farbe
+    db.commit()
+    db.refresh(new_konto)
+    return new_konto
+
+
+@app.put("/konten/{konto_id}", response_model=KontoResponse)
+def update_konto(
+    konto_id: int,
+    konto_update: KontoUpdate,
+    db: Session = Depends(get_db)
+):
+    """Konto aktualisieren"""
+    db_konto = get_konto_or_404(konto_id, db)
+    
+    # Prüfe ob neuer Kontoname schon existiert (falls er geändert wird)
+    if konto_update.kontoname and konto_update.kontoname != db_konto.kontoname:
+        existing = db.query(Konto).filter(Konto.kontoname == konto_update.kontoname).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Kontoname existiert bereits")
+    
+    update_data = konto_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_konto, key, value)
+    
+    db.commit()
+    db.refresh(db_konto)
+    return db_konto
+
+
+@app.delete("/konten/{konto_id}", status_code=204)
+def delete_konto(konto_id: int, db: Session = Depends(get_db)):
+    """Konto löschen"""
+    db_konto = get_konto_or_404(konto_id, db)
+    db.delete(db_konto)
+    db.commit()
+
+
+@app.get("/konten/stats/summary")
+def get_konto_summary(db: Session = Depends(get_db)):
+    """Konto-Zusammenfassung (Gesamtsaldo, Kontenanzahl, etc.)"""
+    konten = db.query(Konto).all()
+    
+    if not konten:
+        return {
+            "total_saldo": 0.0,
+            "konto_count": 0,
+            "konten": []
+        }
+    
+    return {
+        "total_saldo": round(sum(k.kontostand for k in konten), 2),
+        "konto_count": len(konten),
+        "konten": [
+            {
+                "id": k.id,
+                "kontoname": k.kontoname,
+                "kontostand": k.kontostand,
+                "waehrung": k.waehrung
+            }
+            for k in konten
+        ]
     }
