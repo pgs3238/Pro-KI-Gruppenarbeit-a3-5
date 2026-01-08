@@ -239,13 +239,24 @@ def get_konto_or_404(konto_id: int, db: Session):
 @app.get("/konten", response_model=List[KontoResponse])
 def get_konten(db: Session = Depends(get_db)):
     """Alle Konten abrufen"""
-    return db.query(Konto).all()
+    konten = db.query(Konto).all()
+    
+    # Berechne Kontostand aus Transaktionen (ohne zu speichern)
+    for konto in konten:
+        konto.kontostand = KontoManager.berechne_kontostand_aus_transaktionen(db, konto.id, initialstand=0.0)
+    
+    return konten
 
 
 @app.get("/konten/{konto_id}", response_model=KontoResponse)
 def get_konto(konto_id: int, db: Session = Depends(get_db)):
     """Ein einzelnes Konto abrufen"""
-    return get_konto_or_404(konto_id, db)
+    konto = get_konto_or_404(konto_id, db)
+    
+    # Berechne Kontostand aus Transaktionen (ohne zu speichern)
+    konto.kontostand = KontoManager.berechne_kontostand_aus_transaktionen(db, konto_id, initialstand=0.0)
+    
+    return konto
 
 
 @app.post("/konten", response_model=KontoResponse, status_code=201)

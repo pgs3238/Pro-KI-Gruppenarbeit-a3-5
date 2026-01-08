@@ -116,6 +116,7 @@ def generate_transaction(transaction_type: str = "random"):
         "betrag": amount,
         "waehrung": "EUR",
         "beschreibung": category,
+        "konto_id": 1,
     }
 
 

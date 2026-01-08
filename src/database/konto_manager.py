@@ -2,8 +2,9 @@
 
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from .models import Konto
+from .models import Konto, Transaktion
 from datetime import datetime
+from sqlalchemy import func
 
 
 class KontoManager:
@@ -242,3 +243,64 @@ class KontoManager:
             session.commit()
             session.refresh(konto)
         return konto
+
+    @staticmethod
+    def berechne_kontostand_aus_transaktionen(
+        session: Session, konto_id: int, initialstand: float = 0.0
+    ) -> float:
+        """
+        Berechnet den Kontostand aus allen zugehörigen Transaktionen
+
+        Args:
+            session: SQLAlchemy Session
+            konto_id: ID des Kontos
+            initialstand: Startkontostand (default: 0.0)
+
+        Returns:
+            float: Berechneter Kontostand (Initialstand + Summe aller Transaktionen)
+        """
+        # Summiere alle Beträge der Transaktionen für dieses Konto
+        summe = (
+            session.query(func.sum(Transaktion.betrag))
+            .filter(Transaktion.konto_id == konto_id)
+            .scalar()
+        )
+        
+        # Wenn keine Transaktionen vorhanden, ist summe None
+        transaktionssumme = summe if summe is not None else 0.0
+        
+        # Gesamtkontostand = Initialstand + Summe aller Transaktionen
+        kontostand = initialstand + transaktionssumme
+        return kontostand
+
+    @staticmethod
+    def aktualisiere_kontostand_aus_transaktionen(
+        session: Session, konto_id: int, initialstand: float = 0.0
+    ) -> Optional[Konto]:
+        """
+        Aktualisiert den Kontostand eines Kontos basierend auf allen zugehörigen Transaktionen
+
+        Args:
+            session: SQLAlchemy Session
+            konto_id: ID des Kontos
+            initialstand: Initialstand des Kontos vor Transaktionen (default: 0.0)
+
+        Returns:
+            Das aktualisierte Konto-Objekt oder None wenn nicht gefunden
+        """
+        konto = KontoManager.hole_konto(session, konto_id)
+        if not konto:
+            return None
+        
+        # Berechne neuen Kontostand
+        neuer_stand = KontoManager.berechne_kontostand_aus_transaktionen(
+            session, konto_id, initialstand
+        )
+        
+        # Aktualisiere Kontostand
+        konto.kontostand = neuer_stand
+        konto.aktualisiert_am = datetime.now()
+        session.commit()
+        session.refresh(konto)
+        return konto
+
