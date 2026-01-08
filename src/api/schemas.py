@@ -14,6 +14,7 @@ class TransaktionBase(BaseModel):
     betrag: float = Field(..., description="Betrag (positiv für Einnahmen, negativ für Ausgaben)")
     waehrung: str = Field("EUR", max_length=3, description="Währungscode")
     beschreibung: Optional[str] = Field(None, max_length=500, description="Zusätzliche Beschreibung")
+    konto_id: Optional[int] = Field(None, description="ID des zugehörigen Kontos")
 
 
 class TransaktionCreate(TransaktionBase):
@@ -30,6 +31,7 @@ class TransaktionUpdate(BaseModel):
     betrag: Optional[float] = None
     waehrung: Optional[str] = Field(None, max_length=3)
     beschreibung: Optional[str] = Field(None, max_length=500)
+    konto_id: Optional[int] = None
 
 
 class TransaktionResponse(TransaktionBase):
@@ -78,6 +80,7 @@ class KontoUpdate(BaseModel):
     kontoname: Optional[str] = Field(None, max_length=100)
     kontotyp: Optional[str] = None
     bankname: Optional[str] = Field(None, max_length=200)
+    kontonummer: Optional[str] = Field(None, max_length=34)  # IBAN
     kontostand: Optional[float] = None
     waehrung: Optional[str] = Field(None, max_length=3)
     bic: Optional[str] = Field(None, max_length=11)

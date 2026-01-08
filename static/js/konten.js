@@ -30,10 +30,24 @@ async function loadAccountsFromAPI() {
             typ: konto.kontotyp.toLowerCase().replace('ä', 'ae').replace('ö', 'oe').replace('ü', 'ue'),
             bank: konto.bankname || null,
             iban: konto.kontonummer || null,
-            saldo: konto.kontostand,
+            initialstand: konto.kontostand,  // Speichere Initialstand
+            saldo: konto.kontostand,  // Wird gleich mit aktuellen Saldo überschrieben
             waehrung: konto.waehrung,
             farbe: konto.farbe || '#06d6a6'
         }));
+        
+        // Lade den aktuellen Saldo (initialstand + transaktionen) für jedes Konto
+        for (let account of accountsData) {
+            try {
+                const saldoResponse = await fetch(`${API_BASE}/konten/${account.id}/saldo`);
+                if (saldoResponse.ok) {
+                    const saldoData = await saldoResponse.json();
+                    account.saldo = saldoData.aktueller_saldo;  // Überschreibe mit aktuellem Wert
+                }
+            } catch (error) {
+                console.warn(`Fehler beim Laden des Saldos für Konto ${account.id}:`, error);
+            }
+        }
         
         loadAccounts();
     } catch (error) {
@@ -51,7 +65,7 @@ async function createAccountAPI(accountData) {
             kontoname: accountData.name,
             kontotyp: accountData.typ.charAt(0).toUpperCase() + accountData.typ.slice(1),
             bankname: accountData.bank || null,
-            kontonummer: accountData.iban || '',
+            kontonummer: (accountData.iban || '').replace(/\s/g, ''),  // Entferne Leerzeichen
             kontostand: accountData.saldo,
             waehrung: accountData.waehrung,
             bic: null,
@@ -82,6 +96,7 @@ async function updateAccountAPI(konto_id, accountData) {
             kontoname: accountData.name,
             kontotyp: accountData.typ.charAt(0).toUpperCase() + accountData.typ.slice(1),
             bankname: accountData.bank || null,
+            kontonummer: (accountData.iban || '').replace(/\s/g, ''),  // Entferne Leerzeichen
             kontostand: accountData.saldo,
             waehrung: accountData.waehrung,
             farbe: accountData.farbe
@@ -197,7 +212,7 @@ function editAccount(id) {
     document.querySelector('select[name="typ"]').value = account.typ;
     document.querySelector('input[name="iban"]').value = account.iban || '';
     document.querySelector('input[name="bank"]').value = account.bank || '';
-    document.querySelector('input[name="saldo"]').value = account.saldo;
+    document.querySelector('input[name="saldo"]').value = account.initialstand;  // Nutze initialstand statt saldo
     document.querySelector('select[name="waehrung"]').value = account.waehrung;
     document.querySelector(`input[name="farbe"][value="${account.farbe}"]`).checked = true;
 
@@ -212,8 +227,8 @@ function deleteAccount(id) {
     if (confirm('Möchten Sie dieses Konto wirklich löschen?')) {
         deleteAccountAPI(id)
             .then(() => {
-                loadAccountsFromAPI();
                 showToast('Konto erfolgreich gelöscht!', 'success');
+                loadAccountsFromAPI();
             })
             .catch(error => {
                 showToast(`Fehler beim Löschen: ${error.message}`, 'error');
@@ -261,8 +276,8 @@ document.getElementById('accountForm').addEventListener('submit', (e) => {
         // Aktualisierung
         updateAccountAPI(parseInt(editId), accountData)
             .then(() => {
-                loadAccountsFromAPI();
                 showToast('Konto erfolgreich aktualisiert!', 'success');
+                loadAccountsFromAPI();
                 closeAccountModal();
             })
             .catch(error => {
@@ -272,8 +287,8 @@ document.getElementById('accountForm').addEventListener('submit', (e) => {
         // Neue Konten erstellen
         createAccountAPI(accountData)
             .then(() => {
-                loadAccountsFromAPI();
                 showToast('Konto erfolgreich hinzugefügt!', 'success');
+                loadAccountsFromAPI();
                 closeAccountModal();
             })
             .catch(error => {

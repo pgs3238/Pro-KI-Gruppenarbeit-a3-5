@@ -12,13 +12,38 @@ async function loadKonten() {
     const kontenList = document.getElementById('kontenList');
 
     try {
-        // API aufrufen: /transactions/stats/summary
-        const response = await fetch(`${API_BASE_URL}/transactions/stats/summary`);
-        const data = await response.json();
+        // Lade zuerst die verfügbaren Konten
+        const kontenResponse = await fetch(`${API_BASE_URL}/konten`);
+        if (!kontenResponse.ok) throw new Error('Fehler beim Laden der Konten');
+        
+        const konten = await kontenResponse.json();
+        availableKonten = konten;  // Speichere die Konten für Lookups
+        console.log('✓ Konten geladen:', konten);
+        
+        // Lade den aktuellen Saldo für ALLE Konten
+        let totalSaldo = 0;
+        const kontenMitSaldo = [];
+        
+        for (let konto of konten) {
+            try {
+                const saldoResponse = await fetch(`${API_BASE_URL}/konten/${konto.id}/saldo`);
+                if (saldoResponse.ok) {
+                    const saldoData = await saldoResponse.json();
+                    totalSaldo += saldoData.aktueller_saldo;
+                    kontenMitSaldo.push({
+                        ...konto,
+                        saldo: saldoData.aktueller_saldo
+                    });
+                    console.log(`✓ Saldo für ${konto.kontoname}: ${saldoData.aktueller_saldo}€`);
+                }
+            } catch (error) {
+                console.warn(`Fehler beim Laden des Saldos für Konto ${konto.id}:`, error);
+            }
+        }
         
         // Saldo in der Website anzeigen
         if (totalBalance) {
-            totalBalance.textContent = data.balance.toFixed(2).replace('.', ',') + '€';
+            totalBalance.textContent = totalSaldo.toFixed(2).replace('.', ',') + '€';
         }
         
         // Konten-Liste clearen (später könnten wir hier einzelne Konten anzeigen)
@@ -26,8 +51,8 @@ async function loadKonten() {
             kontenList.innerHTML = '';
         }
         
-        console.log('✓ Balance geladen von API:', data.balance + '€');
-        return data;
+        console.log('✓ Gesamtsaldo aller Konten:', totalSaldo.toFixed(2) + '€');
+        return { balance: totalSaldo };
     } catch (error) {
         console.error('✗ Fehler beim Laden des Saldos:', error);
         if (totalBalance) {
@@ -356,7 +381,7 @@ async function performSearch() {
             row.innerHTML = `
                 <td>${formattedDate}</td>
                 <td>${t.beguenstigter}</td>
-                <td>${t.iban_kontonummer || '-'}</td>
+                <td>${t.iban_kontonummer ? formatIBAN(t.iban_kontonummer) : '-'}</td>
                 <td>${t.verwendungszweck || '-'}</td>
                 <td>${kategorie}</td>
                 <td class="${betragClass}">${betragText}</td>
@@ -383,9 +408,9 @@ async function performSearch() {
 /**
  * Lädt alle Daten wenn die Seite geladen ist
  */
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('📱 Website geladen - lade Daten...');
-    loadKonten();
+    await loadKonten();  // Warte bis Konten geladen sind
     createBalanceChart();
     createSankeyChart();
     setupNavigation();
@@ -405,7 +430,7 @@ async function loadTransactions() {
     const table = document.getElementById('transactionsTable');
     if (!table) return;
     
-    table.innerHTML = '<tr><td colspan="7" style="text-align: center;">⏳ Laden...</td></tr>';
+    table.innerHTML = '<tr><td colspan="8" style="text-align: center;">⏳ Laden...</td></tr>';
 
     try {
         // API aufrufen: GET /transactions?limit=30
@@ -425,7 +450,7 @@ async function loadTransactions() {
         table.innerHTML = '';
 
         if (transactions.length === 0) {
-            table.innerHTML = '<tr><td colspan="7" style="text-align: center;">Keine Transaktionen gefunden</td></tr>';
+            table.innerHTML = '<tr><td colspan="8" style="text-align: center;">Keine Transaktionen gefunden</td></tr>';
             return;
         }
 
@@ -444,11 +469,18 @@ async function loadTransactions() {
             
             // Kategorie mit großem Anfangsbuchstaben
             const kategorie = t.beschreibung ? t.beschreibung.charAt(0).toUpperCase() + t.beschreibung.slice(1) : '-';
+            
+            // Suche das zugehörige Konto
+            const konto = t.konto_id ? availableKonten.find(k => k.id === t.konto_id) : null;
+            const kontoName = konto ? konto.kontoname : '-';
+            
+            console.log(`DEBUG Transaction: id=${t.id}, konto_id=${t.konto_id}, availableKonten=${JSON.stringify(availableKonten)}, kontoName=${kontoName}`);
 
             row.innerHTML = `
                 <td>${formattedDate}</td>
                 <td>${t.beguenstigter}</td>
-                <td>${t.iban_kontonummer || '-'}</td>
+                <td>${t.iban_kontonummer ? formatIBAN(t.iban_kontonummer) : '-'}</td>
+                <td>${kontoName}</td>
                 <td>${t.verwendungszweck || '-'}</td>
                 <td>${kategorie}</td>
                 <td class="${betragClass}">${betragText}</td>
@@ -462,7 +494,7 @@ async function loadTransactions() {
         console.log('✓ Transaktionen geladen:', transactions.length);
     } catch (error) {
         console.error('✗ Fehler beim Laden der Transaktionen:', error);
-        table.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Fehler beim Laden der Transaktionen</td></tr>`;
+        table.innerHTML = `<tr><td colspan="8" style="text-align: center; color: red;">Fehler beim Laden der Transaktionen</td></tr>`;
     }
 }
 
@@ -492,12 +524,18 @@ async function editTransaction(id) {
         document.querySelector('input[name="verwendungszweck"]').value = transaction.verwendungszweck || '';
         document.querySelector('select[name="kategorie"]').value = transaction.beschreibung || '';
         document.querySelector('input[name="betrag"]').value = transaction.betrag;
+        document.querySelector('select[name="konto_id"]').value = transaction.konto_id || '';
 
         // Modal-Titel ändern und ID speichern
         document.querySelector('.modal-title').textContent = 'Transaktion bearbeiten';
         document.getElementById('transactionForm').dataset.editId = id;
 
         openModal();
+        
+        // Wenn ein Konto ausgewählt ist, trigger die onKontoSelect um IBAN zu befüllen
+        if (transaction.konto_id) {
+            onKontoSelect();
+        }
     } catch (error) {
         console.error('✗ Fehler beim Laden der Transaktion:', error);
         showToast('Transaktion konnte nicht geladen werden', 'error');
@@ -522,9 +560,78 @@ async function deleteTransaction(id) {
 
         showToast('Transaktion erfolgreich gelöscht!', 'success');
         loadTransactions();
+        loadKonten();  // Auch die Kontostände neu laden
     } catch (error) {
         console.error('✗ Fehler beim Löschen der Transaktion:', error);
         showToast('Transaktion konnte nicht gelöscht werden', 'error');
+    }
+}
+
+/**
+ * Speichert die verfügbaren Konten für Lookups
+ */
+let availableKonten = [];
+
+/**
+ * Lädt die verfügbaren Konten in das Konto-Dropdown
+ */
+async function loadKontoSelect() {
+    const kontoSelect = document.getElementById('kontoSelect');
+    if (!kontoSelect) return;
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/konten`);
+        if (!response.ok) throw new Error('Fehler beim Laden der Konten');
+        
+        const konten = await response.json();
+        availableKonten = konten;  // Speichere die Konten für Lookups
+        
+        // Behalte die erste leere Option
+        kontoSelect.innerHTML = '<option value="">Kein Konto ausgewählt</option>';
+        
+        // Füge alle Konten als Optionen hinzu
+        konten.forEach(konto => {
+            const option = document.createElement('option');
+            option.value = konto.id;
+            option.textContent = `${konto.kontoname}`;
+            kontoSelect.appendChild(option);
+        });
+        
+        // Füge Change-Event hinzu, um IBAN automatisch zu füllen
+        kontoSelect.addEventListener('change', onKontoSelect);
+    } catch (error) {
+        console.error('Fehler beim Laden der Konten für Dropdown:', error);
+    }
+}
+
+/**
+ * Event Handler: Wenn Konto ausgewählt wird, IBAN automatisch eintragen
+ */
+function onKontoSelect() {
+    const kontoSelect = document.getElementById('kontoSelect');
+    const ibanInput = document.querySelector('input[name="iban"]');
+    
+    if (!kontoSelect || !ibanInput) return;
+    
+    const selectedKontoId = parseInt(kontoSelect.value);
+    
+    if (!selectedKontoId) {
+        // Kein Konto ausgewählt - IBAN-Feld leeren und editierbar machen
+        ibanInput.value = '';
+        ibanInput.readOnly = false;
+        ibanInput.style.backgroundColor = '';  // Standardfarbe
+        return;
+    }
+    
+    // Finde das ausgewählte Konto
+    const selectedKonto = availableKonten.find(k => k.id === selectedKontoId);
+    
+    if (selectedKonto && selectedKonto.kontonummer) {
+        // Trage die IBAN des Kontos ein
+        ibanInput.value = selectedKonto.kontonummer;
+        // Mache IBAN-Feld readonly
+        ibanInput.readOnly = true;
+        ibanInput.style.backgroundColor = '#333';  // Dunkler Hintergrund für readonly
     }
 }
 
@@ -537,6 +644,7 @@ function openModal() {
     
     modal.classList.add('active');
     setCurrentDate();
+    loadKontoSelect();  // Lade Konten in das Dropdown
 }
 
 /**
@@ -676,14 +784,16 @@ function setupTransactionModal() {
             const isoDate = `${datumParts[2]}-${datumParts[1]}-${datumParts[0]}`;
 
             // Formulardaten auslesen
+            const kontoId = document.querySelector('select[name="konto_id"]')?.value;
             const transactionData = {
                 buchungstag: isoDate,
                 beguenstigter: document.querySelector('input[name="beguenstigter"]')?.value || '',
-                iban_kontonummer: document.querySelector('input[name="iban"]')?.value || '',
+                iban_kontonummer: (document.querySelector('input[name="iban"]')?.value || '').replace(/\s/g, ''),  // Entferne Leerzeichen
                 verwendungszweck: document.querySelector('input[name="verwendungszweck"]')?.value || '',
                 beschreibung: document.querySelector('select[name="kategorie"]')?.value || '',
                 betrag: parseFloat(document.querySelector('input[name="betrag"]')?.value || 0),
-                waehrung: 'EUR'
+                waehrung: 'EUR',
+                konto_id: kontoId ? parseInt(kontoId) : null
             };
 
             try {
@@ -714,6 +824,7 @@ function setupTransactionModal() {
                 }
 
                 loadTransactions();
+                loadKonten();  // Auch die Kontostände neu laden
                 closeModal();
             } catch (error) {
                 console.error('✗ Fehler bei der Transaktion:', error);

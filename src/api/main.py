@@ -238,24 +238,15 @@ def get_konto_or_404(konto_id: int, db: Session):
 
 @app.get("/konten", response_model=List[KontoResponse])
 def get_konten(db: Session = Depends(get_db)):
-    """Alle Konten abrufen"""
+    """Alle Konten abrufen (mit Initialstand)"""
     konten = db.query(Konto).all()
-    
-    # Berechne Kontostand aus Transaktionen (ohne zu speichern)
-    for konto in konten:
-        konto.kontostand = KontoManager.berechne_kontostand_aus_transaktionen(db, konto.id, initialstand=0.0)
-    
     return konten
 
 
 @app.get("/konten/{konto_id}", response_model=KontoResponse)
 def get_konto(konto_id: int, db: Session = Depends(get_db)):
-    """Ein einzelnes Konto abrufen"""
+    """Ein einzelnes Konto abrufen (mit Initialstand)"""
     konto = get_konto_or_404(konto_id, db)
-    
-    # Berechne Kontostand aus Transaktionen (ohne zu speichern)
-    konto.kontostand = KontoManager.berechne_kontostand_aus_transaktionen(db, konto_id, initialstand=0.0)
-    
     return konto
 
 
@@ -316,10 +307,28 @@ def update_konto(
 
 @app.delete("/konten/{konto_id}", status_code=204)
 def delete_konto(konto_id: int, db: Session = Depends(get_db)):
-    """Konto löschen"""
-    db_konto = get_konto_or_404(konto_id, db)
-    db.delete(db_konto)
-    db.commit()
+    """Konto löschen (mit allen zugehörigen Transaktionen)"""
+    success = KontoManager.lösche_konto(db, konto_id)
+    
+    if not success:
+        raise HTTPException(status_code=404, detail="Konto nicht gefunden")
+
+
+@app.get("/konten/{konto_id}/saldo")
+def get_konto_saldo(konto_id: int, db: Session = Depends(get_db)):
+    """Aktuellen Kontostand eines Kontos abrufen (Initialstand + Transaktionen)"""
+    konto = get_konto_or_404(konto_id, db)
+    
+    # Berechne aktuellen Kontostand aus Transaktionen
+    aktueller_saldo = KontoManager.berechne_kontostand_aus_transaktionen(
+        db, konto_id, initialstand=konto.kontostand
+    )
+    
+    return {
+        "konto_id": konto_id,
+        "initialstand": konto.kontostand,
+        "aktueller_saldo": round(aktueller_saldo, 2)
+    }
 
 
 @app.get("/konten/stats/summary")
