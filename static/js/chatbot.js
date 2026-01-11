@@ -24,11 +24,14 @@ function addMessage(text, isUser = false) {
   const messageDiv = document.createElement("div");
   messageDiv.className = `message ${isUser ? "user-message" : "bot-message"}`;
 
+  // Für Bot-Nachrichten: Markdown parsen, für User: Plain-Text
+  const content = isUser ? text : marked.parse(text);
+
   // HTML-Inhalt der Nachricht (Avatar + Text)
   messageDiv.innerHTML = `
         <div class="message-avatar">${isUser ? "👩‍💻" : "🤖"}</div>
         <div class="message-content">
-            <p>${text}</p>
+            <p>${content}</p>
         </div>
     `;
 
@@ -139,6 +142,59 @@ chatInput.addEventListener("input", () => {
   chatInput.style.height = "auto"; // Reset
   chatInput.style.height = chatInput.scrollHeight + "px"; // Neue Höhe
 });
+
+// ==================== RESET-FUNKTION ====================
+
+/**
+ * Setzt den Chat-Verlauf zurück
+ */
+async function resetChat() {
+  // Bestätigung vom User
+  if (!confirm("Möchtest du den Chat-Verlauf wirklich löschen?")) {
+    return;
+  }
+
+  try {
+    // Backend-Reset aufrufen
+    const response = await fetch(
+      `${API_BASE_URL}/chatbot/reset?session_id=${sessionId}`,
+      {
+        method: "POST",
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP-Fehler: ${response.status}`);
+    }
+
+    // Chat-Fenster leeren (alle Nachrichten entfernen)
+    chatMessages.innerHTML = "";
+
+    // Willkommensnachricht erneut anzeigen
+    addMessage(
+      `Hallo! Ich bin dein Finanzassistent. Frag mich zum Beispiel:
+
+- "Wofür gebe ich am meisten Geld aus?"
+- "Wie viele Transaktionen habe ich?"
+- "Zeig mir meine Bilanz für 2024"
+- "Summiere alle Ausgaben für Lebensmittel"`,
+      false
+    );
+
+    console.log("Chat zurückgesetzt");
+  } catch (error) {
+    console.error("Fehler beim Zurücksetzen:", error);
+    alert("Fehler beim Zurücksetzen des Chats.");
+  }
+}
+
+/**
+ * Event Listener: Reset-Button geklickt
+ */
+const resetButton = document.getElementById("resetChatBtn");
+if (resetButton) {
+  resetButton.addEventListener("click", resetChat);
+}
 
 // ==================== INITIALISIERUNG ====================
 
