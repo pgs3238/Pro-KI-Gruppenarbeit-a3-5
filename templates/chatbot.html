@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FINLY - KI-Chatbot</title>
+    <link rel="stylesheet" href="../static/css/style.css" />
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- ============ SIDEBAR (identisch zu anderen Seiten) ============ -->
+      <aside class="sidebar">
+        <div class="logo">
+          <span>📊</span>
+          <span>FINLY</span>
+        </div>
+
+        <ul class="nav-items">
+          <li class="nav-item">
+            <button
+              class="nav-link"
+              onclick="window.location.href='index.html'"
+            >
+              <span class="nav-icon">📈</span>
+              <span>Übersicht</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button
+              class="nav-link"
+              onclick="window.location.href='transactions.html'"
+            >
+              <span class="nav-icon">💳</span>
+              <span>Transaktionen</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button
+              class="nav-link"
+              onclick="window.location.href='kategorien.html'"
+            >
+              <span class="nav-icon">🏷️</span>
+              <span>Kategorien</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button
+              class="nav-link"
+              onclick="window.location.href='konten.html'"
+            >
+              <span class="nav-icon">🏦</span>
+              <span>Konten</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" id="nav-forecast">
+              <span class="nav-icon">📉</span>
+              <span>Zinsprognose</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <!-- AKTIV: Wir sind auf der Chatbot-Seite -->
+            <button class="nav-link active" id="nav-chatbot">
+              <span class="nav-icon">🤖</span>
+              <span>Chatbot</span>
+            </button>
+          </li>
+        </ul>
+      </aside>
+
+      <!-- ============ HAUPTBEREICH ============ -->
+      <div class="main">
+        <!-- ============ HEADER ============ -->
+        <header class="header">
+          <div class="header-right">
+            <button class="icon-btn">⚙️</button>
+          </div>
+        </header>
+
+        <!-- ============ CONTENT ============ -->
+        <div class="content">
+          <div class="page-header">
+            <h1>💬 KI-Finanzassistent</h1>
+            <p>Frage mich alles über deine Finanzen!</p>
+          </div>
+
+          <!-- Chat-Container -->
+          <div class="chat-container">
+            <!-- Chat-Nachrichten -->
+            <div class="chat-messages" id="chatMessages">
+              <!-- Willkommensnachricht -->
+              <div class="message bot-message">
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                  <p>
+                    Hallo! Ich bin dein Finanzassistent. Frag mich zum Beispiel:
+                  </p>
+                  <ul class="suggestion-list">
+                    <li>"Wofür gebe ich am meisten Geld aus?"</li>
+                    <li>"Wie viele Transaktionen habe ich?"</li>
+                    <li>"Zeig mir meine Bilanz für 2024"</li>
+                    <li>"Summiere alle Ausgaben für Lebensmittel"</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Eingabebereich -->
+            <div class="chat-input-container">
+              <textarea
+                id="chatInput"
+                class="chat-input"
+                placeholder="Stelle eine Frage..."
+                rows="1"
+              ></textarea>
+              <button id="sendButton" class="chat-send-btn">
+                <span>📤</span>
+              </button>
+            </div>
+
+            <!-- Lade-Indikator (versteckt standardmäßig) -->
+            <div class="chat-loading" id="chatLoading" style="display: none">
+              <span>🤔 Denke nach...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SCRIPTS ==================== -->
+    <script src="../static/js/chatbot.js"></script>
+  </body>
+</html>
