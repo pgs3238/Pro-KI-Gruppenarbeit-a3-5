@@ -3,23 +3,30 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from typing import List, Optional, Literal
+from typing import List
 from datetime import date
 
-from ..database import init_db, SessionLocal, Transaktion, Konto
+from ..database import init_db, Transaktion, Konto
 from ..database.search import search_transaktionen
 from ..database.konto_manager import KontoManager
 from .schemas import (
-    TransaktionCreate, TransaktionUpdate, TransaktionResponse, TransaktionSearch,
-    KontoCreate, KontoUpdate, KontoResponse
+    TransaktionCreate,
+    TransaktionUpdate,
+    TransaktionResponse,
+    TransaktionSearch,
+    KontoCreate,
+    KontoUpdate,
+    KontoResponse,
 )
+from .dependencies import get_db
+from . import chatbot_routes
 
 # ==================== SETUP ====================
 
 app = FastAPI(
     title="Ausgabenverwaltung API",
     description="REST API für die Verwaltung von Finanztransaktionen",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 app.add_middleware(
@@ -30,22 +37,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.on_event("startup")
 def startup_event():
     init_db()
     print("✓ API gestartet")
 
 
-def get_db():
-    """Datenbank-Session für jeden Request"""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# Chatbot-Router registrieren
+app.include_router(chatbot_routes.router, prefix="/api")
 
 
 # ==================== HILFSFUNKTIONEN ====================
+
 
 def get_transaction_or_404(transaction_id: int, db: Session):
     """Transaktion laden oder 404 werfen"""
@@ -57,6 +61,7 @@ def get_transaction_or_404(transaction_id: int, db: Session):
 
 # ==================== ENDPUNKTE: BASIC ====================
 
+
 @app.get("/")
 def root():
     """API Status"""
@@ -64,6 +69,7 @@ def root():
 
 
 # ==================== ENDPUNKTE: CRUD ====================
+
 
 @app.get("/transactions", response_model=List[TransaktionResponse])
 def get_transactions(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -91,15 +97,15 @@ def create_transaction(transaction: TransaktionCreate, db: Session = Depends(get
 def update_transaction(
     transaction_id: int,
     transaction_update: TransaktionUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Transaktion aktualisieren"""
     db_transaction = get_transaction_or_404(transaction_id, db)
-    
+
     update_data = transaction_update.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(db_transaction, key, value)
-    
+
     db.commit()
     db.refresh(db_transaction)
     return db_transaction
@@ -115,41 +121,43 @@ def delete_transaction(transaction_id: int, db: Session = Depends(get_db)):
 
 # ==================== ENDPUNKTE: FILTER & STATISTIKEN ====================
 
+
 @app.get("/transactions/filter/date-range", response_model=List[TransaktionResponse])
 def get_transactions_by_date_range(
-    start_date: date,
-    end_date: date,
-    db: Session = Depends(get_db)
+    start_date: date, end_date: date, db: Session = Depends(get_db)
 ):
     """Transaktionen nach Datumsbereich filtern"""
-    return db.query(Transaktion).filter(
-        Transaktion.buchungstag >= start_date,
-        Transaktion.buchungstag <= end_date
-    ).all()
+    return (
+        db.query(Transaktion)
+        .filter(
+            Transaktion.buchungstag >= start_date, Transaktion.buchungstag <= end_date
+        )
+        .all()
+    )
 
 
 @app.get("/transactions/stats/summary")
 def get_transaction_summary(db: Session = Depends(get_db)):
     """Finanz-Zusammenfassung"""
     transactions = db.query(Transaktion).all()
-    
+
     total_income = sum(t.betrag for t in transactions if t.betrag > 0)
     total_expenses = sum(abs(t.betrag) for t in transactions if t.betrag < 0)
-    
+
     return {
         "total_income": round(total_income, 2),
         "total_expenses": round(total_expenses, 2),
         "balance": round(total_income - total_expenses, 2),
-        "transaction_count": len(transactions)
+        "transaction_count": len(transactions),
     }
 
 
 # ==================== ENDPUNKTE: SEARCH ====================
 
+
 @app.post("/transactions/search", response_model=List[TransaktionResponse])
 def search_transactions(
-    search_params: TransaktionSearch,
-    db: Session = Depends(get_db)
+    search_params: TransaktionSearch, db: Session = Depends(get_db)
 ):
     """Transaktionen mit erweiterten Suchfiltern"""
     return search_transaktionen(
@@ -166,67 +174,77 @@ def search_transactions(
         waehrung=search_params.waehrung,
     )
 
+
 # ==================== ENDPUNKTE: SANKEY DIAGRAMM ====================
+
 
 @app.get("/transactions/sankey-data")
 def get_sankey_data(db: Session = Depends(get_db)):
     """Liefert Daten für ein Sankey-Diagramm: Kategorien → Einnahmen/Ausgaben"""
     transactions = db.query(Transaktion).all()
-    
+
     if not transactions:
         return {"nodes": [], "links": []}
-    
+
     # Sammle Kategorien und Beträge
     category_flows = {}  # {kategorie: {expense: betrag, income: betrag}}
-    
+
     for t in transactions:
         category = t.beschreibung or "Sonstiges"
         if category not in category_flows:
             category_flows[category] = {"expense": 0, "income": 0}
-        
+
         if t.betrag < 0:
             category_flows[category]["expense"] += abs(t.betrag)
         else:
             category_flows[category]["income"] += t.betrag
-    
+
     # Definiere Node-Namen
     node_names = ["Kategorien"]
     node_names.extend(sorted(category_flows.keys()))
     node_names.extend(["Ausgaben", "Einnahmen"])
-    
+
     # Erstelle Links (Kategorien → Ausgaben/Einnahmen)
     links = []
-    
+
     for idx, (category, flows) in enumerate(sorted(category_flows.items()), 1):
         # Ausgaben-Link
         if flows["expense"] > 0:
-            links.append({
-                "source": idx,
-                "target": len(node_names) - 2,  # Index von "Ausgaben"
-                "value": round(flows["expense"], 2)
-            })
-        
+            links.append(
+                {
+                    "source": idx,
+                    "target": len(node_names) - 2,  # Index von "Ausgaben"
+                    "value": round(flows["expense"], 2),
+                }
+            )
+
         # Einnahmen-Link
         if flows["income"] > 0:
-            links.append({
-                "source": idx,
-                "target": len(node_names) - 1,  # Index von "Einnahmen"
-                "value": round(flows["income"], 2)
-            })
-    
+            links.append(
+                {
+                    "source": idx,
+                    "target": len(node_names) - 1,  # Index von "Einnahmen"
+                    "value": round(flows["income"], 2),
+                }
+            )
+
     # Erstelle Nodes mit Farben
     node_colors = ["#1f77b4"]  # Kategorien - Blau
     node_colors.extend(["#aec7e8"] * len(category_flows))  # Kategorien - Hellblau
     node_colors.append("#ff7f0e")  # Ausgaben - Orange
     node_colors.append("#2ca02c")  # Einnahmen - Grün
-    
+
     return {
-        "nodes": [{"name": name, "color": color} for name, color in zip(node_names, node_colors)],
-        "links": links
+        "nodes": [
+            {"name": name, "color": color}
+            for name, color in zip(node_names, node_colors)
+        ],
+        "links": links,
     }
 
 
 # ==================== ENDPUNKTE: KONTEN ====================
+
 
 def get_konto_or_404(konto_id: int, db: Session):
     """Konto laden oder 404 werfen"""
@@ -257,12 +275,14 @@ def create_konto(konto: KontoCreate, db: Session = Depends(get_db)):
     existing = db.query(Konto).filter(Konto.kontoname == konto.kontoname).first()
     if existing:
         raise HTTPException(status_code=400, detail="Kontoname existiert bereits")
-    
+
     # Prüfe ob Kontonummer (IBAN) schon existiert
-    existing_iban = db.query(Konto).filter(Konto.kontonummer == konto.kontonummer).first()
+    existing_iban = (
+        db.query(Konto).filter(Konto.kontonummer == konto.kontonummer).first()
+    )
     if existing_iban:
         raise HTTPException(status_code=400, detail="Kontonummer existiert bereits")
-    
+
     new_konto = KontoManager.erstelle_konto(
         session=db,
         kontoname=konto.kontoname,
@@ -271,9 +291,9 @@ def create_konto(konto: KontoCreate, db: Session = Depends(get_db)):
         bankname=konto.bankname,
         kontostand=konto.kontostand,
         waehrung=konto.waehrung,
-        bic=konto.bic
+        bic=konto.bic,
     )
-    
+
     # Speichere die Farbe als zusätzliches Attribut
     new_konto.farbe = konto.farbe
     db.commit()
@@ -283,23 +303,23 @@ def create_konto(konto: KontoCreate, db: Session = Depends(get_db)):
 
 @app.put("/konten/{konto_id}", response_model=KontoResponse)
 def update_konto(
-    konto_id: int,
-    konto_update: KontoUpdate,
-    db: Session = Depends(get_db)
+    konto_id: int, konto_update: KontoUpdate, db: Session = Depends(get_db)
 ):
     """Konto aktualisieren"""
     db_konto = get_konto_or_404(konto_id, db)
-    
+
     # Prüfe ob neuer Kontoname schon existiert (falls er geändert wird)
     if konto_update.kontoname and konto_update.kontoname != db_konto.kontoname:
-        existing = db.query(Konto).filter(Konto.kontoname == konto_update.kontoname).first()
+        existing = (
+            db.query(Konto).filter(Konto.kontoname == konto_update.kontoname).first()
+        )
         if existing:
             raise HTTPException(status_code=400, detail="Kontoname existiert bereits")
-    
+
     update_data = konto_update.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(db_konto, key, value)
-    
+
     db.commit()
     db.refresh(db_konto)
     return db_konto
@@ -309,7 +329,7 @@ def update_konto(
 def delete_konto(konto_id: int, db: Session = Depends(get_db)):
     """Konto löschen (mit allen zugehörigen Transaktionen)"""
     success = KontoManager.lösche_konto(db, konto_id)
-    
+
     if not success:
         raise HTTPException(status_code=404, detail="Konto nicht gefunden")
 
@@ -318,16 +338,16 @@ def delete_konto(konto_id: int, db: Session = Depends(get_db)):
 def get_konto_saldo(konto_id: int, db: Session = Depends(get_db)):
     """Aktuellen Kontostand eines Kontos abrufen (Initialstand + Transaktionen)"""
     konto = get_konto_or_404(konto_id, db)
-    
+
     # Berechne aktuellen Kontostand aus Transaktionen
     aktueller_saldo = KontoManager.berechne_kontostand_aus_transaktionen(
         db, konto_id, initialstand=konto.kontostand
     )
-    
+
     return {
         "konto_id": konto_id,
         "initialstand": konto.kontostand,
-        "aktueller_saldo": round(aktueller_saldo, 2)
+        "aktueller_saldo": round(aktueller_saldo, 2),
     }
 
 
@@ -335,14 +355,10 @@ def get_konto_saldo(konto_id: int, db: Session = Depends(get_db)):
 def get_konto_summary(db: Session = Depends(get_db)):
     """Konto-Zusammenfassung (Gesamtsaldo, Kontenanzahl, etc.)"""
     konten = db.query(Konto).all()
-    
+
     if not konten:
-        return {
-            "total_saldo": 0.0,
-            "konto_count": 0,
-            "konten": []
-        }
-    
+        return {"total_saldo": 0.0, "konto_count": 0, "konten": []}
+
     return {
         "total_saldo": round(sum(k.kontostand for k in konten), 2),
         "konto_count": len(konten),
@@ -351,8 +367,8 @@ def get_konto_summary(db: Session = Depends(get_db)):
                 "id": k.id,
                 "kontoname": k.kontoname,
                 "kontostand": k.kontostand,
-                "waehrung": k.waehrung
+                "waehrung": k.waehrung,
             }
             for k in konten
-        ]
+        ],
     }

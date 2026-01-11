@@ -168,3 +168,4 @@ cython_debug/
 
 data/expenses.db
 .gitignore.local
+data/transaktionen_export.csv
