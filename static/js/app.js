@@ -661,6 +661,23 @@ function closeModal() {
     delete document.getElementById('transactionForm').dataset.editId;
 }
 
+
+/**
+ *  
+ */
+function openImportModal() {
+    document.getElementById("importModal").style.display = "flex";
+}
+
+/**
+ * 
+ */
+function closeImportModal() {
+    document.getElementById("importModal").style.display = "none";
+}
+
+
+
 /**
  * Setze aktuelles Datum als Standardwert
  */

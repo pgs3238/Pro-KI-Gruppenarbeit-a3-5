@@ -183,7 +183,7 @@
                 <span class="menu-icon">✏️</span>
                 <span>Transaktion erfassen</span>
               </button>
-              <button class="fab-menu-item" onclick="toggleFabMenu();">
+              <button class="fab-menu-item" onclick="openImportModal(); toggleFabMenu();">
                 <span class="menu-icon">📎</span>
                 <span>Transaktion importieren</span>
               </button>
@@ -341,6 +341,30 @@
               Abbrechen
             </button>
             <button type="submit" class="btn-save">Speichern</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ============ IMPORT MODAL ============ -->
+    <div class="modal-overlay" id="importModal">
+      <div class="modal-content">
+        <div class="modal-title" style="border-bottom: 1px solid #444; padding-bottom: 15px; margin-bottom: 25px;">
+          Transaktion importieren
+        </div>
+
+        <form id="importForm">
+          <div class="form-group">
+            <label class="form-label">Datei auswählen</label>
+            <input type="file" accept=".csv,.xlsx" class="form-control" required>
+            <small class="form-hint">CSV oder Excel Datei</small>
+          </div>
+
+          <div class="btn-group">
+            <button type="button" class="btn-cancel" onclick="closeImportModal()">
+              Abbrechen
+            </button>
+            <button type="submit" class="btn-save">Importieren</button>
           </div>
         </form>
       </div>
