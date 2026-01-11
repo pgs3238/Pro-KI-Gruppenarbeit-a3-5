@@ -350,16 +350,98 @@
     <div class="modal-overlay" id="importModal">
       <div class="modal-content">
         <div class="modal-title" style="border-bottom: 1px solid #444; padding-bottom: 15px; margin-bottom: 25px;">
-          Transaktion importieren
+          Transaktionen importieren
+          <div style="font-size: 12px; font-weight: normal; color: #ccc; margin-top: 5px;">
+            Alle Bezeichnungen sind <strong>zeichen- und groß-/kleinsensitiv</strong>.
+          </div>
         </div>
 
         <form id="importForm">
+          <!-- Header row -->
+          <div class="form-group">
+            <label class="form-label">Zeile des Headers</label>
+            <input type="number"
+                   min="1"
+                   placeholder="1"
+                   class="form-control"
+                  required>
+            <small class="form-hint">Zeilennummer der Kopfzeile in der Datei</small>
+          </div>
+
+          <!-- Buchungstag -->
+          <div class="form-group">
+            <label class="form-label">Buchungstag</label>
+            <input type="text"
+                   placeholder="Headerbezeichnung für Buchungstag"
+                   class="form-control"
+                   required>
+          </div>
+
+          <!-- Beguenstigter -->
+          <div class="form-group">
+            <label class="form-label">Begünstigter</label>
+            <input type="text"
+                   placeholder="Headerbezeichnung für Begünstigten"
+                   class="form-control"
+                   required>
+          </div>
+
+          <!-- IBAN -->
+          <div class="form-group">
+            <label class="form-label">IBAN des Begünstigten</label>
+            <input type="text"
+                   placeholder="Headerbezeichnung für IBAN"
+                   class="form-control"
+                   required>
+          </div>
+
+          <!-- Verwendungszweck -->
+          <div class="form-group">
+            <label class="form-label">Verwendungszweck</label>
+            <input type="text"
+                   placeholder="Headerbezeichnung für Verwendungszweck"
+                   class="form-control"
+                   required>
+          </div>
+
+          <!-- Betrag -->
+          <div class="form-group">
+            <label class="form-label">Betrag</label>
+            <input type="text"
+                   placeholder="Headerbezeichnung für Betrag"
+                   class="form-control"
+                   required>
+          </div>
+
+          <!-- Endzeilen -->
+          <div class="form-group">
+            <label class="form-label">Endzeilen entfernen</label>
+            <input type="number"
+                   min="0"
+                   placeholder="0"
+                   class="form-control"
+                   required>
+            <small class="form-hint">Anzahl der letzten Zeilen, die nicht zu den Buchungen gehören (z.B. Kontostand, Hinweise)</small>
+          </div>
+
+          <!-- Konto -->
+          <div class="form-group">
+            <label class="form-label">Konto</label>
+            <select name="konto_id" id="kontoSelect" class="form-control">
+              <option value="">Kein Konto ausgewählt</option>
+              <!-- Wird mit JavaScript gefüllt -->
+            </select>
+            <small class="form-hint">Welchem Konto sollen diese Daten zugefügt werden?</small>
+          </div>
+
+          <!-- Datei auswählen -->
           <div class="form-group">
             <label class="form-label">Datei auswählen</label>
             <input type="file" accept=".csv,.xlsx" class="form-control" required>
             <small class="form-hint">CSV oder Excel Datei</small>
           </div>
 
+          <!-- Buttons -->
           <div class="btn-group">
             <button type="button" class="btn-cancel" onclick="closeImportModal()">
               Abbrechen
