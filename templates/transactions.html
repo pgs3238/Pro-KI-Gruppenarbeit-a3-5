@@ -1,224 +1,349 @@
 <!DOCTYPE html>
 <html lang="de">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FINLY - Transaktionen</title>
-    <link rel="stylesheet" href="../static/css/style.css">
-</head>
+    <link rel="stylesheet" href="../static/css/style.css" />
+  </head>
 
-<body>
+  <body>
     <div class="container">
-        <!-- ============ SIDEBAR ============ -->
-        <aside class="sidebar">
-            <div class="logo">
-                <span>📊</span>
-                <span>FINLY</span>
-            </div>
-
-            <ul class="nav-items">
-                <li class="nav-item">
-                    <button class="nav-link" id="nav-overview" onclick="window.location.href='index.html'">
-                        <span class="nav-icon">📈</span>
-                        <span>Übersicht</span>
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link active" id="nav-transaction">
-                        <span class="nav-icon">💳</span>
-                        <span>Transaktionen</span>
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" id="nav-categories" onclick="window.location.href='kategorien.html'">
-                        <span class="nav-icon">🏷️</span>
-                        <span>Kategorien</span>
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" id="nav-accounts" onclick="window.location.href='konten.html'">
-                        <span class="nav-icon">🏦</span>
-                        <span>Konten</span>
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" id="nav-forecast">
-                        <span class="nav-icon">📉</span>
-                        <span>Zinsprognose</span>
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" id="nav-chatbot">
-                        <span class="nav-icon">🤖</span>
-                        <span>Chatbot</span>
-                    </button>
-                </li>
-            </ul>
-        </aside>
-
-        <!-- ============ HAUPTBEREICH ============ -->
-        <div class="main">
-            <!-- ============ HEADER ============ -->
-            <header class="header">
-                <div class="header-right">
-                    <div class="search-wrapper">
-                        <span class="search-icon">🔍</span>
-                        <input type="text" class="search-box" id="searchBox" placeholder="Suche">
-                    </div>
-                    <button class="icon-btn">⚙️</button>
-                </div>
-            </header>
-
-            <!-- ============ CONTENT ============ -->
-            <div class="content">
-                <div class="page-header">
-                    <h1>Transaktionen</h1>
-                    <p>Historie Ihrer Buchungen</p>
-                </div>
-
-                <!-- Tabelle -->
-                <div class="card">
-                    <div class="card-title">Letzten Transaktionen</div>
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Datum</th>
-                                    <th>Begünstigter</th>
-                                    <th>IBAN</th>
-                                    <th>Konto</th>
-                                    <th>Verwendungszweck</th>
-                                    <th>Kategorie</th>
-                                    <th>Betrag</th>
-                                    <th>Aktionen</th>
-                                </tr>
-                                <tr class="filter-row">
-                                    <th><input type="text" class="filter-input" placeholder="Filter..."></th>
-                                    <th><input type="text" class="filter-input" placeholder="Filter..."></th>
-                                    <th><input type="text" class="filter-input" placeholder="Filter..."></th>
-                                    <th><input type="text" class="filter-input" placeholder="Filter..."></th>
-                                    <th><input type="text" class="filter-input" placeholder="Filter..."></th>
-                                    <th><input type="text" class="filter-input" placeholder="Filter..."></th>
-                                    <th><input type="text" class="filter-input" placeholder="Filter..."></th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody id="transactionsTable">
-                                <!-- Wird mit JavaScript gefüllt -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- FAB Button mit Menü -->
-                <div class="fab-container">
-                    <div class="fab-menu" id="fabMenu" style="display: none;">
-                        <button class="fab-menu-item" onclick="openModal(); toggleFabMenu();">
-                            <span class="menu-icon">✏️</span>
-                            <span>Transaktion erfassen</span>
-                        </button>
-                        <button class="fab-menu-item" onclick="toggleFabMenu();">
-                            <span class="menu-icon">📎</span>
-                            <span>Transaktion importieren</span>
-                        </button>
-                    </div>
-                    <button class="fab-btn" onclick="toggleFabMenu()">+</button>
-                </div>
-            </div>
+      <!-- ============ SIDEBAR ============ -->
+      <aside class="sidebar">
+        <div class="logo">
+          <span>📊</span>
+          <span>FINLY</span>
         </div>
+
+        <ul class="nav-items">
+          <li class="nav-item">
+            <button
+              class="nav-link"
+              id="nav-overview"
+              onclick="window.location.href='index.html'"
+            >
+              <span class="nav-icon">📈</span>
+              <span>Übersicht</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link active" id="nav-transaction">
+              <span class="nav-icon">💳</span>
+              <span>Transaktionen</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button
+              class="nav-link"
+              id="nav-categories"
+              onclick="window.location.href='kategorien.html'"
+            >
+              <span class="nav-icon">🏷️</span>
+              <span>Kategorien</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button
+              class="nav-link"
+              id="nav-accounts"
+              onclick="window.location.href='konten.html'"
+            >
+              <span class="nav-icon">🏦</span>
+              <span>Konten</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" id="nav-forecast">
+              <span class="nav-icon">📉</span>
+              <span>Zinsprognose</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button
+              class="nav-link"
+              id="nav-chatbot"
+              onclick="window.location.href='chatbot.html'"
+            >
+              <span class="nav-icon">🤖</span>
+              <span>Chatbot</span>
+            </button>
+          </li>
+        </ul>
+      </aside>
+
+      <!-- ============ HAUPTBEREICH ============ -->
+      <div class="main">
+        <!-- ============ HEADER ============ -->
+        <header class="header">
+          <div class="header-right">
+            <div class="search-wrapper">
+              <span class="search-icon">🔍</span>
+              <input
+                type="text"
+                class="search-box"
+                id="searchBox"
+                placeholder="Suche"
+              />
+            </div>
+            <button class="icon-btn">⚙️</button>
+          </div>
+        </header>
+
+        <!-- ============ CONTENT ============ -->
+        <div class="content">
+          <div class="page-header">
+            <h1>Transaktionen</h1>
+            <p>Historie Ihrer Buchungen</p>
+          </div>
+
+          <!-- Tabelle -->
+          <div class="card">
+            <div class="card-title">Letzten Transaktionen</div>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Datum</th>
+                    <th>Begünstigter</th>
+                    <th>IBAN</th>
+                    <th>Konto</th>
+                    <th>Verwendungszweck</th>
+                    <th>Kategorie</th>
+                    <th>Betrag</th>
+                    <th>Aktionen</th>
+                  </tr>
+                  <tr class="filter-row">
+                    <th>
+                      <input
+                        type="text"
+                        class="filter-input"
+                        placeholder="Filter..."
+                      />
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        class="filter-input"
+                        placeholder="Filter..."
+                      />
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        class="filter-input"
+                        placeholder="Filter..."
+                      />
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        class="filter-input"
+                        placeholder="Filter..."
+                      />
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        class="filter-input"
+                        placeholder="Filter..."
+                      />
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        class="filter-input"
+                        placeholder="Filter..."
+                      />
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        class="filter-input"
+                        placeholder="Filter..."
+                      />
+                    </th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="transactionsTable">
+                  <!-- Wird mit JavaScript gefüllt -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- FAB Button mit Menü -->
+          <div class="fab-container">
+            <div class="fab-menu" id="fabMenu" style="display: none">
+              <button
+                class="fab-menu-item"
+                onclick="openModal(); toggleFabMenu();"
+              >
+                <span class="menu-icon">✏️</span>
+                <span>Transaktion erfassen</span>
+              </button>
+              <button class="fab-menu-item" onclick="toggleFabMenu();">
+                <span class="menu-icon">📎</span>
+                <span>Transaktion importieren</span>
+              </button>
+            </div>
+            <button class="fab-btn" onclick="toggleFabMenu()">+</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ============ MODAL ============ -->
     <div class="modal-overlay" id="transactionModal">
-        <div class="modal-content">
-            <div class="modal-title" style="border-bottom: 1px solid #444; padding-bottom: 15px; margin-bottom: 25px; font-size: 18px; font-weight: bold; color: #fff;">
-                Transaktion erfassen</div>
-            <form id="transactionForm">
-
-                <div class="form-group">
-                    <label class="form-label">Datum</label>
-                    <div class="date-input-wrapper">
-                        <input type="text" 
-                               id="datumInput" 
-                               name="datum" 
-                               required 
-                               class="form-control date-display" 
-                               placeholder="TT.MM.JJJJ"
-                               pattern="\d{2}\.\d{2}\.\d{4}"
-                               title="Bitte im Format TT.MM.JJJJ eingeben (z.B. 05.01.2026)">
-                        <span class="calendar-icon" onclick="toggleCalendar()">📅</span>
-                        <div class="custom-calendar" id="customCalendar" style="display: none;">
-                            <div class="calendar-header">
-                                <button type="button" class="calendar-nav" onclick="changeMonth(-1)">❮</button>
-                                <span class="calendar-month-year" id="calendarMonthYear"></span>
-                                <button type="button" class="calendar-nav" onclick="changeMonth(1)">❯</button>
-                            </div>
-                            <div class="calendar-weekdays">
-                                <span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span>
-                            </div>
-                            <div class="calendar-days" id="calendarDays"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Begünstigter / Sender</label>
-                    <input type="text" name="beguenstigter" placeholder="z.B. Supermarkt, Arbeitgeber" required class="form-control">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Konto</label>
-                    <select name="konto_id" id="kontoSelect" class="form-control">
-                        <option value="">Kein Konto ausgewählt</option>
-                        <!-- Wird mit JavaScript gefüllt -->
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">IBAN</label>
-                    <input type="text" 
-                           name="iban" 
-                           placeholder="DE89 3704 0044 0532 0130 00" 
-                           pattern="[A-Z]{2}[0-9]{2}[A-Z0-9\s]{1,34}"
-                           maxlength="38"
-                           class="form-control iban-input"
-                           title="Bitte geben Sie eine gültige IBAN ein (z.B. DE89370400440532013000 oder DE89 3704 0044 0532 0130 00)">
-                    <small class="form-hint">Format: 2 Buchstaben (Land) + 2 Prüfziffern + Kontonummer (mit oder ohne Leerzeichen)</small>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Verwendungszweck</label>
-                    <input type="text" name="verwendungszweck" placeholder="Beschreibung der Transaktion" class="form-control">
-                </div>
-
-                <div class="form-row">
-                    <div class="form-col">
-                        <label class="form-label">Kategorie</label>
-                        <select name="kategorie" class="form-control">
-                            <option value="">Bitte wählen...</option>
-                            <option value="wohnen">Wohnen & Energie</option>
-                            <option value="lebensmittel">Lebensmittel</option>
-                            <option value="shopping">Shopping</option>
-                            <option value="verkehr">Verkehr</option>
-                            <option value="unterhaltung">Unterhaltung</option>
-                            <option value="gehalt">Gehalt</option>
-                            <option value="sonstiges">Sonstiges</option>
-                        </select>
-                    </div>
-                    <div class="form-col">
-                        <label class="form-label">Betrag (€)</label>
-                        <input type="number" name="betrag" step="0.01" placeholder="z.B. -50.0 oder +50.0" required class="form-control">
-                        <small class="form-hint">💡 Negativ für Ausgaben (-50), Positiv für Einnahmen (+100)</small>
-                    </div>
-                </div>
-
-                <div class="btn-group">
-                    <button type="reset" class="btn-cancel" onclick="closeModal()">Abbrechen</button>
-                    <button type="submit" class="btn-save">Speichern</button>
-                </div>
-            </form>
+      <div class="modal-content">
+        <div
+          class="modal-title"
+          style="
+            border-bottom: 1px solid #444;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+          "
+        >
+          Transaktion erfassen
         </div>
+        <form id="transactionForm">
+          <div class="form-group">
+            <label class="form-label">Datum</label>
+            <div class="date-input-wrapper">
+              <input
+                type="text"
+                id="datumInput"
+                name="datum"
+                required
+                class="form-control date-display"
+                placeholder="TT.MM.JJJJ"
+                pattern="\d{2}\.\d{2}\.\d{4}"
+                title="Bitte im Format TT.MM.JJJJ eingeben (z.B. 05.01.2026)"
+              />
+              <span class="calendar-icon" onclick="toggleCalendar()">📅</span>
+              <div
+                class="custom-calendar"
+                id="customCalendar"
+                style="display: none"
+              >
+                <div class="calendar-header">
+                  <button
+                    type="button"
+                    class="calendar-nav"
+                    onclick="changeMonth(-1)"
+                  >
+                    ❮
+                  </button>
+                  <span
+                    class="calendar-month-year"
+                    id="calendarMonthYear"
+                  ></span>
+                  <button
+                    type="button"
+                    class="calendar-nav"
+                    onclick="changeMonth(1)"
+                  >
+                    ❯
+                  </button>
+                </div>
+                <div class="calendar-weekdays">
+                  <span>Mo</span><span>Di</span><span>Mi</span><span>Do</span
+                  ><span>Fr</span><span>Sa</span><span>So</span>
+                </div>
+                <div class="calendar-days" id="calendarDays"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Begünstigter / Sender</label>
+            <input
+              type="text"
+              name="beguenstigter"
+              placeholder="z.B. Supermarkt, Arbeitgeber"
+              required
+              class="form-control"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Konto</label>
+            <select name="konto_id" id="kontoSelect" class="form-control">
+              <option value="">Kein Konto ausgewählt</option>
+              <!-- Wird mit JavaScript gefüllt -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">IBAN</label>
+            <input
+              type="text"
+              name="iban"
+              placeholder="DE89 3704 0044 0532 0130 00"
+              pattern="[A-Z]{2}[0-9]{2}[A-Z0-9\s]{1,34}"
+              maxlength="38"
+              class="form-control iban-input"
+              title="Bitte geben Sie eine gültige IBAN ein (z.B. DE89370400440532013000 oder DE89 3704 0044 0532 0130 00)"
+            />
+            <small class="form-hint"
+              >Format: 2 Buchstaben (Land) + 2 Prüfziffern + Kontonummer (mit
+              oder ohne Leerzeichen)</small
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Verwendungszweck</label>
+            <input
+              type="text"
+              name="verwendungszweck"
+              placeholder="Beschreibung der Transaktion"
+              class="form-control"
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-col">
+              <label class="form-label">Kategorie</label>
+              <select name="kategorie" class="form-control">
+                <option value="">Bitte wählen...</option>
+                <option value="wohnen">Wohnen & Energie</option>
+                <option value="lebensmittel">Lebensmittel</option>
+                <option value="shopping">Shopping</option>
+                <option value="verkehr">Verkehr</option>
+                <option value="unterhaltung">Unterhaltung</option>
+                <option value="gehalt">Gehalt</option>
+                <option value="sonstiges">Sonstiges</option>
+              </select>
+            </div>
+            <div class="form-col">
+              <label class="form-label">Betrag (€)</label>
+              <input
+                type="number"
+                name="betrag"
+                step="0.01"
+                placeholder="z.B. -50.0 oder +50.0"
+                required
+                class="form-control"
+              />
+              <small class="form-hint"
+                >💡 Negativ für Ausgaben (-50), Positiv für Einnahmen
+                (+100)</small
+              >
+            </div>
+          </div>
+
+          <div class="btn-group">
+            <button type="reset" class="btn-cancel" onclick="closeModal()">
+              Abbrechen
+            </button>
+            <button type="submit" class="btn-save">Speichern</button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <!-- Toast Container -->
@@ -227,6 +352,5 @@
     <!-- ==================== SCRIPTS ==================== -->
     <script src="../static/js/utils.js"></script>
     <script src="../static/js/app.js"></script>
-</body>
-
+  </body>
 </html>
