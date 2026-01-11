@@ -263,3 +263,89 @@ def get_categories() -> List[Dict[str, str]]:
     categories = session.query(Category).all()
 
     return [{"name": c.name, "typ": c.category_type} for c in categories]
+
+
+def get_database_statistics() -> Dict[str, Any]:
+    """
+    Liefert allgemeine Statistiken über die Datenbank.
+    Nutze dies für Fragen wie 'Wie viele Transaktionen habe ich?' oder 'Wie viele Konten gibt es?'.
+
+    Returns:
+        Dictionary mit Anzahl von Transaktionen, Konten, Kategorien und Datum der ersten/letzten Transaktion.
+    """
+    session = get_db_session()
+
+    transaction_count = session.query(func.count(Transaktion.id)).scalar()
+    account_count = session.query(func.count(Konto.id)).scalar()
+    category_count = session.query(func.count(Category.id)).scalar()
+
+    # Erste und letzte Transaktion finden
+    min_date = session.query(func.min(Transaktion.buchungstag)).scalar()
+    max_date = session.query(func.max(Transaktion.buchungstag)).scalar()
+
+    return {
+        "anzahl_transaktionen": transaction_count,
+        "anzahl_konten": account_count,
+        "anzahl_kategorien": category_count,
+        "zeitraum_start": min_date.isoformat() if min_date else None,
+        "zeitraum_ende": max_date.isoformat() if max_date else None,
+        "datenbank_status": "Online",
+    }
+
+
+def get_transaction_stats(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    category: Optional[str] = None,
+    transaction_type: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Berechnet mathematische Statistiken (Summe, Durchschnitt, Min, Max) über Transaktionen.
+    Nutze dies IMMER, wenn der Nutzer nach Summen ("Wie viel insgesamt?"), Durchschnitten oder Gesamtbeträgen fragt.
+    Rechne NIEMALS selbst Transaktionen zusammen!
+
+    Args:
+        start_date: Startdatum (optional)
+        end_date: Enddatum (optional)
+        category: Filter nach Kategorie (optional)
+        transaction_type: "Einnahme" oder "Ausgabe" (optional)
+
+    Returns:
+        Dictionary mit Statistiken (Summe, Anzahl, Durchschnitt, etc.)
+    """
+    session = get_db_session()
+    query = session.query(
+        func.count(Transaktion.id).label("count"),
+        func.sum(Transaktion.betrag).label("total_sum"),
+        func.avg(Transaktion.betrag).label("average"),
+        func.min(Transaktion.betrag).label("min_amount"),
+        func.max(Transaktion.betrag).label("max_amount"),
+    )
+
+    # Filter anwenden (Code-Duplizierung vermeiden wäre schöner, aber für Klarheit hier ok)
+    if start_date:
+        query = query.filter(
+            Transaktion.buchungstag >= datetime.strptime(start_date, "%Y-%m-%d").date()
+        )
+    if end_date:
+        query = query.filter(
+            Transaktion.buchungstag <= datetime.strptime(end_date, "%Y-%m-%d").date()
+        )
+    if category:
+        query = query.join(Category).filter(Category.name == category)
+    if transaction_type:
+        if transaction_type.lower() == "einnahme":
+            query = query.filter(Transaktion.betrag > 0)
+        elif transaction_type.lower() == "ausgabe":
+            query = query.filter(Transaktion.betrag < 0)
+
+    result = query.first()
+
+    return {
+        "anzahl": result.count,
+        "gesamtsumme": float(result.total_sum) if result.total_sum else 0.0,
+        "durchschnitt": float(result.average) if result.average else 0.0,
+        "minimum": float(result.min_amount) if result.min_amount else 0.0,
+        "maximum": float(result.max_amount) if result.max_amount else 0.0,
+        "waehrung": "EUR",
+    }

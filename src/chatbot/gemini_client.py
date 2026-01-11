@@ -32,6 +32,17 @@ class GeminiChatbot:
         # Chat-Historie
         self.chat_history = []
 
+        # System Instruction definieren
+        self.system_instruction = """
+        Du bist ein intelligenter Finanz-Assistent. Deine Aufgabe ist es, Fragen zu den Finanzen des Nutzers präzise zu beantworten.
+        
+        WICHTIGE REGELN:
+        1. NUTZE IMMER TOOLS: Rate niemals Werte. Nutze immer die bereitgestellten Funktionen, um Daten abzurufen.
+        2. KEIN MANUELLES RECHNEN: Wenn der Nutzer nach Summen, Durchschnitten oder Anzahlen fragt, nutze 'get_transaction_stats' oder 'get_database_statistics'. Versuche NIEMALS, Transaktionen aus einer Liste manuell zu zählen oder zu addieren.
+        3. PRÄZISION: Wenn eine Funktion 0 zurückgibt, antworte, dass es keine Ausgaben gab. Erfinde keine Daten.
+        4. MEHRERE SCHRITTE: Wenn eine Frage komplexe Filter erfordert (z.B. "Lebensmittel und Miete"), rufe die entsprechenden Funktionen nacheinander auf und fasse die Ergebnisse zusammen.
+        """
+
     def send_message(self, user_message: str) -> str:
         """
         Sendet eine Nachricht an den Chatbot mit automatischem Function Calling.
@@ -53,6 +64,7 @@ class GeminiChatbot:
                 model=self.model_name,
                 contents=self.chat_history,
                 config=types.GenerateContentConfig(
+                    system_instruction=self.system_instruction,
                     tools=[
                         tools.get_transactions,
                         tools.get_spending_by_category,
@@ -60,6 +72,8 @@ class GeminiChatbot:
                         tools.get_account_overview,
                         tools.get_income_vs_expenses,
                         tools.get_categories,
+                        tools.get_database_statistics,
+                        tools.get_transaction_stats,
                     ],
                     # Automatisches Function Calling aktivieren
                     automatic_function_calling=types.AutomaticFunctionCallingConfig(),

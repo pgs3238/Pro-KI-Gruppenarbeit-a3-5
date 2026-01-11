@@ -15,7 +15,7 @@ from .schemas import (
     ChatResetResponse,
     ChatStatusResponse,
 )
-from ..chatbot.gemini_client import GeminiChatbot
+from ..chatbot import GeminiChatbot
 
 # Environment Variables laden
 load_dotenv()
