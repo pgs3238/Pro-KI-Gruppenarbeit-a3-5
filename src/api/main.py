@@ -1,14 +1,16 @@
 # FastAPI REST API für Transaktionsverwaltung
 
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import UploadFile, File, Form, FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import date
+import tempfile, json
 
 from ..database import init_db, Transaktion, Konto
 from ..database.search import search_transaktionen
 from ..database.konto_manager import KontoManager
+from ..database.csv_importer import CSVTransaktionImporter
 from .schemas import (
     TransaktionCreate,
     TransaktionUpdate,
@@ -372,3 +374,50 @@ def get_konto_summary(db: Session = Depends(get_db)):
             for k in konten
         ],
     }
+
+
+# ==================== ENDPUNKTE: IMPORT ====================
+
+@app.post("/transactions/import")
+async def import_transactions(
+    file: UploadFile = File(...),
+    header_row: int = Form(...),
+    skip_footer: int = Form(...),
+    mapping: str = Form(...),
+    konto_id: int = Form(...),
+    db: Session = Depends(get_db),
+):
+    """
+    Importiere CSV-Transaktionen.
+    frontend sendet:
+      - file: CSV-Datei
+      - header_row: Zeile der Spaltenüberschriften (1-basiert)
+      - skip_footer: Anzahl der Zeilen am Ende, die übersprungen werden
+      - mapping: JSON { "buchungstag": "Buchungstag", "beguenstigter": "Begünstigter / Auftraggeber", ... }
+      - konto_id: ID des Kontos, auf das gebucht wird
+    """
+    try:
+        # Mapping JSON parsen
+        mapping_dict = json.loads(mapping)
+
+        # Temporäre Datei speichern (UploadFile ist ein SpooledFile)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as tmp:
+            contents = await file.read()
+            tmp.write(contents)
+            tmp_path = tmp.name
+
+        # Import starten
+        importer = CSVTransaktionImporter(
+            session=db,
+            mapping=mapping_dict,
+            header_row=header_row,
+            skip_footer=skip_footer,
+            konto_id=konto_id
+        )
+        importer.import_csv(tmp_path)
+
+        return {"message": f"Import erfolgreich für Konto {konto_id}"}
+
+    except Exception as e:
+        # Fehler zurückgeben
+        raise HTTPException(status_code=400, detail=str(e))

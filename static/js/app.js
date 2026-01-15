@@ -568,6 +568,60 @@ async function deleteTransaction(id) {
 }
 
 /**
+ * Transaktionen importieren
+ */
+document.addEventListener("DOMContentLoaded", () => {
+  const importForm = document.getElementById("importForm");
+  if (!importForm) return;
+
+  importForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+
+    const inputs = importForm.querySelectorAll("input");
+    const kontoSelect = importForm.querySelector("select");
+    const fileInput = importForm.querySelector('input[type="file"]');
+
+    formData.append("header_row", inputs[0].value);
+    formData.append("skip_footer", inputs[6].value);
+
+    const mapping = {
+      buchungstag: inputs[1].value,
+      beguenstigter: inputs[2].value,
+      iban_kontonummer: inputs[3].value,
+      verwendungszweck: inputs[4].value,
+      betrag: inputs[5].value
+    };
+
+    formData.append("mapping", JSON.stringify(mapping));
+    formData.append("konto_id", kontoSelect.value || "");
+    formData.append("file", fileInput.files[0]);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/transactions/import`, {
+        method: "POST",
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        const errorMsg = errorData?.detail || errorData?.message || "Import fehlgeschlagen";
+        throw new Error(errorMsg);
+      }
+
+      showToast("Import erfolgreich", "success");
+      closeImportModal();
+      loadTransactions();
+      loadKonten();
+    } catch (error) {
+      console.error(error);
+      showToast("Import fehlgeschlagen", "error");
+    }
+  });
+});
+
+/**
  * Speichert die verfügbaren Konten für Lookups
  */
 let availableKonten = [];
@@ -575,8 +629,9 @@ let availableKonten = [];
 /**
  * Lädt die verfügbaren Konten in das Konto-Dropdown
  */
-async function loadKontoSelect() {
-    const kontoSelect = document.getElementById('kontoSelect');
+async function loadKontoSelect(targetId = 'kontoSelect') {
+    // const kontoSelect = document.getElementById('kontoSelect');
+    const kontoSelect = document.getElementById(targetId);
     if (!kontoSelect) return;
     
     try {
@@ -598,7 +653,9 @@ async function loadKontoSelect() {
         });
         
         // Füge Change-Event hinzu, um IBAN automatisch zu füllen
-        kontoSelect.addEventListener('change', onKontoSelect);
+        if (targetId === 'kontoSelect') {
+            kontoSelect.addEventListener('change', onKontoSelect);
+        }
     } catch (error) {
         console.error('Fehler beim Laden der Konten für Dropdown:', error);
     }
@@ -666,14 +723,15 @@ function closeModal() {
  *  
  */
 function openImportModal() {
-    document.getElementById("importModal").style.display = "flex";
+    document.getElementById('importModal').classList.add('active');
+    loadKontoSelect('importKontoSelect');
 }
 
 /**
  * 
  */
 function closeImportModal() {
-    document.getElementById("importModal").style.display = "none";
+    document.getElementById('importModal').classList.remove('active');
 }
 
 
