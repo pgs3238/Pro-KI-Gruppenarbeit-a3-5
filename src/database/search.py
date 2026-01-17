@@ -82,6 +82,7 @@ def search_transaktionen(
     if konto_name is not None:
         query = query.filter(Konto.kontoname.ilike(f"%{konto_name}"))
 
+    # Order query by descending dates
     query = query.order_by(Transaktion.buchungstag.desc())
 
 

@@ -325,7 +325,7 @@ async function performSearch() {
         const requestBody = {};
         
         if (searchParams.buchungstag) {
-            // Convert dd.mm.yyyy → yyyy-mm-dd
+            // Konvertierd Datum damit dieser im Backend als Datum erkannt wird dd.mm.yyyy → yyyy-mm-dd
             const parts = searchParams.buchungstag.split('.');
             if (parts.length === 3) {
                 const isoDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
@@ -357,6 +357,7 @@ async function performSearch() {
             }
         }
 
+        // TODO Deactivate
         // Console log to test input values at Filter & Search
         console.log("📤 Sending search request:", requestBody);
 
