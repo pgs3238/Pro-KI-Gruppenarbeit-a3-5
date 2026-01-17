@@ -35,7 +35,9 @@ def search_transaktionen(
         query = query.filter(Transaktion.verwendungszweck.ilike(f"%{verwendungszweck}%"))
 
     if iban_kontonummer is not None:
-        query = query.filter(Transaktion.iban_kontonummer == iban_kontonummer)
+        iban_clean = iban_kontonummer.replace(' ', '')
+        query = query.filter(func.replace(Transaktion.iban_kontonummer, ' ', '').like(f"%{iban_clean}%"))
+        #query = query.filter(Transaktion.iban_kontonummer == iban_kontonummer)
 
     # Diese Überprüfung wird aus code sicht nicht benötigt, da die SQL abfrage keine Ergebnisse liefern würde wenn der Minimalbetrag größer als der Maximalbetrag ist. 
     # Diese Überprüfung dient lediglich dazu eine Fehlermeldung an das User Interface zu übergeben. 
