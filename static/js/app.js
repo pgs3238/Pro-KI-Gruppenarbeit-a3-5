@@ -313,7 +313,8 @@ async function performSearch() {
         iban_kontonummer: filterInputs[2].value || null,
         verwendungszweck: filterInputs[4].value || null,
         beschreibung: filterInputs[5].value || null,
-        betrag_str: filterInputs[6].value || null
+        betragMinStr: filterInputs[6].value || null,
+        betragMaxStr: filterInputs[7].value || null
     };
 
     table.innerHTML = '<tr><td colspan="7" style="text-align: center;">⏳ Suche läuft...</td></tr>';
@@ -339,11 +340,16 @@ async function performSearch() {
         if (searchParams.verwendungszweck) {
             requestBody.verwendungszweck = searchParams.verwendungszweck;
         }
-        if (searchParams.betrag_str) {
-            const betrag = parseFloat(searchParams.betrag_str);
-            if (!isNaN(betrag)) {
-                requestBody.betrag_min = betrag;
-                requestBody.betrag_max = betrag;
+        if (searchParams.betragMinStr) {
+            const betragMin = parseFloat(searchParams.betragMinStr.replace(',','.'));
+            if (!isNaN(betragMin)) {
+                requestBody.betrag_min_abs = betragMin;
+            }
+        }
+        if (searchParams.betragMaxStr) {
+            const betragMax = parseFloat(searchParams.betragMaxStr.replace(',','.'));
+            if (!isNaN(betragMax)) {
+                requestBody.betrag_max_abs = betragMax;
             }
         }
 
