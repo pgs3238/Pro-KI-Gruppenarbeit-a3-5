@@ -311,6 +311,7 @@ async function performSearch() {
         buchungstag: filterInputs[0].value || null,
         beguenstigter: filterInputs[1].value || null,
         iban_kontonummer: filterInputs[2].value || null,
+        kontoSelect: filterInputs[3].value || null,
         verwendungszweck: filterInputs[4].value || null,
         beschreibung: filterInputs[5].value || null,
         betragMinStr: filterInputs[6].value || null,
@@ -337,6 +338,9 @@ async function performSearch() {
         if (searchParams.iban_kontonummer) {
             requestBody.iban_kontonummer = searchParams.iban_kontonummer;
         }
+        if (searchParams.kontoSelect) {
+            requestBody.konto_name = searchParams.kontoSelect.trim();
+        }
         if (searchParams.verwendungszweck) {
             requestBody.verwendungszweck = searchParams.verwendungszweck;
         }
@@ -352,6 +356,8 @@ async function performSearch() {
                 requestBody.betrag_max_abs = betragMax;
             }
         }
+
+        console.log("📤 Sending search request:", requestBody);
 
         // API aufrufen: POST /transactions/search
         const response = await fetch(`${API_BASE_URL}/transactions/search`, {

@@ -3,7 +3,7 @@ from datetime import date
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from .models import Transaktion
+from .models import Transaktion, Konto
 
 
 def search_transaktionen(
@@ -18,12 +18,13 @@ def search_transaktionen(
     betrag_min_abs: Optional[float] = None,
     betrag_max_abs: Optional[float] = None,
     waehrung: Optional[str] = None,
+    konto_name: Optional[str] = None,
 ) -> List[Transaktion]:
 
     # Transaktionen werden dynamisch durchsucht
     # Es werden nur die Filter angewendet, in denen eine Eingabe vorliegt.
 
-    query = session.query(Transaktion)
+    query = session.query(Transaktion).join(Konto, Transaktion.konto_id == Konto.id)
 
     if buchungstag is not None:
         query = query.filter(Transaktion.buchungstag == buchungstag)
@@ -76,6 +77,10 @@ def search_transaktionen(
 
     if waehrung is not None:
         query = query.filter(Transaktion.waehrung == waehrung)
+
+    # Filter by Konto
+    if konto_name is not None:
+        query = query.filter(Konto.kontoname.ilike(f"%{konto_name}"))
 
 
 

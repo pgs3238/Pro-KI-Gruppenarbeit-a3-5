@@ -68,6 +68,7 @@ class TransaktionSearch(BaseModel):
     betrag_min_abs: Optional[float] = None
     betrag_max_abs: Optional[float] = None
     waehrung: Optional[str] = None
+    konto_name: Optional[str] = None
 
 
 # ==================== KONTO SCHEMAS ====================

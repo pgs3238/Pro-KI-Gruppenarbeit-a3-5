@@ -161,6 +161,7 @@ def get_transaction_summary(db: Session = Depends(get_db)):
 def search_transactions(
     search_params: TransaktionSearch, db: Session = Depends(get_db)
 ):
+
     """Transaktionen mit erweiterten Suchfiltern"""
     return search_transaktionen(
         session=db,
@@ -174,6 +175,7 @@ def search_transactions(
         betrag_min_abs=search_params.betrag_min_abs,
         betrag_max_abs=search_params.betrag_max_abs,
         waehrung=search_params.waehrung,
+        konto_name=search_params.konto_name,
     )
 
 
