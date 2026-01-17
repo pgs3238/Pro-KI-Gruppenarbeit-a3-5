@@ -375,6 +375,12 @@ async function performSearch() {
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = date.getFullYear();
             const formattedDate = `${day}.${month}.${year}`;
+
+            //Konto Daten Suchen
+            const konto = t.konto_id
+                ? availableKonten.find(k => k.id === t.konto_id)
+                : null;
+            const kontoName = konto ? konto.kontoname : '-';
             
             const kategorie = t.beschreibung ? t.beschreibung.charAt(0).toUpperCase() + t.beschreibung.slice(1) : '-';
 
@@ -382,6 +388,7 @@ async function performSearch() {
                 <td>${formattedDate}</td>
                 <td>${t.beguenstigter}</td>
                 <td>${t.iban_kontonummer ? formatIBAN(t.iban_kontonummer) : '-'}</td>
+                <td>${kontoName}</td>
                 <td>${t.verwendungszweck || '-'}</td>
                 <td>${kategorie}</td>
                 <td class="${betragClass}">${betragText}</td>
