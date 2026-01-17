@@ -357,6 +357,7 @@ async function performSearch() {
             }
         }
 
+        // Console log to test input values at Filter & Search
         console.log("📤 Sending search request:", requestBody);
 
         // API aufrufen: POST /transactions/search
@@ -458,7 +459,8 @@ async function loadTransactions() {
 
     try {
         // API aufrufen: GET /transactions?limit=30
-        const response = await fetch(`${API_BASE_URL}/transactions?limit=30`, {
+        //const response = await fetch(`${API_BASE_URL}/transactions?limit=30`, {
+        const response = await fetch(`${API_BASE_URL}/transactions`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -479,7 +481,8 @@ async function loadTransactions() {
         }
 
         // Umgekehrte Reihenfolge (neueste zuerst)
-        transactions.reverse().forEach(t => {
+        //transactions.reverse().forEach(t => {
+        transactions.forEach(t => {
             const row = table.insertRow();
             const betragClass = t.betrag >= 0 ? 'betrag-positiv' : 'betrag-negativ';
             const betragText = (t.betrag >= 0 ? '+' : '') + t.betrag.toFixed(2).replace('.', ',') + '€';
