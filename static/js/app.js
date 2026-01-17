@@ -311,9 +311,9 @@ async function performSearch() {
         buchungstag: filterInputs[0].value || null,
         beguenstigter: filterInputs[1].value || null,
         iban_kontonummer: filterInputs[2].value || null,
-        verwendungszweck: filterInputs[3].value || null,
-        beschreibung: filterInputs[4].value || null,
-        betrag_str: filterInputs[5].value || null
+        verwendungszweck: filterInputs[4].value || null,
+        beschreibung: filterInputs[5].value || null,
+        betrag_str: filterInputs[6].value || null
     };
 
     table.innerHTML = '<tr><td colspan="7" style="text-align: center;">⏳ Suche läuft...</td></tr>';
@@ -532,10 +532,11 @@ async function editTransaction(id) {
 
         openModal();
         
+        // TODO ERROR remove this do to wrong function
         // Wenn ein Konto ausgewählt ist, trigger die onKontoSelect um IBAN zu befüllen
-        if (transaction.konto_id) {
-            onKontoSelect();
-        }
+        // if (transaction.konto_id) {
+        //     onKontoSelect();
+        // }
     } catch (error) {
         console.error('✗ Fehler beim Laden der Transaktion:', error);
         showToast('Transaktion konnte nicht geladen werden', 'error');
@@ -652,10 +653,11 @@ async function loadKontoSelect(targetId = 'kontoSelect') {
             kontoSelect.appendChild(option);
         });
         
+        // TODO Error remove this due to wrong function
         // Füge Change-Event hinzu, um IBAN automatisch zu füllen
-        if (targetId === 'kontoSelect') {
-            kontoSelect.addEventListener('change', onKontoSelect);
-        }
+        // if (targetId === 'kontoSelect') {
+        //     kontoSelect.addEventListener('change', onKontoSelect);
+        // }
     } catch (error) {
         console.error('Fehler beim Laden der Konten für Dropdown:', error);
     }
@@ -683,13 +685,15 @@ function onKontoSelect() {
     // Finde das ausgewählte Konto
     const selectedKonto = availableKonten.find(k => k.id === selectedKontoId);
     
-    if (selectedKonto && selectedKonto.kontonummer) {
-        // Trage die IBAN des Kontos ein
-        ibanInput.value = selectedKonto.kontonummer;
-        // Mache IBAN-Feld readonly
-        ibanInput.readOnly = true;
-        ibanInput.style.backgroundColor = '#333';  // Dunkler Hintergrund für readonly
-    }
+
+    // TODO remove function due to it doing the wrong thing!!
+    // if (selectedKonto && selectedKonto.kontonummer) {
+    //     // Trage die IBAN des Kontos ein
+    //     ibanInput.value = selectedKonto.kontonummer;
+    //     // Mache IBAN-Feld readonly
+    //     ibanInput.readOnly = true;
+    //     ibanInput.style.backgroundColor = '#333';  // Dunkler Hintergrund für readonly
+    // }
 }
 
 /**

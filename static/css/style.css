@@ -327,6 +327,17 @@ table th {
   border-color: #06d6a6;
 }
 
+.betrag-filter {
+  display: flex;
+  gap: 6px;
+}
+
+.betrag-filter .filter-input {
+  width: 100%;
+  padding: 6px 8px; /* slightly tighter than default */
+  font-size: 12px;
+}
+
 table td {
   padding: 15px;
   border-bottom: 1px solid #3a3a3a;
