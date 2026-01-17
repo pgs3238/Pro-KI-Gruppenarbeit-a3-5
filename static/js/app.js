@@ -323,7 +323,12 @@ async function performSearch() {
         const requestBody = {};
         
         if (searchParams.buchungstag) {
-            requestBody.buchungstag = searchParams.buchungstag;
+            // Convert dd.mm.yyyy → yyyy-mm-dd
+            const parts = searchParams.buchungstag.split('.');
+            if (parts.length === 3) {
+                const isoDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                requestBody.buchungstag = isoDate;
+            }
         }
         if (searchParams.beguenstigter) {
             requestBody.beguenstigter = searchParams.beguenstigter;
