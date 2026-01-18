@@ -21,7 +21,14 @@ from .schemas import (
     KontoResponse,
 )
 from .dependencies import get_db
-from . import chatbot_routes
+try:
+    from . import chatbot_routes
+    CHATBOT_AVAILABLE = True
+except ImportError:
+    CHATBOT_AVAILABLE = False
+    print("⚠️ Chatbot nicht verfügbar (Gemini SDK fehlt)")
+
+from . import zinsrechner_routes
 
 # ==================== SETUP ====================
 
@@ -46,8 +53,10 @@ def startup_event():
     print("✓ API gestartet")
 
 
-# Chatbot-Router registrieren
-app.include_router(chatbot_routes.router, prefix="/api")
+# Router registrieren
+if CHATBOT_AVAILABLE:
+    app.include_router(chatbot_routes.router, prefix="/api")
+app.include_router(zinsrechner_routes.router, prefix="/api")
 
 
 # ==================== HILFSFUNKTIONEN ====================

@@ -1,6 +1,6 @@
 // ============ ZINSRECHNER JAVASCRIPT MIT CUSTOM LEGEND ============
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'http://localhost:8000/api';
 let chart = null;
 let berechnungen = [];
 let ausgewaehlteId = null;
