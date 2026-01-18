@@ -2,9 +2,11 @@
 
 from fastapi import UploadFile, File, Form, FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import date
+from pathlib import Path
 import tempfile, json
 
 from ..database import init_db, Transaktion, Konto
@@ -52,6 +54,26 @@ def startup_event():
     init_db()
     print("✓ API gestartet")
 
+
+# ==================== STATIC FILES ====================
+
+# Basis-Verzeichnis ermitteln (2 Ebenen nach oben von src/api/)
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Static Files (CSS, JS, Bilder)
+app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
+
+# Templates als Static Files (HTML-Dateien direkt erreichbar)
+app.mount("/templates", StaticFiles(directory=str(BASE_DIR / "templates"), html=True), name="templates")
+
+# Root-Route für index.html
+@app.get("/")
+async def root():
+    from fastapi.responses import FileResponse
+    return FileResponse(str(BASE_DIR / "templates" / "index.html"))
+
+
+# ==================== ROUTER ====================
 
 # Router registrieren
 if CHATBOT_AVAILABLE:
