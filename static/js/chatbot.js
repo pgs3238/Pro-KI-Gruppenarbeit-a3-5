@@ -33,7 +33,7 @@ function addMessage(text, isUser = false) {
   const content = isUser ? text : marked.parse(text);
 
   messageDiv.innerHTML = `
-    <div class="message-avatar">${isUser ? "👩‍💻" : "🤖"}</div>
+    <div class="message-avatar">${isUser ? "👤" : "🤖"}</div>
     <div class="message-content">
       ${content}
     </div>
