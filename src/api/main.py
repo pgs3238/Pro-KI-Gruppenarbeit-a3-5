@@ -1,10 +1,11 @@
 # FastAPI REST API für Transaktionsverwaltung
 
 from fastapi import UploadFile, File, Form, FastAPI, HTTPException, Depends
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from datetime import date
 from pathlib import Path
 import tempfile, json
@@ -13,6 +14,7 @@ from ..database import init_db, Transaktion, Konto
 from ..database.search import search_transaktionen
 from ..database.konto_manager import KontoManager
 from ..database.csv_importer import CSVTransaktionImporter
+from ..categories.auto_categorizer_service import get_auto_categorizer_service
 from .schemas import (
     TransaktionCreate,
     TransaktionUpdate,
@@ -40,6 +42,9 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Globale Service-Instanz
+auto_categorizer = get_auto_categorizer_service()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -53,6 +58,20 @@ app.add_middleware(
 def startup_event():
     init_db()
     print("✓ API gestartet")
+
+    # Auto-Kategorisierung beim Start
+    state = auto_categorizer.get_categorization_state()
+
+    # Kategorisieren wenn:
+    # - Transaktionen vorhanden sind UND
+    # - entweder has_new_transactions > 0 ODER has_new_transactions ist None (noch nie kategorisiert)
+    with next(get_db()) as db:
+        transaction_count = db.query(Transaktion).count()
+
+    if transaction_count > 0 and (
+        state["has_new_transactions"] is None or state["has_new_transactions"] > 0
+    ):
+        auto_categorizer.run_full_categorization_cycle()
 
 
 # ==================== STATIC FILES ====================
@@ -80,6 +99,23 @@ if CHATBOT_AVAILABLE:
     app.include_router(chatbot_routes.router, prefix="/api")
 app.include_router(zinsrechner_routes.router, prefix="/api")
 
+# Category-Router registrieren
+app.include_router(category_routes.router)
+
+# Mount static files und templates
+# Finde das Root-Verzeichnis (2 Ebenen über dem src/api Ordner)
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+STATIC_DIR = BASE_DIR / "static"
+TEMPLATES_DIR = BASE_DIR / "templates"
+
+# Mount static files
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+# Mount templates (für direkten Zugriff auf HTML)
+if TEMPLATES_DIR.exists():
+    app.mount("/templates", StaticFiles(directory=str(TEMPLATES_DIR)), name="templates")
+
 
 # ==================== HILFSFUNKTIONEN ====================
 
@@ -104,10 +140,61 @@ def root():
 # ==================== ENDPUNKTE: CRUD ====================
 
 
-@app.get("/transactions", response_model=List[TransaktionResponse])
-def get_transactions(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """Alle Transaktionen (mit Pagination)"""
+@app.get("/transactions")
+def get_transactions(skip: int = 0, limit: int = 1000, days: int = 30, db: Session = Depends(get_db)):
+    """Alle Transaktionen (mit optional Datumsfilter für letzte N Tage)"""
+    from datetime import datetime, timedelta
+    
+    # Wenn days > 0, filtere nach den letzten N Tagen
+    if days > 0:
+        cutoff_date = datetime.now().date() - timedelta(days=days)
+        return db.query(Transaktion).filter(Transaktion.buchungstag >= cutoff_date).offset(skip).limit(limit).all()
+    
     return db.query(Transaktion).offset(skip).limit(limit).all()
+
+
+@app.get("/transactions/formatted/list")
+def get_transactions_formatted(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """Alle Transaktionen mit formatierten Werten für Frontend"""
+    transactions = db.query(Transaktion).order_by(Transaktion.buchungstag.desc()).offset(skip).limit(limit).all()
+    konten = db.query(Konto).all()
+    konto_map = {k.id: k.kontoname for k in konten}
+    
+    formatted = []
+    for t in transactions:
+        # Formatiere Datum als dd.mm.yyyy
+        datum = t.buchungstag.strftime("%d.%m.%Y")
+        
+        # Formatiere Betrag mit + und €
+        betrag_class = "positiv" if t.betrag >= 0 else "negativ"
+        betrag_text = ('+' if t.betrag >= 0 else '') + f"{t.betrag:.2f}".replace('.', ',') + '€'
+        
+        # IBAN formatieren (mit Leerzeichen alle 4 Zeichen)
+        iban = t.iban_kontonummer or '-'
+        if len(iban) > 4:
+            iban = ' '.join([iban[i:i+4] for i in range(0, len(iban), 4)])
+        
+        # Kategorie: Nutze kategorie_id und lade den Namen via Relationship
+        kategorie = '-'
+        if t.kategorie_id and t.kategorie:
+            kategorie = t.kategorie.name
+        
+        # Kontoname auflösen
+        kontoname = konto_map.get(t.konto_id, '-') if t.konto_id else '-'
+        
+        formatted.append({
+            "id": t.id,
+            "datum": datum,
+            "beguenstigter": t.beguenstigter,
+            "iban": iban,
+            "konto": kontoname,
+            "verwendungszweck": t.verwendungszweck or '-',
+            "kategorie": kategorie,
+            "betrag": betrag_text,
+            "betrag_class": betrag_class
+        })
+    
+    return formatted
 
 
 @app.get("/transactions/{transaction_id}", response_model=TransaktionResponse)
@@ -123,6 +210,14 @@ def create_transaction(transaction: TransaktionCreate, db: Session = Depends(get
     db.add(db_transaction)
     db.commit()
     db.refresh(db_transaction)
+
+    # Auto-Kategorisierung: Counter erhöhen und prüfen
+    auto_categorizer.increment_transaction_counter()
+
+    # Prüfe ob Schwelle erreicht (5 Transaktionen)
+    if auto_categorizer.should_trigger_categorization(threshold=5):
+        auto_categorizer.run_full_categorization_cycle()
+
     return db_transaction
 
 
@@ -192,7 +287,6 @@ def get_transaction_summary(db: Session = Depends(get_db)):
 def search_transactions(
     search_params: TransaktionSearch, db: Session = Depends(get_db)
 ):
-
     """Transaktionen mit erweiterten Suchfiltern"""
     return search_transaktionen(
         session=db,
@@ -207,6 +301,7 @@ def search_transactions(
         betrag_max_abs=search_params.betrag_max_abs,
         waehrung=search_params.waehrung,
         konto_name=search_params.konto_name,
+        beschreibung=search_params.beschreibung,
     )
 
 
@@ -222,10 +317,14 @@ def get_sankey_data(db: Session = Depends(get_db)):
         return {"nodes": [], "links": []}
 
     # Sammle Kategorien und Beträge
-    category_flows = {}  # {kategorie: {expense: betrag, income: betrag}}
+    category_flows = {}  # {kategorie_name: {expense: betrag, income: betrag}}
 
     for t in transactions:
-        category = t.beschreibung or "Sonstiges"
+        # Nutze kategorie.name falls kategorie_id gesetzt, sonst "Unbekannt"
+        category = "Unbekannt"
+        if t.kategorie_id and t.kategorie:
+            category = t.kategorie.name
+        
         if category not in category_flows:
             category_flows[category] = {"expense": 0, "income": 0}
 
@@ -411,6 +510,7 @@ def get_konto_summary(db: Session = Depends(get_db)):
 
 # ==================== ENDPUNKTE: IMPORT ====================
 
+
 @app.post("/transactions/import")
 async def import_transactions(
     file: UploadFile = File(...),
@@ -445,12 +545,55 @@ async def import_transactions(
             mapping=mapping_dict,
             header_row=header_row,
             skip_footer=skip_footer,
-            konto_id=konto_id
+            konto_id=konto_id,
         )
         importer.import_csv(tmp_path)
+
+        auto_categorizer.run_full_categorization_cycle()
 
         return {"message": f"Import erfolgreich für Konto {konto_id}"}
 
     except Exception as e:
         # Fehler zurückgeben
         raise HTTPException(status_code=400, detail=str(e))
+
+
+# ==================== ENDPUNKTE: AUTO-KATEGORISIERUNG ====================
+
+
+@app.post("/categories/auto-categorize")
+def trigger_auto_categorization(
+    max_iterations: Optional[int] = None,
+    min_occurrences: int = 3,
+    db: Session = Depends(get_db),
+):
+    """
+    Manueller Trigger für Auto-Kategorisierung.
+    Nützlich für Tests und Debugging.
+
+    Args:
+        max_iterations: Maximale Anzahl von Iterationen (None = unbegrenzt)
+        min_occurrences: Minimale Häufigkeit für neue Keywords beim Lernen
+    """
+
+    stats = auto_categorizer.run_full_categorization_cycle(
+        max_iterations=max_iterations, min_occurrences=min_occurrences
+    )
+
+    return {"message": "Auto-Kategorisierung abgeschlossen", "statistics": stats}
+
+
+@app.get("/categories/auto-categorize/status")
+def get_auto_categorization_status(db: Session = Depends(get_db)):
+    """
+    Gibt den Status der Auto-Kategorisierung zurück.
+    """
+
+    state = auto_categorizer.get_categorization_state()
+
+    return {
+        "new_transactions_count": state["has_new_transactions"],
+        "last_categorization": state["last_categorization"],
+        "will_trigger_at": 5,  # Schwelle
+        "needs_categorization": state["has_new_transactions"] >= 5,
+    }

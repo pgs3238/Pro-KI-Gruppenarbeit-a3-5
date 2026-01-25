@@ -1,12 +1,7 @@
 <!DOCTYPE html>
-<!-- Sagt dem Browser das diese Datei eine HTML Datei ist (muss immer ganz oben stehen) -->
 <html lang="de">
-  <!-- Öffnet das HTML Dokument und sagt dass es Deutsch ist -->
-
   <head>
-    <!-- Kopf der Seite (unsichtbar); Quasi Anleitung für den User-->
     <meta charset="UTF-8" />
-    <!-- Anzeigen von Umlauten -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Responsives Design für Laptop/Handy -->
     <title>FINLY - Finanzübersicht</title>
@@ -20,33 +15,22 @@
   </head>
 
   <body>
-    <!-- Körper der Seite (Alles was der Nutzer sieht steht hier-->
     <div class="container">
-      <!-- Haupt Klasse container, die alles beinhaltet. Eigentlich nicht notwendig hier eine Klasse zu machen, ist aber Standard in der Web-Entwicklung -->
       <!-- ============ SIDEBAR ============ -->
       <aside class="sidebar">
         <div class="logo">
-          <!-- Logo der App -->
           <span>📊</span>
-          <!-- Icon der App -->
           <span>FINLY</span>
-          <!-- Name der APP: FINLY als Text -->
         </div>
 
         <ul class="nav-items">
-          <!-- Navigations Liste -->
           <li class="nav-item">
-            <!-- Listenelement für Navigations Item Übersicht -->
             <button class="nav-link active" id="nav-overview">
-              <!-- Interaktiven Button mit eindeutiger ID -->
               <span class="nav-icon">📈</span>
-              <!-- Übersichts Icon -->
               <span>Übersicht</span>
-              <!-- Name des Menupunktes "Übersicht" -->
             </button>
           </li>
           <li class="nav-item">
-            <!-- Listenelement für Navigations Item Transaktion -->
             <button
               class="nav-link"
               id="nav-transaction"
@@ -57,31 +41,23 @@
             </button>
           </li>
           <li class="nav-item">
-            <!-- Listenelement für Navigations Item Kategorien -->
             <button
               class="nav-link"
               id="nav-categories"
               onclick="window.location.href='/templates/kategorien.html'"
             >
-              <!-- Interaktiven Button mit eindeutiger ID -->
               <span class="nav-icon">🏷️</span>
-              <!-- Kategorien Icon -->
               <span>Kategorien</span>
-              <!-- Name des Menupunktes "Kategorien" -->
             </button>
           </li>
           <li class="nav-item">
-            <!-- Listenelement für Navigations Item Konten -->
             <button
               class="nav-link"
               id="nav-accounts"
               onclick="window.location.href='/templates/konten.html'"
             >
-              <!-- Interaktiven Button mit eindeutiger ID -->
               <span class="nav-icon">🏦</span>
-              <!-- Konten Icon -->
               <span>Konten</span>
-              <!-- Name des Menupunktes "Konten" -->
             </button>
           </li>
           <li class="nav-item">
@@ -95,17 +71,13 @@
             </button>
           </li>
           <li class="nav-item">
-            <!-- Listenelement für Navigations Item Chatbot -->
             <button
               class="nav-link"
               id="nav-chatbot"
               onclick="window.location.href='/templates/chatbot.html'"
             >
-              <!-- Interaktiven Button mit eindeutiger ID -->
-              <span class="nav-icon">🤖</span>
-              <!-- Chatbot Icon -->
-              <span>Chatbot</span>
-              <!-- Name des Menupunktes "Chatbot" -->
+              <span class="nav-icon">💬</span>
+              <span>Finanz-Buddy</span>
             </button>
           </li>
         </ul>
@@ -135,55 +107,97 @@
         <!-- ============ CONTENT ============ -->
         <div class="content">
           <div class="page-header">
-            <h1>Finanzübersicht</h1>
-            <!-- Seitentitel -->
-            <p>Anzeigen und Verwalten Sie Ihre Finanzen hier</p>
-            <!-- Beschreibung -->
+            <h1>Dashboard</h1>
+            <p>Ihr Finanzüberblick auf einen Blick</p>
           </div>
-          <div class="cards-grid">
-            <!-- ============ MEINE KONTEN ============ -->
-            <div class="card konten-card">
-              <div class="card-title">Meine Konten</div>
-              <!-- Überschrift der Karte "Meine Konten" -->
-              <div class="balance-container">
-                <div class="total-balance" id="totalBalance">0,00€</div>
-                <!-- Gesamtbetrag mit Anfangswert 0-->
-                <div class="balance-trend" id="balanceTrend">+0,0%</div>
-                <!-- Tendenz der Entwicklung -->
+
+          <!-- KPI Cards -->
+          <div class="dashboard-kpis">
+            <div class="kpi-card">
+              <div class="kpi-icon">📊</div>
+              <div class="kpi-content">
+                <div class="kpi-label">Einnahmen (Monat)</div>
+                <div class="kpi-value" id="monthlyIncome">0,00 €</div>
+                <div class="kpi-change" id="incomeChange">--</div>
               </div>
-              <div class="balance-label">Gesamtbetrag</div>
-              <!-- Beschriftung des Gesamtbetrags -->
-              <div class="konten-list" id="kontenList">
-                <!-- Liste der Konten -->
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-icon">💸</div>
+              <div class="kpi-content">
+                <div class="kpi-label">Ausgaben (Monat)</div>
+                <div class="kpi-value" id="monthlyExpenses">0,00 €</div>
+                <div class="kpi-change" id="expensesChange">--</div>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-icon">📈</div>
+              <div class="kpi-content">
+                <div class="kpi-label">Bilanz (Monat)</div>
+                <div class="kpi-value" id="monthlyBalance">0,00 €</div>
+                <div class="kpi-change" id="balanceChangePercent">--</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Dashboard Grid -->
+          <div class="dashboard-grid">
+            <!-- Konten Übersicht -->
+            <div class="dashboard-card">
+              <div class="dashboard-card-header">
+                <h2>🏦 Meine Konten</h2>
+                <button class="card-link-btn" onclick="window.location.href='konten.html'">
+                  Mehr →
+                </button>
+              </div>
+              <div class="accounts-preview" id="accountsPreview">
                 <!-- Wird mit JavaScript gefüllt -->
               </div>
             </div>
 
-            <!-- ============ BALANCE DIAGRAMM ============ -->
-            <div class="card">
-              <div class="card-title">Meine Bilanz</div>
-              <!-- Überschrift der Karte "Bilanz" -->
-              <div class="chart-container">
-                <!-- Container für das Diagramm -->
-                <canvas id="balanceChart"></canvas>
-                <!-- Darstellung des Diagramms -->
+            <!-- Letzte Transaktionen -->
+            <div class="dashboard-card">
+              <div class="dashboard-card-header">
+                <h2>💳 Letzten Transaktionen</h2>
+                <button class="card-link-btn" onclick="window.location.href='transactions.html'">
+                  Mehr →
+                </button>
+              </div>
+              <div class="transactions-preview" id="transactionsPreview">
+                <!-- Wird mit JavaScript gefüllt -->
               </div>
             </div>
 
-            <!-- ============ SANKEY DIAGRAMM ============ -->
-            <div class="card sankey-card" style="grid-column: 1 / -1">
-              <div class="card-title">Geldfluss nach Kategorien</div>
-              <!-- Überschrift der Karte "Sankey" -->
-              <div class="chart-container">
-                <!-- Container für das Sankey-Diagramm -->
-                <div id="sankeyChart"></div>
-                <!-- Darstellung des Sankey-Diagramms -->
+            <!-- Top Kategorien -->
+            <div class="dashboard-card">
+              <div class="dashboard-card-header">
+                <h2>🏷️ Top Ausgaben-Kategorien</h2>
+                <button class="card-link-btn" onclick="window.location.href='kategorien.html'">
+                  Mehr →
+                </button>
+              </div>
+              <div class="categories-preview" id="categoriesPreview">
+                <!-- Wird mit JavaScript gefüllt -->
+              </div>
+            </div>
+
+            <!-- Ausgaben Trend -->
+            <div class="dashboard-card">
+              <div class="dashboard-card-header">
+                <h2>📉 Ausgaben-Trend</h2>
+              </div>
+              <div class="chart-container-small">
+                <canvas id="expensesTrendChart"></canvas>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
 
     <!-- ==================== SCRIPTS ==================== -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

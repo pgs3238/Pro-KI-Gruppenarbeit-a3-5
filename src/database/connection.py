@@ -32,6 +32,27 @@ SessionLocal = sessionmaker(  # Erstellt eine Session Factory für die Datenbank
 )
 
 
+def ensure_categorization_state():
+    """
+    Stellt sicher, dass der CategorizationState-Eintrag existiert.
+    Erstellt ihn, falls er noch nicht vorhanden ist.
+    """
+    from .models import CategorizationState
+
+    session = SessionLocal()
+    try:
+        state = session.query(CategorizationState).filter_by(id=1).first()
+        if not state:
+            state = CategorizationState(
+                id=1, has_new_transactions=0, last_categorization=None
+            )
+            session.add(state)
+            session.commit()
+            print("✓ CategorizationState initialisiert")
+    finally:
+        session.close()
+
+
 def init_db():
     from .models import Base
 
@@ -39,6 +60,7 @@ def init_db():
     print(f"✓ Datenbank initialisiert: {DB_PATH}")
 
     # Lade Standard-Kategorien, falls die Datenbank leer ist
-    from src.categories.categories import _check_and_load_defaults_categories
+    from src.categories.categories import check_and_load_defaults_categories
 
-    _check_and_load_defaults_categories()
+    check_and_load_defaults_categories()
+    ensure_categorization_state()

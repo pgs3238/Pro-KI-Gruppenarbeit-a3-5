@@ -19,12 +19,17 @@ def search_transaktionen(
     betrag_max_abs: Optional[float] = None,
     waehrung: Optional[str] = None,
     konto_name: Optional[str] = None,
+    beschreibung: Optional[str] = None,
 ) -> List[Transaktion]:
 
     # Transaktionen werden dynamisch durchsucht
     # Es werden nur die Filter angewendet, in denen eine Eingabe vorliegt.
 
-    query = session.query(Transaktion).join(Konto, Transaktion.konto_id == Konto.id)
+    # Nur joinen wenn konto_name Filter gesetzt ist
+    if konto_name is not None:
+        query = session.query(Transaktion).join(Konto, Transaktion.konto_id == Konto.id)
+    else:
+        query = session.query(Transaktion)
 
     if buchungstag is not None:
         query = query.filter(Transaktion.buchungstag == buchungstag)
@@ -38,7 +43,6 @@ def search_transaktionen(
     if iban_kontonummer is not None:
         iban_clean = iban_kontonummer.replace(' ', '')
         query = query.filter(func.replace(Transaktion.iban_kontonummer, ' ', '').like(f"%{iban_clean}%"))
-        #query = query.filter(Transaktion.iban_kontonummer == iban_kontonummer)
 
     # Diese Überprüfung wird aus code sicht nicht benötigt, da die SQL abfrage keine Ergebnisse liefern würde wenn der Minimalbetrag größer als der Maximalbetrag ist. 
     # Diese Überprüfung dient lediglich dazu eine Fehlermeldung an das User Interface zu übergeben. 
@@ -46,8 +50,6 @@ def search_transaktionen(
         if betrag_min > betrag_max:
             raise ValueError("betrag_min cannot be greater than betrag_max")
     
-    # Alte Abfrage. Werte können zwischen - unendlich und + unendlich eingegeben werden. 
-    # Problem: betrag_min bei Negativen zahlen heißt bspw. zwischen -50 und plus unendlich | betrag_max bei negativen Zahlen zwischen -50 und - unendlich
     if betrag_min is not None:
         query = query.filter(Transaktion.betrag >= betrag_min)
 
@@ -68,7 +70,6 @@ def search_transaktionen(
 
     # Neue Abfrage. Um das Problem mit den negativen Zahlen zu beheben werden die Werte aus der SQL für die Abfrage in Absolute Werte umgewandelt.
     # Aus -50 wird +50. Infolge dessen kann auch im negativen Bereich zwischen 0 und -50 gefiltert werden. 
-    # Wird diese Suche angewendet, muss die GUI negative Werte in positive umwandeln, da mit dieser Funktion nicht mehr nach -50 gesucht werden kann     
     if betrag_min_abs is not None:
         query = query.filter(func.abs(Transaktion.betrag) >= betrag_min_abs)
 
@@ -78,11 +79,14 @@ def search_transaktionen(
     if waehrung is not None:
         query = query.filter(Transaktion.waehrung == waehrung)
 
+    # Filter by Beschreibung (Kategorie)
+    if beschreibung is not None:
+        query = query.filter(Transaktion.beschreibung.ilike(f"%{beschreibung}%"))
+
     # Filter by Konto
     if konto_name is not None:
-        query = query.filter(Konto.kontoname.ilike(f"%{konto_name}"))
+        query = query.filter(Konto.kontoname.ilike(f"%{konto_name}%"))
 
     query = query.order_by(Transaktion.buchungstag.desc())
-
 
     return query.all()

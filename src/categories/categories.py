@@ -10,7 +10,7 @@ from src.database import SessionLocal, Category, CategoryRules
 _defaults_loaded = False
 
 
-def _check_and_load_defaults_categories():
+def check_and_load_defaults_categories():
     """
     Prüft, ob die Datenbank leer ist und lädt Standard-Kategorien.
     Wird automatisch beim ersten Modulimport aufgerufen.
@@ -25,16 +25,16 @@ def _check_and_load_defaults_categories():
         if category_count == 0:
             # Erstelle Standard-Kategorien, wenn die Datenbank leer ist
             default_categories = [
-                Category(name="Lebensmittel", category_type="Ausgabe"),
-                Category(name="Miete", category_type="Ausgabe"),
-                Category(name="Gehalt", category_type="Einnahme"),
-                Category(name="Freizeit", category_type="Ausgabe"),
-                Category(name="Versicherung", category_type="Ausgabe"),
-                Category(name="Transport", category_type="Ausgabe"),
-                Category(name="Strom & Gas", category_type="Ausgabe"),
-                Category(name="Internet & Telefon", category_type="Ausgabe"),
-                Category(name="Abos & Mitgliedschaften", category_type="Ausgabe"),
-                Category(name="Rücklagen", category_type="Ausgabe"),
+                Category(name="Lebensmittel", category_type="Ausgabe", icon="🍔", farbe="#ef4444"),
+                Category(name="Miete", category_type="Ausgabe", icon="🏠", farbe="#ef4444"),
+                Category(name="Gehalt", category_type="Einnahme", icon="💼", farbe="#06d6a6"),
+                Category(name="Freizeit", category_type="Ausgabe", icon="🎮", farbe="#ef4444"),
+                Category(name="Versicherung", category_type="Ausgabe", icon="🛡️", farbe="#ef4444"),
+                Category(name="Transport", category_type="Ausgabe", icon="🚗", farbe="#ef4444"),
+                Category(name="Strom & Gas", category_type="Ausgabe", icon="⚡", farbe="#ef4444"),
+                Category(name="Internet & Telefon", category_type="Ausgabe", icon="📱", farbe="#ef4444"),
+                Category(name="Abos & Mitgliedschaften", category_type="Ausgabe", icon="📺", farbe="#ef4444"),
+                Category(name="Rücklagen", category_type="Ausgabe", icon="🏦", farbe="#ef4444"),
             ]
             session.add_all(default_categories)
             session.commit()
@@ -55,13 +55,15 @@ def _check_and_load_defaults_categories():
     _defaults_loaded = True
 
 
-def add_category(name: str, category_type: str):
+def add_category(name: str, category_type: str, icon: str = "🏷️", farbe: str = "#06d6a6"):
     """
     Fügt eine neue Kategorie hinzu.
 
     Args:
         name: Name der Kategorie (darf nicht leer sein)
         category_type: Typ der Kategorie ("Ausgabe" oder "Einnahme")
+        icon: Icon der Kategorie (default: 🏷️)
+        farbe: Farbe der Kategorie (default: #06d6a6)
 
     Raises:
         ValueError: Wenn der Name leer ist oder die Kategorie bereits existiert
@@ -76,8 +78,8 @@ def add_category(name: str, category_type: str):
         if existing:
             raise ValueError(f"Kategorie mit dem Namen '{name}' existiert bereits")
 
-        # Erstelle und speichere die neue Kategorie
-        new_category = Category(name=name, category_type=category_type)
+        # Erstelle und speichere die neue Kategorie mit icon und farbe
+        new_category = Category(name=name, category_type=category_type, icon=icon, farbe=farbe)
         session.add(new_category)
         session.commit()
 
@@ -85,6 +87,7 @@ def add_category(name: str, category_type: str):
 def remove_category(id: int = None, name: str = None):
     """
     Entfernt eine Kategorie aus der Datenbank.
+    Löscht auch alle zugehörigen CategoryRules.
 
     Args:
         id: Optional - ID der zu löschenden Kategorie
@@ -106,6 +109,9 @@ def remove_category(id: int = None, name: str = None):
 
         category = query.first()
         if category:
+            # Lösche zuerst die CategoryRules (Foreign Key Constraint)
+            session.query(CategoryRules).filter(CategoryRules.category_name == category.name).delete()
+            
             # Kategorie gefunden - lösche sie
             session.delete(category)
             session.commit()

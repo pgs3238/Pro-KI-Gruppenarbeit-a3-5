@@ -24,6 +24,7 @@ class TransaktionBase(BaseModel):
         None, max_length=500, description="Zusätzliche Beschreibung"
     )
     konto_id: Optional[int] = Field(None, description="ID des zugehörigen Kontos")
+    kategorie_id: Optional[int] = Field(None, description="ID der zugeordneten Kategorie")
 
 
 class TransaktionCreate(TransaktionBase):
@@ -43,6 +44,7 @@ class TransaktionUpdate(BaseModel):
     waehrung: Optional[str] = Field(None, max_length=3)
     beschreibung: Optional[str] = Field(None, max_length=500)
     konto_id: Optional[int] = None
+    kategorie_id: Optional[int] = None
 
 
 class TransaktionResponse(TransaktionBase):
@@ -69,6 +71,7 @@ class TransaktionSearch(BaseModel):
     betrag_max_abs: Optional[float] = None
     waehrung: Optional[str] = None
     konto_name: Optional[str] = None
+    beschreibung: Optional[str] = None
 
 
 # ==================== KONTO SCHEMAS ====================
