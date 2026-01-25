@@ -3,8 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FINLY - Dashboard</title>
-    <link rel="stylesheet" href="../static/css/style.css" />
+    <!-- Responsives Design für Laptop/Handy -->
+    <title>FINLY - Finanzübersicht</title>
+    <!-- Browser Tab Titel -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Bibliothek laden um Diagramme anzuzeigen -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Plotly.js für Sankey -->
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <!-- Laden des CSS Stylings -->
   </head>
 
   <body>
@@ -27,7 +34,7 @@
             <button
               class="nav-link"
               id="nav-transaction"
-              onclick="window.location.href='transactions.html'"
+              onclick="window.location.href='/templates/transactions.html'"
             >
               <span class="nav-icon">💳</span>
               <span>Transaktionen</span>
@@ -37,7 +44,7 @@
             <button
               class="nav-link"
               id="nav-categories"
-              onclick="window.location.href='kategorien.html'"
+              onclick="window.location.href='/templates/kategorien.html'"
             >
               <span class="nav-icon">🏷️</span>
               <span>Kategorien</span>
@@ -47,23 +54,27 @@
             <button
               class="nav-link"
               id="nav-accounts"
-              onclick="window.location.href='konten.html'"
+              onclick="window.location.href='/templates/konten.html'"
             >
               <span class="nav-icon">🏦</span>
               <span>Konten</span>
             </button>
           </li>
           <li class="nav-item">
-            <button class="nav-link" id="nav-forecast">
+            <!-- Listenelement für Navigations Item Zinsprognose -->
+            <button class="nav-link" id="nav-forecast" onclick="window.location.href='/templates/zinsrechner.html'">
+              <!-- Interaktiven Button mit eindeutiger ID -->
               <span class="nav-icon">📉</span>
+              <!-- Zinsprognose Icon -->
               <span>Zinsprognose</span>
+              <!-- Name des Menupunktes "Zinsprognose" -->
             </button>
           </li>
           <li class="nav-item">
             <button
               class="nav-link"
               id="nav-chatbot"
-              onclick="window.location.href='chatbot.html'"
+              onclick="window.location.href='/templates/chatbot.html'"
             >
               <span class="nav-icon">💬</span>
               <span>Finanz-Buddy</span>
@@ -190,6 +201,6 @@
 
     <!-- ==================== SCRIPTS ==================== -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="../static/js/dashboard.js"></script>
+    <script src="/static/js/app.js"></script>
   </body>
 </html>

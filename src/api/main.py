@@ -3,6 +3,7 @@
 from fastapi import UploadFile, File, Form, FastAPI, HTTPException, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date
@@ -24,8 +25,14 @@ from .schemas import (
     KontoResponse,
 )
 from .dependencies import get_db
-from . import chatbot_routes
-from . import category_routes
+try:
+    from . import chatbot_routes
+    CHATBOT_AVAILABLE = True
+except ImportError:
+    CHATBOT_AVAILABLE = False
+    print("⚠️ Chatbot nicht verfügbar (Gemini SDK fehlt)")
+
+from . import zinsrechner_routes
 
 # ==================== SETUP ====================
 
@@ -67,8 +74,30 @@ def startup_event():
         auto_categorizer.run_full_categorization_cycle()
 
 
-# Chatbot-Router registrieren
-app.include_router(chatbot_routes.router, prefix="/api")
+# ==================== STATIC FILES ====================
+
+# Basis-Verzeichnis ermitteln (2 Ebenen nach oben von src/api/)
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Static Files (CSS, JS, Bilder)
+app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
+
+# Templates als Static Files (HTML-Dateien direkt erreichbar)
+app.mount("/templates", StaticFiles(directory=str(BASE_DIR / "templates"), html=True), name="templates")
+
+# Root-Route für index.html
+@app.get("/")
+async def root():
+    from fastapi.responses import FileResponse
+    return FileResponse(str(BASE_DIR / "templates" / "index.html"))
+
+
+# ==================== ROUTER ====================
+
+# Router registrieren
+if CHATBOT_AVAILABLE:
+    app.include_router(chatbot_routes.router, prefix="/api")
+app.include_router(zinsrechner_routes.router, prefix="/api")
 
 # Category-Router registrieren
 app.include_router(category_routes.router)
