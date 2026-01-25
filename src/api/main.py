@@ -112,8 +112,15 @@ def root():
 
 
 @app.get("/transactions")
-def get_transactions(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """Alle Transaktionen (mit Pagination)"""
+def get_transactions(skip: int = 0, limit: int = 1000, days: int = 30, db: Session = Depends(get_db)):
+    """Alle Transaktionen (mit optional Datumsfilter für letzte N Tage)"""
+    from datetime import datetime, timedelta
+    
+    # Wenn days > 0, filtere nach den letzten N Tagen
+    if days > 0:
+        cutoff_date = datetime.now().date() - timedelta(days=days)
+        return db.query(Transaktion).filter(Transaktion.buchungstag >= cutoff_date).offset(skip).limit(limit).all()
+    
     return db.query(Transaktion).offset(skip).limit(limit).all()
 
 
@@ -138,8 +145,10 @@ def get_transactions_formatted(skip: int = 0, limit: int = 100, db: Session = De
         if len(iban) > 4:
             iban = ' '.join([iban[i:i+4] for i in range(0, len(iban), 4)])
         
-        # Kategorie mit Großbuchstaben
-        kategorie = (t.beschreibung.capitalize() if t.beschreibung else '-')
+        # Kategorie: Nutze kategorie_id und lade den Namen via Relationship
+        kategorie = '-'
+        if t.kategorie_id and t.kategorie:
+            kategorie = t.kategorie.name
         
         # Kontoname auflösen
         kontoname = konto_map.get(t.konto_id, '-') if t.konto_id else '-'
@@ -279,10 +288,14 @@ def get_sankey_data(db: Session = Depends(get_db)):
         return {"nodes": [], "links": []}
 
     # Sammle Kategorien und Beträge
-    category_flows = {}  # {kategorie: {expense: betrag, income: betrag}}
+    category_flows = {}  # {kategorie_name: {expense: betrag, income: betrag}}
 
     for t in transactions:
-        category = t.beschreibung or "Sonstiges"
+        # Nutze kategorie.name falls kategorie_id gesetzt, sonst "Unbekannt"
+        category = "Unbekannt"
+        if t.kategorie_id and t.kategorie:
+            category = t.kategorie.name
+        
         if category not in category_flows:
             category_flows[category] = {"expense": 0, "income": 0}
 

@@ -43,30 +43,21 @@ async function loadDashboardData() {
 // KPIs laden
 async function loadKPIs() {
   try {
-    // Konten laden für Gesamtguthaben
-    const accountsResponse = await fetch(`${API_BASE_URL}/konten`);
-    const accounts = await accountsResponse.json();
-    
-    const totalBalance = accounts.reduce((sum, acc) => sum + acc.kontostand, 0);
-    document.getElementById("totalBalance").textContent = formatCurrency(totalBalance);
-    
-    // Balance Change berechnen (Beispielwert, könnte aus Historie berechnet werden)
-    const balanceChangeElem = document.getElementById("balanceChange");
-    balanceChangeElem.textContent = "+5,2%";
-    balanceChangeElem.className = "kpi-change positive";
-
-    // Transaktionen für aktuellen Monat laden
-    const transactionsResponse = await fetch(`${API_BASE_URL}/transaktionen`);
-    const transactions = await transactionsResponse.json();
+    // 1. Transaktionen laden (unformatiert für Berechnungen)
+    const transResponse = await fetch(`${API_BASE_URL}/transactions?days=365&limit=10000`);
+    if (!transResponse.ok) throw new Error("Fehler beim Laden der Transaktionen");
+    const allTransactions = await transResponse.json();
     
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
     
-    const monthlyTransactions = transactions.filter((t) => {
+    // Filtriere Transaktionen des aktuellen Monats
+    const monthlyTransactions = allTransactions.filter((t) => {
       const date = new Date(t.buchungstag);
       return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
     });
 
+    // Berechne Einnahmen und Ausgaben
     const monthlyIncome = monthlyTransactions
       .filter((t) => t.betrag > 0)
       .reduce((sum, t) => sum + t.betrag, 0);
@@ -79,22 +70,24 @@ async function loadKPIs() {
     
     const monthlyBalance = monthlyIncome - monthlyExpenses;
 
+    // 3. Setze die Werte
     document.getElementById("monthlyIncome").textContent = formatCurrency(monthlyIncome);
     document.getElementById("monthlyExpenses").textContent = formatCurrency(monthlyExpenses);
     document.getElementById("monthlyBalance").textContent = formatCurrency(monthlyBalance);
 
-    // Change indicators
+    // 4. Bilanz-Indicator
     const balanceChangePercent = document.getElementById("balanceChangePercent");
     if (monthlyBalance >= 0) {
-      balanceChangePercent.textContent = "Positiv";
+      balanceChangePercent.textContent = "✓ Positiv";
       balanceChangePercent.className = "kpi-change positive";
     } else {
-      balanceChangePercent.textContent = "Negativ";
+      balanceChangePercent.textContent = "✗ Negativ";
       balanceChangePercent.className = "kpi-change negative";
     }
 
   } catch (error) {
     console.error("Fehler beim Laden der KPIs:", error);
+    showToast("Fehler beim Laden der KPI-Daten", "error");
   }
 }
 
@@ -119,17 +112,16 @@ async function loadAccountsPreview() {
       const accountItem = document.createElement("div");
       accountItem.className = "account-preview-item";
       
-      const icon = getAccountIcon(account.typ);
+      const icon = getAccountIcon(account.kontotyp.toLowerCase());
       
       accountItem.innerHTML = `
         <div class="account-preview-info">
           <div class="account-preview-icon">${icon}</div>
           <div class="account-preview-details">
-            <h4>${account.name}</h4>
-            <p>${account.typ}</p>
+            <h4>${account.kontoname}</h4>
+            <p>${account.kontotyp}</p>
           </div>
         </div>
-        <div class="account-preview-balance">${formatCurrency(account.kontostand)}</div>
       `;
       
       container.appendChild(accountItem);
@@ -143,8 +135,19 @@ async function loadAccountsPreview() {
 // Transaktionen Preview laden
 async function loadTransactionsPreview() {
   try {
-    const response = await fetch(`${API_BASE_URL}/transaktionen`);
-    let transactions = await response.json();
+    const [transactionsRes, kontosRes] = await Promise.all([
+      fetch(`${API_BASE_URL}/transactions?days=30`),
+      fetch(`${API_BASE_URL}/konten`)
+    ]);
+    
+    let transactions = await transactionsRes.json();
+    let kontos = await kontosRes.json();
+    
+    // Map für Kontonamen erstellen
+    const konto_map = {};
+    kontos.forEach(k => {
+      konto_map[k.id] = k.kontoname;
+    });
     
     // Nach Datum sortieren (neueste zuerst)
     transactions.sort((a, b) => new Date(b.buchungstag) - new Date(a.buchungstag));
@@ -170,13 +173,14 @@ async function loadTransactionsPreview() {
       const amountText = isPositive ? `+${formatCurrency(transaction.betrag)}` : formatCurrency(transaction.betrag);
       
       const date = new Date(transaction.buchungstag).toLocaleDateString("de-DE");
+      const kontoName = konto_map[transaction.konto_id] || "Konto";
       
       item.innerHTML = `
         <div class="transaction-preview-info">
           <div class="transaction-preview-icon">${icon}</div>
           <div class="transaction-preview-details">
             <h4>${transaction.beguenstigter || "Unbekannt"}</h4>
-            <p>${date} • ${transaction.konto_name || "Konto"}</p>
+            <p>${date} • ${kontoName}</p>
           </div>
         </div>
         <div class="transaction-preview-amount ${amountClass}">${amountText}</div>
@@ -193,27 +197,43 @@ async function loadTransactionsPreview() {
 // Kategorien Preview laden
 async function loadCategoriesPreview() {
   try {
-    const [transactionsRes, categoriesRes] = await Promise.all([
-      fetch(`${API_BASE_URL}/transaktionen`),
-      fetch(`${API_BASE_URL}/kategorien`),
+    const [transactionsRes, kategoriesRes] = await Promise.all([
+      fetch(`${API_BASE_URL}/transactions?days=30`),
+      fetch(`${API_BASE_URL}/api/categories`),
     ]);
     
     const transactions = await transactionsRes.json();
-    const categories = await categoriesRes.json();
+    const kategorien = await kategoriesRes.json();
     
-    // Nur Ausgaben-Kategorien
-    const expenseCategories = categories.filter((c) => c.typ === "ausgabe");
+    // Berechne das Datum vor 30 Tagen
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
     
-    // Summen pro Kategorie berechnen
+    // Summen pro Kategorie berechnen (nur letzte 30 Tage, nur Ausgaben)
     const categorySums = {};
     transactions
-      .filter((t) => t.betrag < 0)
+      .filter((t) => {
+        const transDate = new Date(t.buchungstag);
+        return t.betrag < 0 && transDate >= thirtyDaysAgo;
+      })
       .forEach((t) => {
-        const catName = t.kategorie_name || "Sonstiges";
-        if (!categorySums[catName]) {
-          categorySums[catName] = 0;
+        // Nur kategorisierte Transaktionen zählen
+        let catName = null;
+        
+        if (t.kategorie_id && kategorien.length > 0) {
+          const kat = kategorien.find(k => k.id === t.kategorie_id);
+          if (kat) {
+            catName = kat.name;
+          }
         }
-        categorySums[catName] += Math.abs(t.betrag);
+        
+        // Nur hinzufügen, wenn eine echte Kategorie vorhanden ist
+        if (catName) {
+          if (!categorySums[catName]) {
+            categorySums[catName] = 0;
+          }
+          categorySums[catName] += Math.abs(t.betrag);
+        }
       });
     
     // Top 5 Kategorien
@@ -225,7 +245,7 @@ async function loadCategoriesPreview() {
     container.innerHTML = "";
 
     if (topCategories.length === 0) {
-      container.innerHTML = '<p style="color: #888; text-align: center;">Noch keine Ausgaben vorhanden</p>';
+      container.innerHTML = '<p style="color: #888; text-align: center;">Keine kategorisierten Ausgaben in den letzten 30 Tagen</p>';
       return;
     }
 
@@ -258,7 +278,7 @@ async function loadCategoriesPreview() {
 // Ausgaben Trend Chart laden
 async function loadExpensesTrend() {
   try {
-    const response = await fetch(`${API_BASE_URL}/transaktionen`);
+    const response = await fetch(`${API_BASE_URL}/transactions?days=180&limit=10000`);
     const transactions = await response.json();
     
     // Letzte 6 Monate

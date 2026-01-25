@@ -1,5 +1,85 @@
 // ==================== KONFIGURATION ====================
 const API_BASE_URL = 'http://localhost:8000';
+let availableKategorien = [];  // Cache für Kategorien
+
+
+// ==================== KATEGORIEN LADEN ====================
+
+async function loadKategorien() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/categories`);
+        if (!response.ok) throw new Error('Fehler beim Laden der Kategorien');
+        
+        availableKategorien = await response.json();
+        console.log('✓ Kategorien geladen:', availableKategorien);
+        
+        // Fülle alle Kategorie-Selects mit den geladenen Kategorien
+        updateKategorieSelects();
+        
+        return availableKategorien;
+    } catch (error) {
+        console.error('✗ Fehler beim Laden der Kategorien:', error);
+        return [];
+    }
+}
+
+function updateKategorieSelects() {
+    const selects = document.querySelectorAll('select[name="kategorie"]');
+    
+    selects.forEach(select => {
+        // Merke aktuellen Wert
+        const currentValue = select.value;
+        
+        // Speichere nur die erste Option "Bitte wählen..."
+        const firstOption = select.options[0];
+        const firstOptionValue = firstOption.value;
+        const firstOptionText = firstOption.text;
+        
+        // Leere das Select komplett
+        select.innerHTML = '';
+        
+        // Füge das "Bitte wählen..." wieder hinzu
+        const emptyOption = document.createElement('option');
+        emptyOption.value = firstOptionValue;
+        emptyOption.text = firstOptionText;
+        select.appendChild(emptyOption);
+        
+        // Gruppiere nach Typ
+        const ausgaben = availableKategorien.filter(k => k.category_type === 'Ausgabe');
+        const einnahmen = availableKategorien.filter(k => k.category_type === 'Einnahme');
+        
+        // Füge Ausgaben hinzu
+        if (ausgaben.length > 0) {
+            const ausgabenGroup = document.createElement('optgroup');
+            ausgabenGroup.label = 'Ausgaben';
+            ausgaben.forEach(kat => {
+                const option = document.createElement('option');
+                option.value = kat.id;
+                option.text = `${kat.icon} ${kat.name}`;
+                ausgabenGroup.appendChild(option);
+            });
+            select.appendChild(ausgabenGroup);
+        }
+        
+        // Füge Einnahmen hinzu
+        if (einnahmen.length > 0) {
+            const einnahmenGroup = document.createElement('optgroup');
+            einnahmenGroup.label = 'Einnahmen';
+            einnahmen.forEach(kat => {
+                const option = document.createElement('option');
+                option.value = kat.id;
+                option.text = `${kat.icon} ${kat.name}`;
+                einnahmenGroup.appendChild(option);
+            });
+            select.appendChild(einnahmenGroup);
+        }
+        
+        // Stelle den vorherigen Wert wieder her (falls vorhanden)
+        if (currentValue) {
+            select.value = currentValue;
+        }
+    });
+}
 
 
 // ==================== ACCOUNT BALANCE ====================
@@ -558,9 +638,15 @@ async function editTransaction(id) {
         document.querySelector('input[name="beguenstigter"]').value = transaction.beguenstigter;
         document.querySelector('input[name="iban"]').value = transaction.iban_kontonummer || '';
         document.querySelector('input[name="verwendungszweck"]').value = transaction.verwendungszweck || '';
-        document.querySelector('select[name="kategorie"]').value = transaction.beschreibung || '';
         document.querySelector('input[name="betrag"]').value = transaction.betrag;
         document.querySelector('select[name="konto_id"]').value = transaction.konto_id || '';
+        
+        // Kategorie setzen - nutze kategorie_id falls vorhanden
+        if (transaction.kategorie_id) {
+            document.querySelector('select[name="kategorie"]').value = transaction.kategorie_id;
+        } else {
+            document.querySelector('select[name="kategorie"]').value = '';
+        }
 
         // Modal-Titel ändern und ID speichern
         document.querySelector('.modal-title').textContent = 'Transaktion bearbeiten';
@@ -900,15 +986,16 @@ function setupTransactionModal() {
 
             // Formulardaten auslesen
             const kontoId = document.querySelector('select[name="konto_id"]')?.value;
+            const kategorieId = document.querySelector('select[name="kategorie"]')?.value;
             const transactionData = {
                 buchungstag: isoDate,
                 beguenstigter: document.querySelector('input[name="beguenstigter"]')?.value || '',
                 iban_kontonummer: (document.querySelector('input[name="iban"]')?.value || '').replace(/\s/g, ''),  // Entferne Leerzeichen
                 verwendungszweck: document.querySelector('input[name="verwendungszweck"]')?.value || '',
-                beschreibung: document.querySelector('select[name="kategorie"]')?.value || '',
                 betrag: parseFloat(document.querySelector('input[name="betrag"]')?.value || 0),
                 waehrung: 'EUR',
-                konto_id: kontoId ? parseInt(kontoId) : null
+                konto_id: kontoId ? parseInt(kontoId) : null,
+                kategorie_id: kategorieId ? parseInt(kategorieId) : null
             };
 
             try {
@@ -1022,5 +1109,19 @@ function setupTransactionModal() {
     selects.forEach(select => {
         updateSelectColor(select);
         select.addEventListener('change', () => updateSelectColor(select));
+    });
+}
+
+// ==================== SEITEN-INIT ====================
+
+// Beim Laden der transactions.html Seite
+if (window.location.pathname.includes('transactions')) {
+    document.addEventListener('DOMContentLoaded', async () => {
+        console.log('📄 Transaktionen-Seite geladen');
+        loadKategorien();  // Lade Kategorien
+        loadTransactions();  // Lade Transaktionen
+        loadKonten();  // Lade Konten
+        setupFilterInputs();  // Setup Filter
+        setupSearch();  // Setup Suche
     });
 }
