@@ -48,8 +48,17 @@ async function loadKPIs() {
     if (!transResponse.ok) throw new Error("Fehler beim Laden der Transaktionen");
     const allTransactions = await transResponse.json();
     
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+    
+    // Berechne vorherigen Monat
+    let previousMonth = currentMonth - 1;
+    let previousYear = currentYear;
+    if (previousMonth < 0) {
+      previousMonth = 11;
+      previousYear = currentYear - 1;
+    }
     
     // Filtriere Transaktionen des aktuellen Monats
     const monthlyTransactions = allTransactions.filter((t) => {
@@ -57,7 +66,13 @@ async function loadKPIs() {
       return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
     });
 
-    // Berechne Einnahmen und Ausgaben
+    // Filtriere Transaktionen des vorherigen Monats
+    const previousMonthTransactions = allTransactions.filter((t) => {
+      const date = new Date(t.buchungstag);
+      return date.getMonth() === previousMonth && date.getFullYear() === previousYear;
+    });
+
+    // Berechne Einnahmen und Ausgaben (aktueller Monat)
     const monthlyIncome = monthlyTransactions
       .filter((t) => t.betrag > 0)
       .reduce((sum, t) => sum + t.betrag, 0);
@@ -67,13 +82,47 @@ async function loadKPIs() {
         .filter((t) => t.betrag < 0)
         .reduce((sum, t) => sum + t.betrag, 0)
     );
-    
-    const monthlyBalance = monthlyIncome - monthlyExpenses;
 
-    // 3. Setze die Werte
+    // Berechne Einnahmen und Ausgaben (vorheriger Monat)
+    const previousMonthIncome = previousMonthTransactions
+      .filter((t) => t.betrag > 0)
+      .reduce((sum, t) => sum + t.betrag, 0);
+    
+    const previousMonthExpenses = Math.abs(
+      previousMonthTransactions
+        .filter((t) => t.betrag < 0)
+        .reduce((sum, t) => sum + t.betrag, 0)
+    );
+
+    const monthlyBalance = monthlyIncome - monthlyExpenses;
+    
+    // 2. Setze die KPI-Werte
     document.getElementById("monthlyIncome").textContent = formatCurrency(monthlyIncome);
     document.getElementById("monthlyExpenses").textContent = formatCurrency(monthlyExpenses);
     document.getElementById("monthlyBalance").textContent = formatCurrency(monthlyBalance);
+
+    // 3. Berechne prozentuale Veränderungen zum vorherigen Monat
+    // Income Change
+    const incomeChangeElem = document.getElementById("incomeChange");
+    if (previousMonthIncome > 0) {
+      const incomeChangePercent = (((monthlyIncome - previousMonthIncome) / previousMonthIncome) * 100).toFixed(1);
+      incomeChangeElem.textContent = (monthlyIncome >= previousMonthIncome ? "+" : "") + incomeChangePercent + "%";
+      incomeChangeElem.className = monthlyIncome >= previousMonthIncome ? "kpi-change positive" : "kpi-change negative";
+    } else {
+      incomeChangeElem.textContent = "--";
+      incomeChangeElem.className = "kpi-change";
+    }
+
+    // Expense Change
+    const expensesChangeElem = document.getElementById("expensesChange");
+    if (previousMonthExpenses > 0) {
+      const expensesChangePercent = (((monthlyExpenses - previousMonthExpenses) / previousMonthExpenses) * 100).toFixed(1);
+      expensesChangeElem.textContent = (monthlyExpenses <= previousMonthExpenses ? "+" : "") + expensesChangePercent + "%";
+      expensesChangeElem.className = monthlyExpenses <= previousMonthExpenses ? "kpi-change positive" : "kpi-change negative";
+    } else {
+      expensesChangeElem.textContent = "--";
+      expensesChangeElem.className = "kpi-change";
+    }
 
     // 4. Bilanz-Indicator
     const balanceChangePercent = document.getElementById("balanceChangePercent");
