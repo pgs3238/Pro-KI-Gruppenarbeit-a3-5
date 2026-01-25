@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FINLY - Kategorien</title>
-    <link rel="stylesheet" href="../static/css/style.css" />
+    <link rel="stylesheet" href="/static/css/style.css" />
   </head>
 
   <body>
@@ -54,7 +54,7 @@
             </button>
           </li>
           <li class="nav-item">
-            <button class="nav-link" id="nav-forecast">
+            <button class="nav-link" id="nav-forecast" onclick="window.location.href='zinsrechner.html'">
               <span class="nav-icon">📉</span>
               <span>Zinsprognose</span>
             </button>
@@ -66,10 +66,10 @@
               onclick="window.location.href='chatbot.html'"
             >
               <!-- Interaktiven Button mit eindeutiger ID -->
-              <span class="nav-icon">🤖</span>
-              <!-- Chatbot Icon -->
-              <span>Chatbot</span>
-              <!-- Name des Menupunktes "Chatbot" -->
+              <span class="nav-icon">💬</span>
+              <!-- Finanz-Buddy Icon -->
+              <span>Finanz-Buddy</span>
+              <!-- Name des Menupunktes "Finanz-Buddy" -->
             </button>
           </li>
         </ul>
@@ -195,15 +195,15 @@
             <label class="form-label">Typ</label>
             <select name="typ" class="form-control" required>
               <option value="">Bitte wählen...</option>
-              <option value="ausgabe">Ausgabe</option>
-              <option value="einnahme">Einnahme</option>
+              <option value="Ausgabe">Ausgabe</option>
+              <option value="Einnahme">Einnahme</option>
             </select>
           </div>
 
           <div class="form-group">
             <label class="form-label">Icon</label>
             <div class="icon-picker" id="iconPicker">
-              <input type="radio" name="icon" value="🍔" id="icon1" checked />
+              <input type="radio" name="icon" value="🍔" id="icon1" />
               <label for="icon1" class="icon-option">🍔</label>
 
               <input type="radio" name="icon" value="🏠" id="icon2" />
@@ -398,7 +398,7 @@
       </div>
     </div>
 
-    <script src="../static/js/utils.js"></script>
-    <script src="../static/js/kategorien.js"></script>
+    <script src="/static/js/utils.js"></script>
+    <script src="/static/js/kategorien.js"></script>
   </body>
 </html>

@@ -3,10 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FINLY - Finanz-Buddy</title>
+    <title>FINLY - KI-Chatbot</title>
     <link rel="stylesheet" href="../static/css/style.css" />
     <!-- Markdown-Parser für formatierte Bot-Antworten -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
   </head>
 
   <body>
@@ -56,16 +58,16 @@
             </button>
           </li>
           <li class="nav-item">
-            <button class="nav-link" id="nav-forecast" onclick="window.location.href='/templates/zinsrechner.html'">
+            <button class="nav-link" id="nav-forecast" onclick="window.location.href='zinsrechner.html'">
               <span class="nav-icon">📉</span>
               <span>Zinsprognose</span>
             </button>
           </li>
           <li class="nav-item">
-            <!-- AKTIV: Wir sind auf der Finanz-Buddy-Seite -->
+            <!-- AKTIV: Wir sind auf der Chatbot-Seite -->
             <button class="nav-link active" id="nav-chatbot">
-              <span class="nav-icon">💬</span>
-              <span>Finanz-Buddy</span>
+              <span class="nav-icon">🤖</span>
+              <span>Chatbot</span>
             </button>
           </li>
         </ul>
@@ -85,8 +87,8 @@
         <!-- ============ CONTENT ============ -->
         <div class="content">
           <div class="page-header">
-            <h1>Finanz-Buddy</h1>
-            <p>Dein persönlicher KI-Finanzassistent: Frage mich alles über deine Finanzen!</p>
+            <h1>💬 KI-Finanzassistent</h1>
+            <p>Frage mich alles über deine Finanzen!</p>
           </div>
 
           <!-- Chat-Container -->
@@ -105,7 +107,7 @@
                 rows="1"
               ></textarea>
               <button id="sendButton" class="chat-send-btn">
-                <span>↑</span>
+                <span>⬆️</span>
               </button>
             </div>
 
@@ -119,6 +121,6 @@
     </div>
 
     <!-- ==================== SCRIPTS ==================== -->
-    <script src="/static/js/chatbot.js"></script>
+    <script src="../static/js/chatbot.js"></script>
   </body>
 </html>

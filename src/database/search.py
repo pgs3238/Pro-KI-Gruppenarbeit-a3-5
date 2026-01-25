@@ -27,6 +27,7 @@ def search_transaktionen(
     betrag_max_abs: Optional[float] = None,
     waehrung: Optional[str] = None,
     konto_name: Optional[str] = None,
+    beschreibung: Optional[str] = None,
 ) -> List[Transaktion]:
     """
     Searches transactions in the database based on multiple optional filters.
@@ -79,8 +80,6 @@ def search_transaktionen(
         if betrag_min > betrag_max:
             raise ValueError("betrag_min cannot be greater than betrag_max")
     
-    # Alte Abfrage. Werte können zwischen - unendlich und + unendlich eingegeben werden. 
-    # Problem: betrag_min bei Negativen zahlen heißt bspw. zwischen -50 und plus unendlich | betrag_max bei negativen Zahlen zwischen -50 und - unendlich
     if betrag_min is not None:
         query = query.filter(Transaktion.betrag >= betrag_min)
 
@@ -106,11 +105,15 @@ def search_transaktionen(
     if waehrung is not None:
         query = query.filter(Transaktion.waehrung == waehrung)
 
+    # Filter by Beschreibung (Kategorie)
+    if beschreibung is not None:
+        query = query.filter(Transaktion.beschreibung.ilike(f"%{beschreibung}%"))
+
+    # Filter by Konto
     if konto_name is not None:
-        query = query.filter(Konto.kontoname.ilike(f"%{konto_name}"))
+        query = query.filter(Konto.kontoname.ilike(f"%{konto_name}%"))
 
     # Order query by descending dates
     query = query.order_by(Transaktion.buchungstag.desc())
-
 
     return query.all()

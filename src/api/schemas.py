@@ -1,6 +1,6 @@
 # Pydantic-Schemas für API Request/Response Validierung
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 from datetime import date, datetime
 from typing import Optional
 
@@ -24,6 +24,7 @@ class TransaktionBase(BaseModel):
         None, max_length=500, description="Zusätzliche Beschreibung"
     )
     konto_id: Optional[int] = Field(None, description="ID des zugehörigen Kontos")
+    kategorie_id: Optional[int] = Field(None, description="ID der zugeordneten Kategorie")
 
 
 class TransaktionCreate(TransaktionBase):
@@ -43,6 +44,7 @@ class TransaktionUpdate(BaseModel):
     waehrung: Optional[str] = Field(None, max_length=3)
     beschreibung: Optional[str] = Field(None, max_length=500)
     konto_id: Optional[int] = None
+    kategorie_id: Optional[int] = None
 
 
 class TransaktionResponse(TransaktionBase):
@@ -69,6 +71,7 @@ class TransaktionSearch(BaseModel):
     betrag_max_abs: Optional[float] = None
     waehrung: Optional[str] = None
     konto_name: Optional[str] = None
+    beschreibung: Optional[str] = None
 
 
 # ==================== KONTO SCHEMAS ====================
@@ -115,6 +118,12 @@ class KontoResponse(KontoBase):
     iban: str
     erstellt_am: datetime
     aktualisiert_am: datetime
+
+    @computed_field
+    @property
+    def iban_kurz(self) -> str:
+        """Gibt die gekürzte IBAN-Darstellung zurück"""
+        return f"{self.iban[:4]}...{self.iban[-4:]}" if len(self.iban) > 8 else self.iban
 
     class Config:
         from_attributes = True

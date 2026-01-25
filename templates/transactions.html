@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FINLY - Transaktionen</title>
-    <link rel="stylesheet" href="../static/css/style.css" />
+    <link rel="stylesheet" href="/static/css/style.css" />
   </head>
 
   <body>
@@ -54,7 +54,7 @@
             </button>
           </li>
           <li class="nav-item">
-            <button class="nav-link" id="nav-forecast">
+            <button class="nav-link" id="nav-forecast" onclick="window.location.href='zinsrechner.html'">
               <span class="nav-icon">📉</span>
               <span>Zinsprognose</span>
             </button>
@@ -65,8 +65,8 @@
               id="nav-chatbot"
               onclick="window.location.href='chatbot.html'"
             >
-              <span class="nav-icon">🤖</span>
-              <span>Chatbot</span>
+              <span class="nav-icon">💬</span>
+              <span>Finanz-Buddy</span>
             </button>
           </li>
         </ul>
@@ -99,7 +99,10 @@
 
           <!-- Tabelle -->
           <div class="card">
-            <div class="card-title">Letzten Transaktionen</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+              <div class="card-title">Letzten Transaktionen</div>
+              <button id="clearFiltersBtn" style="padding: 8px 16px; background: #ff6b6b; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">🔄 Filter löschen</button>
+            </div>
             <div class="table-wrapper">
               <table>
                 <thead>
@@ -119,7 +122,9 @@
                         type="text"
                         class="filter-input"
                         data-filter="buchungstag"
-                        placeholder="Filter..."
+                        placeholder="TT.MM.JJJJ/TT-MM-JJJJ"
+                        maxlength="10"
+                        pattern="\d{2}[.-]\d{2}[.-]\d{4}"
                       />
                     </th>
                     <th>
@@ -328,13 +333,6 @@
               <label class="form-label">Kategorie</label>
               <select name="kategorie" class="form-control">
                 <option value="">Bitte wählen...</option>
-                <option value="wohnen">Wohnen & Energie</option>
-                <option value="lebensmittel">Lebensmittel</option>
-                <option value="shopping">Shopping</option>
-                <option value="verkehr">Verkehr</option>
-                <option value="unterhaltung">Unterhaltung</option>
-                <option value="gehalt">Gehalt</option>
-                <option value="sonstiges">Sonstiges</option>
               </select>
             </div>
             <div class="form-col">
