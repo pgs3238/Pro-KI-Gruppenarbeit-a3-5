@@ -178,6 +178,9 @@
                         />
                       </div>
                     </th>
+                    <th>
+                      <button id="clearFiltersBtn" class="btn-clear"> Alle Löschen</button>
+                    </th>
                     <th></th>
                   </tr>
                 </thead>
@@ -473,5 +476,23 @@
     <!-- ==================== SCRIPTS ==================== -->
     <script src="../static/js/utils.js"></script>
     <script src="../static/js/app.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const clearFiltersBtn = document.getElementById("clearFiltersBtn");
+
+        if (!clearFiltersBtn) return;
+
+        clearFiltersBtn.addEventListener("click", async () => {
+          // Alle Filter-Inputs löschen
+          const filterInputs = document.querySelectorAll(".filter-input");
+          filterInputs.forEach(input => input.value = "");
+
+          // Automatisch performSearch aufrufen
+          if (typeof performSearch === "function") {
+            await performSearch(); // Ruft die Suche auf, als wären alle Felder leer
+          }
+        });
+      });
+    </script>
   </body>
 </html>
