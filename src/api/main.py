@@ -3,7 +3,7 @@
 from fastapi import UploadFile, File, Form, FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from datetime import date
 import tempfile, json
 
@@ -11,6 +11,7 @@ from ..database import init_db, Transaktion, Konto
 from ..database.search import search_transaktionen
 from ..database.konto_manager import KontoManager
 from ..database.csv_importer import CSVTransaktionImporter
+from ..categories.auto_categorizer_service import get_auto_categorizer_service
 from .schemas import (
     TransaktionCreate,
     TransaktionUpdate,
@@ -31,6 +32,9 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Globale Service-Instanz
+auto_categorizer = get_auto_categorizer_service()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -44,6 +48,20 @@ app.add_middleware(
 def startup_event():
     init_db()
     print("✓ API gestartet")
+
+    # Auto-Kategorisierung beim Start
+    state = auto_categorizer.get_categorization_state()
+
+    # Kategorisieren wenn:
+    # - Transaktionen vorhanden sind UND
+    # - entweder has_new_transactions > 0 ODER has_new_transactions ist None (noch nie kategorisiert)
+    with next(get_db()) as db:
+        transaction_count = db.query(Transaktion).count()
+
+    if transaction_count > 0 and (
+        state["has_new_transactions"] is None or state["has_new_transactions"] > 0
+    ):
+        auto_categorizer.run_full_categorization_cycle()
 
 
 # Chatbot-Router registrieren
@@ -92,6 +110,14 @@ def create_transaction(transaction: TransaktionCreate, db: Session = Depends(get
     db.add(db_transaction)
     db.commit()
     db.refresh(db_transaction)
+
+    # Auto-Kategorisierung: Counter erhöhen und prüfen
+    auto_categorizer.increment_transaction_counter()
+
+    # Prüfe ob Schwelle erreicht (5 Transaktionen)
+    if auto_categorizer.should_trigger_categorization(threshold=5):
+        auto_categorizer.run_full_categorization_cycle()
+
     return db_transaction
 
 
@@ -161,7 +187,6 @@ def get_transaction_summary(db: Session = Depends(get_db)):
 def search_transactions(
     search_params: TransaktionSearch, db: Session = Depends(get_db)
 ):
-
     """Transaktionen mit erweiterten Suchfiltern"""
     return search_transaktionen(
         session=db,
@@ -380,6 +405,7 @@ def get_konto_summary(db: Session = Depends(get_db)):
 
 # ==================== ENDPUNKTE: IMPORT ====================
 
+
 @app.post("/transactions/import")
 async def import_transactions(
     file: UploadFile = File(...),
@@ -414,12 +440,55 @@ async def import_transactions(
             mapping=mapping_dict,
             header_row=header_row,
             skip_footer=skip_footer,
-            konto_id=konto_id
+            konto_id=konto_id,
         )
         importer.import_csv(tmp_path)
+
+        auto_categorizer.run_full_categorization_cycle()
 
         return {"message": f"Import erfolgreich für Konto {konto_id}"}
 
     except Exception as e:
         # Fehler zurückgeben
         raise HTTPException(status_code=400, detail=str(e))
+
+
+# ==================== ENDPUNKTE: AUTO-KATEGORISIERUNG ====================
+
+
+@app.post("/categories/auto-categorize")
+def trigger_auto_categorization(
+    max_iterations: Optional[int] = None,
+    min_occurrences: int = 3,
+    db: Session = Depends(get_db),
+):
+    """
+    Manueller Trigger für Auto-Kategorisierung.
+    Nützlich für Tests und Debugging.
+
+    Args:
+        max_iterations: Maximale Anzahl von Iterationen (None = unbegrenzt)
+        min_occurrences: Minimale Häufigkeit für neue Keywords beim Lernen
+    """
+
+    stats = auto_categorizer.run_full_categorization_cycle(
+        max_iterations=max_iterations, min_occurrences=min_occurrences
+    )
+
+    return {"message": "Auto-Kategorisierung abgeschlossen", "statistics": stats}
+
+
+@app.get("/categories/auto-categorize/status")
+def get_auto_categorization_status(db: Session = Depends(get_db)):
+    """
+    Gibt den Status der Auto-Kategorisierung zurück.
+    """
+
+    state = auto_categorizer.get_categorization_state()
+
+    return {
+        "new_transactions_count": state["has_new_transactions"],
+        "last_categorization": state["last_categorization"],
+        "will_trigger_at": 5,  # Schwelle
+        "needs_categorization": state["has_new_transactions"] >= 5,
+    }

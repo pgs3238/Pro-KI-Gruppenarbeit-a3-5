@@ -10,7 +10,7 @@ from src.database import SessionLocal, Category, CategoryRules
 _defaults_loaded = False
 
 
-def _check_and_load_defaults_categories():
+def check_and_load_defaults_categories():
     """
     Prüft, ob die Datenbank leer ist und lädt Standard-Kategorien.
     Wird automatisch beim ersten Modulimport aufgerufen.
