@@ -1,10 +1,12 @@
 # FastAPI REST API für Transaktionsverwaltung
 
 from fastapi import UploadFile, File, Form, FastAPI, HTTPException, Depends
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date
+from pathlib import Path
 import tempfile, json
 
 from ..database import init_db, Transaktion, Konto
@@ -23,6 +25,7 @@ from .schemas import (
 )
 from .dependencies import get_db
 from . import chatbot_routes
+from . import category_routes
 
 # ==================== SETUP ====================
 
@@ -66,6 +69,23 @@ def startup_event():
 
 # Chatbot-Router registrieren
 app.include_router(chatbot_routes.router, prefix="/api")
+
+# Category-Router registrieren
+app.include_router(category_routes.router)
+
+# Mount static files und templates
+# Finde das Root-Verzeichnis (2 Ebenen über dem src/api Ordner)
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+STATIC_DIR = BASE_DIR / "static"
+TEMPLATES_DIR = BASE_DIR / "templates"
+
+# Mount static files
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+# Mount templates (für direkten Zugriff auf HTML)
+if TEMPLATES_DIR.exists():
+    app.mount("/templates", StaticFiles(directory=str(TEMPLATES_DIR)), name="templates")
 
 
 # ==================== HILFSFUNKTIONEN ====================
