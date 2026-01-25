@@ -20,9 +20,36 @@ def search_transaktionen(
     waehrung: Optional[str] = None,
     konto_name: Optional[str] = None,
 ) -> List[Transaktion]:
+    """
+    Searches transactions in the database based on multiple optional filters.
 
-    # Transaktionen werden dynamisch durchsucht
-    # Es werden nur die Filter angewendet, in denen eine Eingabe vorliegt.
+    Only filters that are provided (non-None) are applied. Filters include 
+    booking date, beneficiary, purpose, IBAN/account number, amounts (absolute or normal),
+    transaction type (income/expense), currency, and account name.
+
+    Special features:
+        - Handles European-style negative and positive amounts.
+        - Provides absolute value filtering for amounts (betrag_min_abs / betrag_max_abs).
+        - Raises ValueError if min > max for amount filters, to help the UI show errors.
+
+    Args:
+        session: SQLAlchemy session for database queries.
+        buchungstag:        Filter by booking date.
+        beguenstigter:      Filter by beneficiary name (case-insensitive, partial match).
+        verwendungszweck:   Filter by purpose/description (case-insensitive, partial match).
+        iban_kontonummer:   Filter by IBAN or account number (spaces ignored, partial match).
+        betrag_min:         Minimum transaction amount (normal values).
+        betrag_max:         Maximum transaction amount (normal values).
+        typ:                "expense" to filter negative amounts, "income" for positive amounts.
+        betrag_min_abs:     Minimum absolute transaction amount (ignores sign).
+        betrag_max_abs:     Maximum absolute transaction amount (ignores sign).
+        waehrung:           Filter by currency (e.g., "EUR").
+        konto_name:         Filter by account name (case-insensitive, partial match).
+
+    Returns:
+        List of Transaktion objects matching the provided filters, ordered by
+        booking date descending.
+    """
 
     query = session.query(Transaktion).join(Konto, Transaktion.konto_id == Konto.id)
 
@@ -39,9 +66,7 @@ def search_transaktionen(
         iban_clean = iban_kontonummer.replace(' ', '')
         query = query.filter(func.replace(Transaktion.iban_kontonummer, ' ', '').like(f"%{iban_clean}%"))
         #query = query.filter(Transaktion.iban_kontonummer == iban_kontonummer)
-
-    # Diese Überprüfung wird aus code sicht nicht benötigt, da die SQL abfrage keine Ergebnisse liefern würde wenn der Minimalbetrag größer als der Maximalbetrag ist. 
-    # Diese Überprüfung dient lediglich dazu eine Fehlermeldung an das User Interface zu übergeben. 
+ 
     if betrag_min is not None and betrag_max is not None:
         if betrag_min > betrag_max:
             raise ValueError("betrag_min cannot be greater than betrag_max")
@@ -54,21 +79,16 @@ def search_transaktionen(
     if betrag_max is not None:
         query = query.filter(Transaktion.betrag <= betrag_max)
 
-    # Filtern nach Einnahmen (income) und Ausgaben (expense)
     if typ == "expense":
         query = query.filter(Transaktion.betrag < 0)
     elif typ == "income":
         query = query.filter(Transaktion.betrag > 0)
 
-    # Diese Überprüfung wird aus code sicht nicht benötigt, da die SQL abfrage keine Ergebnisse liefern würde wenn der Minimalbetrag größer als der Maximalbetrag ist. 
-    # Diese Überprüfung dient lediglich dazu eine Fehlermeldung an das User Interface zu übergeben.
     if betrag_min_abs is not None and betrag_max_abs is not None:
         if betrag_min_abs > betrag_max_abs:
             raise ValueError("betrag_min_abs cannot be greater than betrag_max_abs")
 
-    # Neue Abfrage. Um das Problem mit den negativen Zahlen zu beheben werden die Werte aus der SQL für die Abfrage in Absolute Werte umgewandelt.
-    # Aus -50 wird +50. Infolge dessen kann auch im negativen Bereich zwischen 0 und -50 gefiltert werden. 
-    # Wird diese Suche angewendet, muss die GUI negative Werte in positive umwandeln, da mit dieser Funktion nicht mehr nach -50 gesucht werden kann     
+    # Neue Abfrage. Um das Problem mit den negativen Zahlen zu beheben werden die Werte aus der SQL für die Abfrage in Absolute Werte umgewandelt.    
     if betrag_min_abs is not None:
         query = query.filter(func.abs(Transaktion.betrag) >= betrag_min_abs)
 
@@ -78,7 +98,6 @@ def search_transaktionen(
     if waehrung is not None:
         query = query.filter(Transaktion.waehrung == waehrung)
 
-    # Filter by Konto
     if konto_name is not None:
         query = query.filter(Konto.kontoname.ilike(f"%{konto_name}"))
 
