@@ -1581,8 +1581,7 @@ button.fab-btn.active:hover {
 /* ==================== CHATBOT STYLES ==================== */
 
 .chat-container {
-  max-width: 900px;
-  margin: 0 auto;
+  width: 100%;
   height: calc(100vh - 250px);
   display: flex;
   flex-direction: column;
