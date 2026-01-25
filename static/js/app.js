@@ -285,15 +285,31 @@ function toggleFabMenu() {
 // ==================== SEARCH ====================
 function setupFilterInputs() {
     const filterInputs = document.querySelectorAll('.filter-input');
+    const clearBtn = document.getElementById('clearFiltersBtn');
     
-    filterInputs.forEach((input, index) => {
+    // Suche nur bei Enter-Taste
+    filterInputs.forEach((input) => {
         input.addEventListener('keypress', async (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
+                console.log('📍 Enter gedrückt - starte Suche');
                 await performSearch();
             }
         });
     });
+    
+    // Clear-Button Setup
+    if (clearBtn) {
+        clearBtn.addEventListener('click', async () => {
+            // Alle Filter leeren
+            filterInputs.forEach(input => {
+                input.value = '';
+            });
+            // Alle Transaktionen laden
+            await loadTransactions();
+            console.log('✓ Filter gelöscht - zeige alle Transaktionen');
+        });
+    }
 }
 
 

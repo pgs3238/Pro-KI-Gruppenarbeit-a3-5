@@ -201,6 +201,7 @@ def search_transactions(
         betrag_max_abs=search_params.betrag_max_abs,
         waehrung=search_params.waehrung,
         konto_name=search_params.konto_name,
+        beschreibung=search_params.beschreibung,
     )
 
 
