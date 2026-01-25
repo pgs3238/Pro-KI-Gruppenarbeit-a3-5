@@ -1,3 +1,11 @@
+"""
+Author: Paul-Gerhard Siegel
+Course: Programmieren für KI
+Description:
+    This module provides a search function for transactions stored in the database.
+    It allows filtering transactions dynamically based on multiple optional criteria
+    such as date, beneficiary, amount, transaction type, currency, and account.
+"""
 from typing import Optional, List, Literal
 from datetime import date
 from sqlalchemy.orm import Session

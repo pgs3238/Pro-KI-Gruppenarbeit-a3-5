@@ -1,3 +1,11 @@
+"""
+Author: Paul-Gerhard Siegel
+Course: Programmieren für KI
+Description:
+    This module provides a CSV-based transaction importer. It reads transaction
+    data from CSV files, automatically detects the delimiter, applies a user-defined
+    column mapping, and stores the transactions in the database using SQLAlchemy.
+"""
 import csv
 from datetime import datetime
 from .models import Transaktion

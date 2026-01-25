@@ -1,3 +1,9 @@
+"""
+Author: Paul-Gerhard Siegel
+Course: Programmieren für KI
+Description:
+    FastAPI endpoint for importing CSV transactions into the database.
+"""
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 import tempfile
 import json
@@ -15,6 +21,27 @@ async def import_transactions(
     skip_footer: int = Form(0),
     konto_id: int | None = Form(None)
 ):
+    """
+    Imports transactions from an uploaded CSV file into the database.
+
+    The endpoint accepts a CSV file via multipart form data, stores it temporarily
+    on the server, and uses the CSVTransaktionImporter to insert the data into
+    the database. The column mapping and CSV structure information are provided
+    by the client (e.g. frontend).
+
+    Args:
+        file: Uploaded CSV file containing transaction data.
+        header_row: Line number (1-based) where the CSV header is located.
+        mapping: JSON string defining the mapping between CSV headers and model fields.
+        skip_footer: Number of lines at the end of the file to ignore.
+        konto_id: Optional account ID assigned to all imported transactions.
+
+    Returns:
+        JSON response indicating whether the import was successful.
+
+    Raises:
+        HTTPException: If the uploaded file is not a supported file type.
+    """
     if not file.filename.endswith((".csv", ".xlsx")):
         raise HTTPException(status_code=400, detail="Invalid file type")
 

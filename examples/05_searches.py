@@ -1,3 +1,11 @@
+"""
+Author: Paul-Gerhard Siegel
+Course: Programmieren für KI
+Description:
+    Example script demonstrating how to use the transaction search function.
+    The script performs several example queries with different filter combinations
+    and prints the results to the console.
+"""
 from src.database import SessionLocal
 from src.database.search import search_transaktionen
 from datetime import date
