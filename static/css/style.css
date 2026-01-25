@@ -1690,7 +1690,6 @@ button.fab-btn.active:hover {
 }
 
 .chat-send-btn {
-  padding: 0.75rem 1.5rem;
   background: #06d6a6;
   color: #1a1a1a;
   border: none;
