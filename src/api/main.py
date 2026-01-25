@@ -91,10 +91,52 @@ def root():
 # ==================== ENDPUNKTE: CRUD ====================
 
 
-@app.get("/transactions", response_model=List[TransaktionResponse])
+@app.get("/transactions")
 def get_transactions(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """Alle Transaktionen (mit Pagination)"""
     return db.query(Transaktion).offset(skip).limit(limit).all()
+
+
+@app.get("/transactions/formatted/list")
+def get_transactions_formatted(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """Alle Transaktionen mit formatierten Werten für Frontend"""
+    transactions = db.query(Transaktion).order_by(Transaktion.buchungstag.desc()).offset(skip).limit(limit).all()
+    konten = db.query(Konto).all()
+    konto_map = {k.id: k.kontoname for k in konten}
+    
+    formatted = []
+    for t in transactions:
+        # Formatiere Datum als dd.mm.yyyy
+        datum = t.buchungstag.strftime("%d.%m.%Y")
+        
+        # Formatiere Betrag mit + und €
+        betrag_class = "positiv" if t.betrag >= 0 else "negativ"
+        betrag_text = ('+' if t.betrag >= 0 else '') + f"{t.betrag:.2f}".replace('.', ',') + '€'
+        
+        # IBAN formatieren (mit Leerzeichen alle 4 Zeichen)
+        iban = t.iban_kontonummer or '-'
+        if len(iban) > 4:
+            iban = ' '.join([iban[i:i+4] for i in range(0, len(iban), 4)])
+        
+        # Kategorie mit Großbuchstaben
+        kategorie = (t.beschreibung.capitalize() if t.beschreibung else '-')
+        
+        # Kontoname auflösen
+        kontoname = konto_map.get(t.konto_id, '-') if t.konto_id else '-'
+        
+        formatted.append({
+            "id": t.id,
+            "datum": datum,
+            "beguenstigter": t.beguenstigter,
+            "iban": iban,
+            "konto": kontoname,
+            "verwendungszweck": t.verwendungszweck or '-',
+            "kategorie": kategorie,
+            "betrag": betrag_text,
+            "betrag_class": betrag_class
+        })
+    
+    return formatted
 
 
 @app.get("/transactions/{transaction_id}", response_model=TransaktionResponse)
