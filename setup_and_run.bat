@@ -15,7 +15,7 @@ echo.
 
 REM 2. Pakete installieren
 echo [2/3] Installiere Python-Pakete...
-pip install fastapi uvicorn sqlalchemy requests -q
+pip install SQLAlchemy==2.0.44 fastapi>=0.104.0 uvicorn[standard]>=0.24.0 pydantic>=2.0.0 python-dotenv>=1.2.1 google-genai>=1.57.0 python-multipart>=0.0.6 -q
 echo ✓ Pakete installiert
 echo.
 

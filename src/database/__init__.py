@@ -11,6 +11,7 @@ from .models import (
     Category,
     CategoryRules,
     Konto,
+    CategorizationState,
 )  # Importiere die ORM-Modelle aus models.py
 from .konto_manager import KontoManager  # Importiere den KontoManager
 
@@ -23,5 +24,6 @@ __all__ = [  # Definiert, welche Objekte beim Importieren des Packages sichtbar 
     "Category",  # ORM-Modell für Kategorien
     "CategoryRules",  # ORM-Modell für Kategorisierungsregeln
     "Konto",  # ORM-Modell für Konten
+    "CategorizationState",  # ORM-Modell für den Kategorisierungsstatus
     "KontoManager",  # Manager-Klasse für Konto-Operationen
 ]

@@ -21,23 +21,31 @@ Base = (
 )  # Basisklasse für alle ORM-Modelle um Tabellen in der Datenbank zu repräsentieren
 
 
-class Konto(Base):  # Erbt von Base und repräsentiert die "konten" Tabelle in der Datenbank
+class Konto(
+    Base
+):  # Erbt von Base und repräsentiert die "konten" Tabelle in der Datenbank
     """Bankkonto mit Kontostand und Kontoinformationen"""
 
     __tablename__ = "konten"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    kontoname = Column(String(100), nullable=False, unique=True)  # z.B. "Girokonto", "Sparkonto"
+    kontoname = Column(
+        String(100), nullable=False, unique=True
+    )  # z.B. "Girokonto", "Sparkonto"
     kontonummer = Column(String(34), nullable=False, unique=True)  # IBAN
     bankname = Column(String(200), nullable=True)  # z.B. "Sparkasse München"
     kontostand = Column(Float, nullable=False, default=0.0)  # Aktueller Kontostand
     waehrung = Column(String(3), default="EUR")  # Währung
-    kontotyp = Column(String(50), nullable=False)  # z.B. "Girokonto", "Sparkonto", "Kreditkarte"
+    kontotyp = Column(
+        String(50), nullable=False
+    )  # z.B. "Girokonto", "Sparkonto", "Kreditkarte"
     iban = Column(String(34), nullable=False)  # IBAN für Transaktionen
     bic = Column(String(11), nullable=True)  # BIC/SWIFT Code
     farbe = Column(String(7), default="#06d6a6")  # Farbe für Darstellung (Hex-Code)
     erstellt_am = Column(DateTime, default=datetime.now)  # Erstellungsdatum
-    aktualisiert_am = Column(DateTime, default=datetime.now, onupdate=datetime.now)  # Aktualisierungsdatum
+    aktualisiert_am = Column(
+        DateTime, default=datetime.now, onupdate=datetime.now
+    )  # Aktualisierungsdatum
 
     # Relationship: Gibt dir Zugriff auf alle Transaktionen dieses Kontos
     transaktionen = relationship("Transaktion", back_populates="konto")
@@ -54,7 +62,9 @@ class Transaktion(
     __tablename__ = "transaktionen"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    konto_id = Column(Integer, ForeignKey("konten.id"), nullable=True)  # Fremdschlüssel zum Konto
+    konto_id = Column(
+        Integer, ForeignKey("konten.id"), nullable=True
+    )  # Fremdschlüssel zum Konto
     buchungstag = Column(Date, nullable=False)
     beguenstigter = Column(String(200), nullable=True)
     verwendungszweck = Column(String(500))
@@ -118,3 +128,26 @@ class CategoryRules(Base):
 
     def __repr__(self):
         return f"<CategoryRules(category='{self.category.name}', keyword='{self.keyword}', source='{self.source}')>"
+
+
+class CategorizationState(Base):
+    """
+    Categorization-Status für Auto-Kategorisierung.
+    Singleton-Tabelle mit nur einem Eintrag (id=1).
+    """
+
+    __tablename__ = "categorization_state"
+
+    id = Column(Integer, primary_key=True, default=1)
+    has_new_transactions = Column(
+        Integer
+    )  # Counter für neue Transaktionen seit letzter Kategorisierung
+    last_categorization = Column(
+        DateTime, nullable=True
+    )  # Zeitstempel der letzten Kategorisierung
+    updated_at = Column(
+        DateTime, default=datetime.now, onupdate=datetime.now
+    )  # Letztes Update
+
+    def __repr__(self):
+        return f"<SystemState(has_new_transactions={self.has_new_transactions}, last_categorization={self.last_categorization})>"
