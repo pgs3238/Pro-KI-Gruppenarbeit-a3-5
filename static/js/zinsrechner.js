@@ -692,23 +692,24 @@ async function zuruecksetzen() {
 // ============ KONTEN LADEN ============
 async function ladeKonten() {
     try {
-        const response = await fetch(`${API_BASE}/konten`);
-        const data = await response.json();
+        const response = await fetch(`http://localhost:8000/konten`);
+        const konten = await response.json();
         
-        if (data.success && data.konten && data.konten.length > 0) {
-            kontenListe = data.konten;
+        if (Array.isArray(konten) && konten.length > 0) {
+            kontenListe = konten;
             
             const select = document.getElementById('kontoauswahl');
             select.innerHTML = '<option value="">-- Konto auswählen --</option>';
             
-            data.konten.forEach(konto => {
+            konten.forEach(konto => {
                 const option = document.createElement('option');
                 option.value = konto.iban;
-                option.textContent = `${konto.iban_kurz} - ${formatCurrency(konto.kontostand)}`;
+                const ibanKurz = konto.iban_kurz || `${konto.iban.substring(0, 4)}...${konto.iban.substring(konto.iban.length - 4)}`;
+                option.textContent = `${ibanKurz} - ${formatCurrency(konto.kontostand)}`;
                 select.appendChild(option);
             });
             
-            console.log(`${data.konten.length} Konten geladen`);
+            console.log(`${konten.length} Konten geladen`);
         } else {
             const select = document.getElementById('kontoauswahl');
             select.innerHTML = '<option value="">Keine Konten gefunden</option>';

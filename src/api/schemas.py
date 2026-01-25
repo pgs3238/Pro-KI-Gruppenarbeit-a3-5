@@ -1,6 +1,6 @@
 # Pydantic-Schemas für API Request/Response Validierung
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 from datetime import date, datetime
 from typing import Optional
 
@@ -118,6 +118,12 @@ class KontoResponse(KontoBase):
     iban: str
     erstellt_am: datetime
     aktualisiert_am: datetime
+
+    @computed_field
+    @property
+    def iban_kurz(self) -> str:
+        """Gibt die gekürzte IBAN-Darstellung zurück"""
+        return f"{self.iban[:4]}...{self.iban[-4:]}" if len(self.iban) > 8 else self.iban
 
     class Config:
         from_attributes = True

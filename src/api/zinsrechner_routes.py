@@ -200,47 +200,7 @@ async def vergleich_loeschen(nummer: int):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/konten")
-async def get_konten():
-    """Lädt alle Konten aus der Hauptdatenbank"""
-    try:
-        if not EXPENSES_DB.exists():
-            return {"success": True, "konten": []}
-        
-        conn = sqlite3.connect(EXPENSES_DB)
-        cursor = conn.cursor()
-        
-        cursor.execute('''
-            SELECT 
-                iban_kontonummer,
-                SUM(betrag) as kontostand,
-                COUNT(*) as anzahl_transaktionen,
-                waehrung
-            FROM transaktionen
-            WHERE iban_kontonummer IS NOT NULL
-            GROUP BY iban_kontonummer
-        ''')
-        
-        konten = []
-        for row in cursor.fetchall():
-            iban = row[0]
-            iban_kurz = f"{iban[:4]}...{iban[-4:]}" if len(iban) > 8 else iban
-            
-            konten.append({
-                "iban": iban,
-                "iban_kurz": iban_kurz,
-                "kontostand": round(row[1], 2),
-                "anzahl_transaktionen": row[2],
-                "waehrung": row[3] or "EUR"
-            })
-        
-        conn.close()
-        
-        return {"success": True, "konten": konten}
-    
-    except Exception as e:
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get("/kontostand")
 async def get_kontostand():

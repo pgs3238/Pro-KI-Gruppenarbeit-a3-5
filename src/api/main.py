@@ -32,6 +32,13 @@ except ImportError:
     CHATBOT_AVAILABLE = False
     print("⚠️ Chatbot nicht verfügbar (Gemini SDK fehlt)")
 
+try:
+    from . import category_routes
+    CATEGORY_ROUTES_AVAILABLE = True
+except ImportError:
+    CATEGORY_ROUTES_AVAILABLE = False
+    print("⚠️ Category Routes nicht verfügbar")
+
 from . import zinsrechner_routes
 
 # ==================== SETUP ====================
@@ -100,7 +107,8 @@ if CHATBOT_AVAILABLE:
 app.include_router(zinsrechner_routes.router, prefix="/api")
 
 # Category-Router registrieren
-app.include_router(category_routes.router)
+if CATEGORY_ROUTES_AVAILABLE:
+    app.include_router(category_routes.router)
 
 # Mount static files und templates
 # Finde das Root-Verzeichnis (2 Ebenen über dem src/api Ordner)
