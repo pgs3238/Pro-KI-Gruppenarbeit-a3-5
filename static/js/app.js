@@ -345,13 +345,17 @@ async function performSearch() {
         const requestBody = {};
         
         if (searchParams.buchungstag) {
-            // Convert dd.mm.yyyy → yyyy-mm-dd
-            const parts = searchParams.buchungstag.split('.');
-            if (parts.length === 3) {
-                const isoDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-                requestBody.buchungstag = isoDate;
+            // Validiere das Datumsformat (TT.MM.JJJJ oder TT-MM-JJJJ)
+            const dateRegex = /^\d{2}[.-]\d{2}[.-]\d{4}$/;
+            if (!dateRegex.test(searchParams.buchungstag)) {
+                throw new Error('❌ Ungültiges Datumsformat. Bitte nutze das Format TT.MM.JJJJ oder TT-MM-JJJJ');
             }
+            // Konvertiere TT.MM.JJJJ oder TT-MM-JJJJ → YYYY-MM-DD
+            const parts = searchParams.buchungstag.split(/[.-]/);
+            const isoDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+            requestBody.buchungstag = isoDate;
         }
+        
         if (searchParams.beguenstigter) {
             requestBody.beguenstigter = searchParams.beguenstigter;
         }
