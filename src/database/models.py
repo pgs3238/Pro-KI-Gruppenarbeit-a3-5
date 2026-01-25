@@ -102,6 +102,8 @@ class Category(Base):  # Erbt von Base und repräsentiert die "categories" Tabel
         Enum("Ausgabe", "Einnahme", name="category_type_enum", validate_strings=True),
         nullable=False,
     )
+    icon = Column(String(10), nullable=True, default="🏷️")  # Icon für die Kategorie
+    farbe = Column(String(7), nullable=True, default="#06d6a6")  # Farbe für die Darstellung
 
     # Relationship: Gibt dir Zugriff auf alle Transaktionen dieser Kategorie
     transaktionen = relationship("Transaktion", back_populates="kategorie")

@@ -285,15 +285,31 @@ function toggleFabMenu() {
 // ==================== SEARCH ====================
 function setupFilterInputs() {
     const filterInputs = document.querySelectorAll('.filter-input');
+    const clearBtn = document.getElementById('clearFiltersBtn');
     
-    filterInputs.forEach((input, index) => {
+    // Suche nur bei Enter-Taste
+    filterInputs.forEach((input) => {
         input.addEventListener('keypress', async (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
+                console.log('📍 Enter gedrückt - starte Suche');
                 await performSearch();
             }
         });
     });
+    
+    // Clear-Button Setup
+    if (clearBtn) {
+        clearBtn.addEventListener('click', async () => {
+            // Alle Filter leeren
+            filterInputs.forEach(input => {
+                input.value = '';
+            });
+            // Alle Transaktionen laden
+            await loadTransactions();
+            console.log('✓ Filter gelöscht - zeige alle Transaktionen');
+        });
+    }
 }
 
 
@@ -329,13 +345,17 @@ async function performSearch() {
         const requestBody = {};
         
         if (searchParams.buchungstag) {
-            // Convert dd.mm.yyyy → yyyy-mm-dd
-            const parts = searchParams.buchungstag.split('.');
-            if (parts.length === 3) {
-                const isoDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-                requestBody.buchungstag = isoDate;
+            // Validiere das Datumsformat (TT.MM.JJJJ oder TT-MM-JJJJ)
+            const dateRegex = /^\d{2}[.-]\d{2}[.-]\d{4}$/;
+            if (!dateRegex.test(searchParams.buchungstag)) {
+                throw new Error('❌ Ungültiges Datumsformat. Bitte nutze das Format TT.MM.JJJJ oder TT-MM-JJJJ');
             }
+            // Konvertiere TT.MM.JJJJ oder TT-MM-JJJJ → YYYY-MM-DD
+            const parts = searchParams.buchungstag.split(/[.-]/);
+            const isoDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+            requestBody.buchungstag = isoDate;
         }
+        
         if (searchParams.beguenstigter) {
             requestBody.beguenstigter = searchParams.beguenstigter;
         }
@@ -458,7 +478,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 // ==================== TRANSACTIONS (transactions.html) ====================
 
 /**
- * Lädt die letzten 30 Transaktionen von der API und zeigt sie in der Tabelle
+ * Lädt die Transaktionen von der API (formatiert vom Backend)
  */
 async function loadTransactions() {
     const table = document.getElementById('transactionsTable');
@@ -467,9 +487,8 @@ async function loadTransactions() {
     table.innerHTML = '<tr><td colspan="8" style="text-align: center;">⏳ Laden...</td></tr>';
 
     try {
-        // API aufrufen: GET /transactions?limit=30
-        //const response = await fetch(`${API_BASE_URL}/transactions?limit=30`, {
-        const response = await fetch(`${API_BASE_URL}/transactions`, {
+        // API aufrufen: GET /transactions/formatted/list
+        const response = await fetch(`${API_BASE_URL}/transactions/formatted/list`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -489,37 +508,18 @@ async function loadTransactions() {
             return;
         }
 
-        // Umgekehrte Reihenfolge (neueste zuerst)
-        //transactions.reverse().forEach(t => {
+        // Zeige formatierte Transaktionen (vom Backend)
         transactions.forEach(t => {
             const row = table.insertRow();
-            const betragClass = t.betrag >= 0 ? 'betrag-positiv' : 'betrag-negativ';
-            const betragText = (t.betrag >= 0 ? '+' : '') + t.betrag.toFixed(2).replace('.', ',') + '€';
             
-            // Formatiere Datum als dd.mm.yyyy
-            const date = new Date(t.buchungstag);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-            const formattedDate = `${day}.${month}.${year}`;
-            
-            // Kategorie mit großem Anfangsbuchstaben
-            const kategorie = t.beschreibung ? t.beschreibung.charAt(0).toUpperCase() + t.beschreibung.slice(1) : '-';
-            
-            // Suche das zugehörige Konto
-            const konto = t.konto_id ? availableKonten.find(k => k.id === t.konto_id) : null;
-            const kontoName = konto ? konto.kontoname : '-';
-            
-            console.log(`DEBUG Transaction: id=${t.id}, konto_id=${t.konto_id}, availableKonten=${JSON.stringify(availableKonten)}, kontoName=${kontoName}`);
-
             row.innerHTML = `
-                <td>${formattedDate}</td>
+                <td>${t.datum}</td>
                 <td>${t.beguenstigter}</td>
-                <td>${t.iban_kontonummer ? formatIBAN(t.iban_kontonummer) : '-'}</td>
-                <td>${kontoName}</td>
-                <td>${t.verwendungszweck || '-'}</td>
-                <td>${kategorie}</td>
-                <td class="${betragClass}">${betragText}</td>
+                <td>${t.iban}</td>
+                <td>${t.konto}</td>
+                <td>${t.verwendungszweck}</td>
+                <td>${t.kategorie}</td>
+                <td class="betrag-${t.betrag_class}">${t.betrag}</td>
                 <td style="display: flex; gap: 8px;">
                     <button class="action-btn edit-btn" onclick="editTransaction(${t.id})" title="Bearbeiten">✏️</button>
                     <button class="action-btn delete-btn" onclick="deleteTransaction(${t.id})" title="Löschen">🗑️</button>
@@ -527,10 +527,10 @@ async function loadTransactions() {
             `;
         });
 
-        console.log('✓ Transaktionen geladen:', transactions.length);
+        console.log('✓ ' + transactions.length + ' Transaktionen geladen');
     } catch (error) {
-        console.error('✗ Fehler beim Laden der Transaktionen:', error);
-        table.innerHTML = `<tr><td colspan="8" style="text-align: center; color: red;">Fehler beim Laden der Transaktionen</td></tr>`;
+        console.error('✗ Fehler beim Laden:', error);
+        table.innerHTML = `<tr><td colspan="8" style="text-align: center; color: red;">❌ Fehler: ${error.message}</td></tr>`;
     }
 }
 

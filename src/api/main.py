@@ -1,10 +1,12 @@
 # FastAPI REST API für Transaktionsverwaltung
 
 from fastapi import UploadFile, File, Form, FastAPI, HTTPException, Depends
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date
+from pathlib import Path
 import tempfile, json
 
 from ..database import init_db, Transaktion, Konto
@@ -23,6 +25,7 @@ from .schemas import (
 )
 from .dependencies import get_db
 from . import chatbot_routes
+from . import category_routes
 
 # ==================== SETUP ====================
 
@@ -67,6 +70,23 @@ def startup_event():
 # Chatbot-Router registrieren
 app.include_router(chatbot_routes.router, prefix="/api")
 
+# Category-Router registrieren
+app.include_router(category_routes.router)
+
+# Mount static files und templates
+# Finde das Root-Verzeichnis (2 Ebenen über dem src/api Ordner)
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+STATIC_DIR = BASE_DIR / "static"
+TEMPLATES_DIR = BASE_DIR / "templates"
+
+# Mount static files
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+# Mount templates (für direkten Zugriff auf HTML)
+if TEMPLATES_DIR.exists():
+    app.mount("/templates", StaticFiles(directory=str(TEMPLATES_DIR)), name="templates")
+
 
 # ==================== HILFSFUNKTIONEN ====================
 
@@ -91,10 +111,52 @@ def root():
 # ==================== ENDPUNKTE: CRUD ====================
 
 
-@app.get("/transactions", response_model=List[TransaktionResponse])
+@app.get("/transactions")
 def get_transactions(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """Alle Transaktionen (mit Pagination)"""
     return db.query(Transaktion).offset(skip).limit(limit).all()
+
+
+@app.get("/transactions/formatted/list")
+def get_transactions_formatted(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """Alle Transaktionen mit formatierten Werten für Frontend"""
+    transactions = db.query(Transaktion).order_by(Transaktion.buchungstag.desc()).offset(skip).limit(limit).all()
+    konten = db.query(Konto).all()
+    konto_map = {k.id: k.kontoname for k in konten}
+    
+    formatted = []
+    for t in transactions:
+        # Formatiere Datum als dd.mm.yyyy
+        datum = t.buchungstag.strftime("%d.%m.%Y")
+        
+        # Formatiere Betrag mit + und €
+        betrag_class = "positiv" if t.betrag >= 0 else "negativ"
+        betrag_text = ('+' if t.betrag >= 0 else '') + f"{t.betrag:.2f}".replace('.', ',') + '€'
+        
+        # IBAN formatieren (mit Leerzeichen alle 4 Zeichen)
+        iban = t.iban_kontonummer or '-'
+        if len(iban) > 4:
+            iban = ' '.join([iban[i:i+4] for i in range(0, len(iban), 4)])
+        
+        # Kategorie mit Großbuchstaben
+        kategorie = (t.beschreibung.capitalize() if t.beschreibung else '-')
+        
+        # Kontoname auflösen
+        kontoname = konto_map.get(t.konto_id, '-') if t.konto_id else '-'
+        
+        formatted.append({
+            "id": t.id,
+            "datum": datum,
+            "beguenstigter": t.beguenstigter,
+            "iban": iban,
+            "konto": kontoname,
+            "verwendungszweck": t.verwendungszweck or '-',
+            "kategorie": kategorie,
+            "betrag": betrag_text,
+            "betrag_class": betrag_class
+        })
+    
+    return formatted
 
 
 @app.get("/transactions/{transaction_id}", response_model=TransaktionResponse)
@@ -201,6 +263,7 @@ def search_transactions(
         betrag_max_abs=search_params.betrag_max_abs,
         waehrung=search_params.waehrung,
         konto_name=search_params.konto_name,
+        beschreibung=search_params.beschreibung,
     )
 
 

@@ -1,63 +1,40 @@
-// ============ BEISPIELDATEN ============
-const categoriesData = [
-    {
-        id: 1,
-        name: 'Lebensmittel',
-        typ: 'ausgabe',
-        icon: '🍔',
-        farbe: '#06d6a6',
-        beschreibung: 'Essen und Trinken'
-    },
-    {
-        id: 2,
-        name: 'Wohnen',
-        typ: 'ausgabe',
-        icon: '🏠',
-        farbe: '#3b82f6',
-        beschreibung: 'Miete, Nebenkosten, Energie'
-    },
-    {
-        id: 3,
-        name: 'Verkehr',
-        typ: 'ausgabe',
-        icon: '🚗',
-        farbe: '#8b5cf6',
-        beschreibung: 'Auto, ÖPNV, Benzin'
-    },
-    {
-        id: 4,
-        name: 'Unterhaltung',
-        typ: 'ausgabe',
-        icon: '🎮',
-        farbe: '#f59e0b',
-        beschreibung: 'Freizeit, Hobbys, Streaming'
-    },
-    {
-        id: 5,
-        name: 'Gehalt',
-        typ: 'einnahme',
-        icon: '💼',
-        farbe: '#ef4444',
-        beschreibung: 'Monatliches Einkommen'
-    },
-    {
-        id: 6,
-        name: 'Shopping',
-        typ: 'ausgabe',
-        icon: '🛒',
-        farbe: '#ec4899',
-        beschreibung: 'Kleidung, Elektronik'
-    }
-];
+// ============ API KONFIGURATION ============
+// Verwende die API auf localhost:8000, unabhängig davon, wo die HTML serviert wird
+const API_BASE_URL = 'http://localhost:8000/api/categories';
+
+// ============ KATEGORIEN VON BACKEND LADEN ============
+let categoriesData = [];
 
 // Kategorien laden und anzeigen
-function loadCategories() {
-    // Nach Typ gruppieren
-    const ausgaben = categoriesData.filter(c => c.typ === 'ausgabe');
-    const einnahmen = categoriesData.filter(c => c.typ === 'einnahme');
+async function loadCategories() {
+    try {
+        // Kategorien vom Backend laden
+        const response = await fetch(API_BASE_URL);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const categories = await response.json();
+        categoriesData = categories;
+        renderCategories(categories);
+    } catch (error) {
+        console.error('Fehler beim Laden der Kategorien:', error);
+        showToast('Fehler beim Laden der Kategorien', 'error');
+    }
+}
+
+// Kategorien rendern
+function renderCategories(categories) {
+    console.log('Alle Kategorien erhalten vom Backend:', categories);
+    
+    // Nach Typ gruppieren (Ausgabe vs. Einnahme)
+    const ausgaben = categories.filter(c => c.category_type === 'Ausgabe');
+    const einnahmen = categories.filter(c => c.category_type === 'Einnahme');
+
+    console.log('Ausgaben gefiltert:', ausgaben);
+    console.log('Einnahmen gefiltert:', einnahmen);
 
     // Statistiken aktualisieren
-    document.getElementById('totalCategories').textContent = categoriesData.length;
+    document.getElementById('totalCategories').textContent = categories.length;
     document.getElementById('ausgabenCategories').textContent = ausgaben.length;
     document.getElementById('einnahmenCategories').textContent = einnahmen.length;
     document.getElementById('ausgabenCount').textContent = `${ausgaben.length} Kategorien`;
@@ -93,14 +70,43 @@ function createCategoryItem(category) {
     const item = document.createElement('div');
     item.className = 'category-item';
     
+    // Verwende standardmäßige Icons basierend auf dem Namen
+    const iconMap = {
+        'Lebensmittel': '🍔',
+        'Wohnen': '🏠',
+        'Miete': '🏠',
+        'Verkehr': '🚗',
+        'Transport': '🚗',
+        'Unterhaltung': '🎮',
+        'Freizeit': '🎮',
+        'Gehalt': '💼',
+        'Shopping': '🛒',
+        'Versicherung': '🛡️',
+        'Strom & Gas': '⚡',
+        'Internet & Telefon': '📱',
+        'Abos & Mitgliedschaften': '📺',
+        'Rücklagen': '🏦'
+    };
+
+    // Farben basierend auf Kategorie-Typ
+    const colorMap = {
+        'Ausgabe': '#ef4444',
+        'Einnahme': '#06d6a6'
+    };
+
+    // Verwende das gespeicherte Icon, falls vorhanden, ansonsten Fallback auf iconMap oder default
+    const icon = category.icon || iconMap[category.name] || '🏷️';
+    // Verwende die gespeicherte Farbe, falls vorhanden, ansonsten Fallback auf colorMap oder default
+    const color = category.farbe || colorMap[category.category_type] || '#06d6a6';
+    
     item.innerHTML = `
         <div class="category-item-left">
-            <div class="category-item-icon" style="background: ${category.farbe};">
-                ${category.icon}
+            <div class="category-item-icon" style="background: ${color};">
+                ${icon}
             </div>
             <div class="category-item-info">
                 <h3 class="category-item-name">${category.name}</h3>
-                ${category.beschreibung ? `<p class="category-item-description">${category.beschreibung}</p>` : ''}
+                <p class="category-item-description">${category.category_type}</p>
             </div>
         </div>
         <div class="category-item-right">
@@ -127,10 +133,25 @@ function editCategory(id) {
     if (!category) return;
 
     document.querySelector('input[name="name"]').value = category.name;
-    document.querySelector('select[name="typ"]').value = category.typ;
-    document.querySelector(`input[name="icon"][value="${category.icon}"]`).checked = true;
-    document.querySelector(`input[name="farbe"][value="${category.farbe}"]`).checked = true;
-    document.querySelector('textarea[name="beschreibung"]').value = category.beschreibung || '';
+    document.querySelector('select[name="typ"]').value = category.category_type;
+    
+    // Setze das gespeicherte Icon, falls vorhanden, ansonsten das erste Icon als Default
+    const iconToCheck = document.querySelector(`input[name="icon"][value="${category.icon}"]`);
+    if (iconToCheck) {
+        iconToCheck.checked = true;
+    } else {
+        document.querySelector('input[name="icon"][value="🍔"]').checked = true;
+    }
+    
+    // Setze die gespeicherte Farbe, falls vorhanden, ansonsten die Default-Farbe
+    const colorToCheck = document.querySelector(`input[name="farbe"][value="${category.farbe}"]`);
+    if (colorToCheck) {
+        colorToCheck.checked = true;
+    } else {
+        document.querySelector('input[name="farbe"][value="#06d6a6"]').checked = true;
+    }
+    
+    document.querySelector('textarea[name="beschreibung"]').value = '';
 
     document.querySelector('.modal-title').textContent = 'Kategorie bearbeiten';
     document.getElementById('categoryForm').dataset.editId = id;
@@ -139,16 +160,27 @@ function editCategory(id) {
 }
 
 // Kategorie löschen
-function deleteCategory(id) {
+async function deleteCategory(id) {
     const category = categoriesData.find(c => c.id === id);
     if (!category) return;
 
     if (confirm(`Möchten Sie die Kategorie "${category.name}" wirklich löschen?`)) {
-        const index = categoriesData.findIndex(c => c.id === id);
-        if (index !== -1) {
-            categoriesData.splice(index, 1);
+        try {
+            const response = await fetch(`http://localhost:8000/api/categories/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.detail || 'Fehler beim Löschen');
+            }
+
+            categoriesData = categoriesData.filter(c => c.id !== id);
             loadCategories();
             showToast('Kategorie erfolgreich gelöscht!', 'success');
+        } catch (error) {
+            console.error('Fehler beim Löschen der Kategorie:', error);
+            showToast(error.message || 'Fehler beim Löschen der Kategorie', 'error');
         }
     }
 }
@@ -158,6 +190,24 @@ const modal = document.getElementById('categoryModal');
 const selects = document.querySelectorAll('select.form-control');
 
 function openCategoryModal() {
+    // Stelle sicher, dass ein Typ ausgewählt ist (Standard: Ausgabe)
+    const typSelect = document.querySelector('select[name="typ"]');
+    if (typSelect && !typSelect.value) {
+        typSelect.value = 'Ausgabe';
+    }
+    
+    // Stelle sicher, dass ein Icon ausgewählt ist (Standard: erstes Icon)
+    const iconInputs = document.querySelectorAll('input[name="icon"]');
+    if (iconInputs.length > 0 && !document.querySelector('input[name="icon"]:checked')) {
+        iconInputs[0].checked = true;
+    }
+    
+    // Stelle sicher, dass eine Farbe ausgewählt ist (Standard: erste Farbe)
+    const farbeInputs = document.querySelectorAll('input[name="farbe"]');
+    if (farbeInputs.length > 0 && !document.querySelector('input[name="farbe"]:checked')) {
+        farbeInputs[0].checked = true;
+    }
+    
     modal.classList.add('active');
 }
 
@@ -174,36 +224,67 @@ modal.addEventListener('click', (e) => {
 });
 
 // Form Submit
-document.getElementById('categoryForm').addEventListener('submit', (e) => {
+document.getElementById('categoryForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.target;
     const editId = form.dataset.editId;
 
+    const iconElement = document.querySelector('input[name="icon"]:checked');
+    const farbeElement = document.querySelector('input[name="farbe"]:checked');
+    
+    console.log('Ausgewähltes Icon:', iconElement ? iconElement.value : 'KEINE AUSWAHL');
+    console.log('Ausgewählte Farbe:', farbeElement ? farbeElement.value : 'KEINE AUSWAHL');
+
     const categoryData = {
         name: document.querySelector('input[name="name"]').value,
-        typ: document.querySelector('select[name="typ"]').value,
-        icon: document.querySelector('input[name="icon"]:checked').value,
-        farbe: document.querySelector('input[name="farbe"]:checked').value,
-        beschreibung: document.querySelector('textarea[name="beschreibung"]').value || ''
+        category_type: document.querySelector('select[name="typ"]').value,
+        icon: iconElement ? iconElement.value : '🏷️',
+        farbe: farbeElement ? farbeElement.value : '#06d6a6'
     };
 
-    if (editId) {
-        const category = categoriesData.find(c => c.id === parseInt(editId));
-        if (category) {
-            Object.assign(category, categoryData);
-            showToast('Kategorie erfolgreich aktualisiert!', 'success');
-        }
-    } else {
-        const newId = Math.max(...categoriesData.map(c => c.id), 0) + 1;
-        categoriesData.push({
-            id: newId,
-            ...categoryData
-        });
-        showToast('Kategorie erfolgreich hinzugefügt!', 'success');
-    }
+    console.log('CategoryData:', categoryData);
 
-    loadCategories();
-    closeCategoryModal();
+    try {
+        let response;
+        if (editId) {
+            // Update existierende Kategorie
+            response = await fetch(`http://localhost:8000/api/categories/${editId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(categoryData)
+            });
+        } else {
+            // Erstelle neue Kategorie
+            response = await fetch('http://localhost:8000/api/categories', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(categoryData)
+            });
+        }
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Fehler beim Speichern');
+        }
+
+        const savedCategory = await response.json();
+
+        if (editId) {
+            showToast('Kategorie erfolgreich aktualisiert!', 'success');
+        } else {
+            showToast('Kategorie erfolgreich hinzugefügt!', 'success');
+        }
+
+        loadCategories();
+        closeCategoryModal();
+    } catch (error) {
+        console.error('Fehler beim Speichern der Kategorie:', error);
+        showToast(error.message || 'Fehler beim Speichern der Kategorie', 'error');
+    }
 });
 
 // Select Placeholder Styling
@@ -251,23 +332,34 @@ loadCategories();
 // ============ REGELN MODAL ============
 
 let currentRulesCategory = null;
-
-// Beispiel-Regeln (sollten später vom Backend kommen)
-const categoryRules = {
-    1: ['rewe', 'edeka', 'aldi', 'lidl', 'supermarkt', 'lebensmittel'],
-    2: ['miete', 'nebenkosten', 'strom', 'gas', 'wasser'],
-    3: ['tankstelle', 'öpnv', 'bahn', 'bus', 'benzin', 'diesel'],
-    4: ['netflix', 'spotify', 'kino', 'streaming'],
-    5: ['gehalt', 'lohn'],
-    6: ['amazon', 'zalando', 'ebay', 'kleidung']
-};
+let currentRulesCategoryId = null;
 
 function openRulesModal(categoryId, categoryName) {
-    currentRulesCategory = categoryId;
+    currentRulesCategory = categoryName;
+    currentRulesCategoryId = categoryId;
     const category = categoriesData.find(c => c.id === categoryId);
     
     if (category) {
-        document.getElementById('rulesCategoryIcon').textContent = category.icon;
+        // Icon basierend auf Kategorienamen
+        const iconMap = {
+            'Lebensmittel': '🍔',
+            'Wohnen': '🏠',
+            'Miete': '🏠',
+            'Verkehr': '🚗',
+            'Transport': '🚗',
+            'Unterhaltung': '🎮',
+            'Freizeit': '🎮',
+            'Gehalt': '💼',
+            'Shopping': '🛒',
+            'Versicherung': '🛡️',
+            'Strom & Gas': '⚡',
+            'Internet & Telefon': '📱',
+            'Abos & Mitgliedschaften': '📺',
+            'Rücklagen': '🏦'
+        };
+        
+        const icon = iconMap[category.name] || '🏷️';
+        document.getElementById('rulesCategoryIcon').textContent = icon;
         document.getElementById('rulesCategoryName').textContent = category.name;
         
         loadKeywords(categoryId);
@@ -280,32 +372,44 @@ function closeRulesModal() {
     document.getElementById('rulesModal').classList.remove('active');
     document.getElementById('newKeywordInput').value = '';
     currentRulesCategory = null;
+    currentRulesCategoryId = null;
 }
 
-function loadKeywords(categoryId) {
-    const keywords = categoryRules[categoryId] || [];
-    const keywordsList = document.getElementById('keywordsList');
-    
-    keywordsList.innerHTML = '';
-    
-    if (keywords.length === 0) {
-        keywordsList.innerHTML = '<div class="empty-state">Keine Schlüsselwörter definiert</div>';
-    } else {
-        keywords.forEach(keyword => {
-            const tag = document.createElement('div');
-            tag.className = 'keyword-tag';
-            tag.innerHTML = `
-                <span class="keyword-text">${keyword}</span>
-                <button class="keyword-remove" onclick="removeKeyword('${keyword}')" title="Entfernen">×</button>
-            `;
-            keywordsList.appendChild(tag);
-        });
+async function loadKeywords(categoryId) {
+    try {
+        const response = await fetch(`http://localhost:8000/api/categories/${categoryId}/rules`);
+        if (!response.ok) {
+            throw new Error('Fehler beim Laden der Regeln');
+        }
+
+        const rulesData = await response.json();
+        const keywords = rulesData.keywords || [];
+        
+        const keywordsList = document.getElementById('keywordsList');
+        keywordsList.innerHTML = '';
+        
+        if (keywords.length === 0) {
+            keywordsList.innerHTML = '<div class="empty-state">Keine Schlüsselwörter definiert</div>';
+        } else {
+            keywords.forEach(keyword => {
+                const tag = document.createElement('div');
+                tag.className = 'keyword-tag';
+                tag.innerHTML = `
+                    <span class="keyword-text">${keyword}</span>
+                    <button class="keyword-remove" onclick="removeKeyword('${keyword}')" title="Entfernen">×</button>
+                `;
+                keywordsList.appendChild(tag);
+            });
+        }
+        
+        document.getElementById('keywordsCount').textContent = keywords.length;
+    } catch (error) {
+        console.error('Fehler beim Laden der Schlüsselwörter:', error);
+        showToast('Fehler beim Laden der Schlüsselwörter', 'error');
     }
-    
-    document.getElementById('keywordsCount').textContent = keywords.length;
 }
 
-function addKeyword() {
+async function addKeyword() {
     const input = document.getElementById('newKeywordInput');
     const keyword = input.value.trim().toLowerCase();
     
@@ -313,40 +417,55 @@ function addKeyword() {
         showToast('Bitte geben Sie ein Schlüsselwort ein!', 'warning');
         return;
     }
-    
-    if (!categoryRules[currentRulesCategory]) {
-        categoryRules[currentRulesCategory] = [];
+
+    try {
+        const response = await fetch(`http://localhost:8000/api/categories/${currentRulesCategoryId}/rules/keywords`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ keyword: keyword })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Fehler beim Hinzufügen');
+        }
+
+        showToast('Schlüsselwort erfolgreich hinzugefügt!', 'success');
+        await loadKeywords(currentRulesCategoryId);
+        input.value = '';
+        input.focus();
+    } catch (error) {
+        console.error('Fehler beim Hinzufügen des Schlüsselworts:', error);
+        showToast(error.message || 'Fehler beim Hinzufügen des Schlüsselworts', 'error');
     }
-    
-    if (categoryRules[currentRulesCategory].includes(keyword)) {
-        showToast('Dieses Schlüsselwort existiert bereits!', 'warning');
-        return;
-    }
-    
-    categoryRules[currentRulesCategory].push(keyword);
-    loadKeywords(currentRulesCategory);
-    input.value = '';
-    input.focus();
 }
 
-function removeKeyword(keyword) {
+async function removeKeyword(keyword) {
     if (confirm(`Schlüsselwort "${keyword}" wirklich entfernen?`)) {
-        const index = categoryRules[currentRulesCategory].indexOf(keyword);
-        if (index !== -1) {
-            categoryRules[currentRulesCategory].splice(index, 1);
-            loadKeywords(currentRulesCategory);
+        try {
+            const encodedKeyword = encodeURIComponent(keyword);
+            const response = await fetch(`http://localhost:8000/api/categories/${currentRulesCategoryId}/rules/keywords/${encodedKeyword}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                throw new Error('Fehler beim Löschen');
+            }
+
+            showToast('Schlüsselwort erfolgreich gelöscht!', 'success');
+            await loadKeywords(currentRulesCategoryId);
+        } catch (error) {
+            console.error('Fehler beim Löschen des Schlüsselworts:', error);
+            showToast(error.message || 'Fehler beim Löschen des Schlüsselworts', 'error');
         }
     }
 }
 
 function testRules() {
-    const keywords = categoryRules[currentRulesCategory] || [];
-    if (keywords.length === 0) {
-        showToast('Keine Regeln zum Testen vorhanden!', 'warning');
-        return;
-    }
-    
-    showToast(`Diese Kategorie wird bei folgenden Schlüsselwörtern verwendet: ${keywords.join(', ')}`, 'info', 15000);
+    // Diese Funktion wird nicht mehr benötigt, da wir die echten Daten haben
+    showToast('Regeln werden automatisch beim Kategorisieren verwendet.', 'info', 5000);
 }
 
 // Modal Click Outside
