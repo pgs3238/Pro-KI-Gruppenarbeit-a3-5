@@ -304,21 +304,25 @@ async function performSearch() {
     const table = document.getElementById('transactionsTable');
     if (!table) return;
 
-    // Sammle alle Filter-Werte
+    // Sammle alle Filter-Werte über data-Attribute
     const filterInputs = document.querySelectorAll('.filter-input');
     
-    const searchParams = {
-        buchungstag: filterInputs[0].value || null,
-        beguenstigter: filterInputs[1].value || null,
-        iban_kontonummer: filterInputs[2].value || null,
-        kontoSelect: filterInputs[3].value || null,
-        verwendungszweck: filterInputs[4].value || null,
-        beschreibung: filterInputs[5].value || null,
-        betragMinStr: filterInputs[6].value || null,
-        betragMaxStr: filterInputs[7].value || null
-    };
+    const searchParams = {};
+    filterInputs.forEach(input => {
+        const filterName = input.getAttribute('data-filter');
+        if (filterName && input.value.trim()) {
+            searchParams[filterName] = input.value.trim();
+        }
+    });
 
-    table.innerHTML = '<tr><td colspan="7" style="text-align: center;">⏳ Suche läuft...</td></tr>';
+    // Wenn keine Filter gesetzt sind, zeige Nachricht
+    if (Object.keys(searchParams).length === 0) {
+        console.log('ℹ️ Keine Filter gesetzt - zeige alle Transaktionen');
+        await loadTransactions();
+        return;
+    }
+
+    table.innerHTML = '<tr><td colspan="8" style="text-align: center;">⏳ Suche läuft...</td></tr>';
 
     try {
         // Baue den Request Body
@@ -338,27 +342,31 @@ async function performSearch() {
         if (searchParams.iban_kontonummer) {
             requestBody.iban_kontonummer = searchParams.iban_kontonummer;
         }
-        if (searchParams.kontoSelect) {
-            requestBody.konto_name = searchParams.kontoSelect.trim();
+        if (searchParams.konto_name) {
+            requestBody.konto_name = searchParams.konto_name;
         }
         if (searchParams.verwendungszweck) {
             requestBody.verwendungszweck = searchParams.verwendungszweck;
         }
-        if (searchParams.betragMinStr) {
-            const betragMin = parseFloat(searchParams.betragMinStr.replace(',','.'));
+        if (searchParams.beschreibung) {
+            requestBody.beschreibung = searchParams.beschreibung;
+        }
+        if (searchParams.betrag_min) {
+            const betragMin = parseFloat(searchParams.betrag_min.replace(',','.'));
             if (!isNaN(betragMin)) {
                 requestBody.betrag_min_abs = betragMin;
             }
         }
-        if (searchParams.betragMaxStr) {
-            const betragMax = parseFloat(searchParams.betragMaxStr.replace(',','.'));
+        if (searchParams.betrag_max) {
+            const betragMax = parseFloat(searchParams.betrag_max.replace(',','.'));
             if (!isNaN(betragMax)) {
                 requestBody.betrag_max_abs = betragMax;
             }
         }
 
         // Console log to test input values at Filter & Search
-        console.log("📤 Sending search request:", requestBody);
+        console.log("📤 Suchparameter:", searchParams);
+        console.log("📤 Sende Suche an API:", requestBody);
 
         // API aufrufen: POST /transactions/search
         const response = await fetch(`${API_BASE_URL}/transactions/search`, {
@@ -370,7 +378,8 @@ async function performSearch() {
         });
 
         if (!response.ok) {
-            throw new Error(`API-Fehler: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(`API-Fehler ${response.status}: ${errorData.detail || 'Unbekannter Fehler'}`);
         }
 
         const transactions = await response.json();
@@ -378,7 +387,7 @@ async function performSearch() {
         table.innerHTML = '';
 
         if (transactions.length === 0) {
-            table.innerHTML = '<tr><td colspan="7" style="text-align: center;">Keine Transaktionen gefunden</td></tr>';
+            table.innerHTML = '<tr><td colspan="8" style="text-align: center;">Keine Transaktionen gefunden</td></tr>';
             return;
         }
 
@@ -417,10 +426,10 @@ async function performSearch() {
             `;
         });
 
-        console.log('✓ Suchergebnisse:', transactions.length);
+        console.log('✓ Suchergebnisse: ' + transactions.length + ' Transaktionen gefunden');
     } catch (error) {
         console.error('✗ Fehler bei der Suche:', error);
-        table.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Fehler bei der Suche</td></tr>`;
+        table.innerHTML = `<tr><td colspan="8" style="text-align: center; color: red;">❌ Fehler: ${error.message}</td></tr>`;
     }
 }
 
