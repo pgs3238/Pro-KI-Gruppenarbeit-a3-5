@@ -11,7 +11,7 @@ from datetime import date
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from .models import Transaktion, Konto
+from .models import Transaktion, Konto, Category
 
 
 def search_transaktionen(
@@ -28,6 +28,7 @@ def search_transaktionen(
     waehrung: Optional[str] = None,
     konto_name: Optional[str] = None,
     beschreibung: Optional[str] = None,
+    kategorie_name: Optional[str] = None,
 ) -> List[Transaktion]:
     """
     Searches transactions in the database based on multiple optional filters.
@@ -60,7 +61,8 @@ def search_transaktionen(
         booking date descending.
     """
 
-    query = session.query(Transaktion).join(Konto, Transaktion.konto_id == Konto.id)
+    # Verwende outerjoin statt join, um auch Transaktionen ohne Konto/Kategorie zu finden
+    query = session.query(Transaktion).outerjoin(Konto, Transaktion.konto_id == Konto.id).outerjoin(Category, Transaktion.kategorie_id == Category.id)
 
     if buchungstag is not None:
         query = query.filter(Transaktion.buchungstag == buchungstag)
@@ -105,9 +107,13 @@ def search_transaktionen(
     if waehrung is not None:
         query = query.filter(Transaktion.waehrung == waehrung)
 
-    # Filter by Beschreibung (Kategorie)
+    # Filter by Beschreibung (Freitextfeld)
     if beschreibung is not None:
         query = query.filter(Transaktion.beschreibung.ilike(f"%{beschreibung}%"))
+
+    # Filter by Kategorie-Name (über die Category-Tabelle)
+    if kategorie_name is not None:
+        query = query.filter(Category.name.ilike(f"%{kategorie_name}%"))
 
     # Filter by Konto
     if konto_name is not None:
