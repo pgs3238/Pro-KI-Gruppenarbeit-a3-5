@@ -99,7 +99,7 @@
             <p>Ihr Finanzüberblick auf einen Blick</p>
           </div>
 
-          <!-- KPI Cards -->
+          <!-- KPI Cards inkl. Konten -->
           <div class="dashboard-kpis">
             <div class="kpi-card">
               <div class="kpi-icon">📊</div>
@@ -127,36 +127,33 @@
                 <div class="kpi-change" id="balanceChangePercent">--</div>
               </div>
             </div>
+
+            <div class="kpi-card kpi-card-accounts" onclick="window.location.href='konten.html'" style="cursor: pointer;">
+              <div class="kpi-icon">🏦</div>
+              <div class="kpi-content">
+                <div class="kpi-label">Meine Konten</div>
+                <div class="kpi-accounts-icons" id="accountsKpiIcons">
+                  <!-- Wird mit JavaScript gefüllt -->
+                </div>
+              </div>
+            </div>
           </div>
 
-          <!-- Main Dashboard Grid -->
-          <div class="dashboard-grid">
-            <!-- Konten Übersicht -->
-            <div class="dashboard-card">
-              <div class="dashboard-card-header">
-                <h2>🏦 Meine Konten</h2>
-                <button class="card-link-btn" onclick="window.location.href='konten.html'">
-                  Mehr →
-                </button>
-              </div>
-              <div class="accounts-preview" id="accountsPreview">
-                <!-- Wird mit JavaScript gefüllt -->
+          <!-- Sankey Diagramm -->
+          <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+              <h2 style="margin: 0;">🔀 Geldfluss nach Kategorien</h2>
+              <div style="display: flex; align-items: center; gap: 15px;">
+                <button id="sankeyPrevMonth" style="background: #333; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 5px 12px; border-radius: 5px;" title="Vorheriger Monat">◀</button>
+                <span id="sankeyMonthLabel" style="font-size: 16px; font-weight: 500; min-width: 140px; text-align: center;">Januar 2026</span>
+                <button id="sankeyNextMonth" style="background: #333; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 5px 12px; border-radius: 5px;" title="Nächster Monat">▶</button>
               </div>
             </div>
+            <div id="sankeyChart" style="width: 100%; height: 500px;"></div>
+          </div>
 
-            <!-- Letzte Transaktionen -->
-            <div class="dashboard-card">
-              <div class="dashboard-card-header">
-                <h2>💳 Letzten Transaktionen</h2>
-                <button class="card-link-btn" onclick="window.location.href='transactions.html'">
-                  Mehr →
-                </button>
-              </div>
-              <div class="transactions-preview" id="transactionsPreview">
-                <!-- Wird mit JavaScript gefüllt -->
-              </div>
-            </div>
-
+          <!-- Top Ausgaben und Trend nebeneinander -->
+          <div class="dashboard-grid dashboard-grid-2col">
             <!-- Top Kategorien -->
             <div class="dashboard-card">
               <div class="dashboard-card-header">
@@ -181,17 +178,17 @@
             </div>
           </div>
 
-          <!-- Sankey Diagramm -->
-          <div class="card" style="margin-top: 20px;">
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-              <h2 style="margin: 0;">🔀 Geldfluss nach Kategorien</h2>
-              <div style="display: flex; align-items: center; gap: 15px;">
-                <button id="sankeyPrevMonth" style="background: #333; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 5px 12px; border-radius: 5px;" title="Vorheriger Monat">◀</button>
-                <span id="sankeyMonthLabel" style="font-size: 16px; font-weight: 500; min-width: 140px; text-align: center;">Januar 2026</span>
-                <button id="sankeyNextMonth" style="background: #333; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 5px 12px; border-radius: 5px;" title="Nächster Monat">▶</button>
-              </div>
+          <!-- Letzte Transaktionen in voller Breite -->
+          <div class="dashboard-card" style="margin-top: 20px;">
+            <div class="dashboard-card-header">
+              <h2>💳 Letzte Transaktionen</h2>
+              <button class="card-link-btn" onclick="window.location.href='transactions.html'">
+                Mehr →
+              </button>
             </div>
-            <div id="sankeyChart" style="width: 100%; height: 500px;"></div>
+            <div class="transactions-preview" id="transactionsPreview">
+              <!-- Wird mit JavaScript gefüllt -->
+            </div>
           </div>
         </div>
       </div>

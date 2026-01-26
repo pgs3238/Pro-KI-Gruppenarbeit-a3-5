@@ -142,40 +142,30 @@ async function loadKPIs() {
   }
 }
 
-// Konten Preview laden
+// Konten Preview laden (für KPI-Karte)
 async function loadAccountsPreview() {
   try {
     const response = await fetch(`${API_BASE_URL}/konten`);
     const accounts = await response.json();
     
-    // Nur die ersten 3 Konten anzeigen
-    const previewAccounts = accounts.slice(0, 3);
+    const iconsContainer = document.getElementById("accountsKpiIcons");
     
-    const container = document.getElementById("accountsPreview");
-    container.innerHTML = "";
+    if (!iconsContainer) return;
+    
+    iconsContainer.innerHTML = "";
 
-    if (previewAccounts.length === 0) {
-      container.innerHTML = '<p style="color: #888; text-align: center;">Noch keine Konten vorhanden</p>';
+    if (accounts.length === 0) {
+      iconsContainer.innerHTML = '<span style="color: #888; font-size: 0.8rem;">Noch keine Konten</span>';
       return;
     }
 
-    previewAccounts.forEach((account) => {
-      const accountItem = document.createElement("div");
-      accountItem.className = "account-preview-item";
-      
-      const icon = getAccountIcon(account.kontotyp.toLowerCase());
-      
-      accountItem.innerHTML = `
-        <div class="account-preview-info">
-          <div class="account-preview-icon">${icon}</div>
-          <div class="account-preview-details">
-            <h4>${account.kontoname}</h4>
-            <p>${account.kontotyp}</p>
-          </div>
-        </div>
-      `;
-      
-      container.appendChild(accountItem);
+    // Zeige alle Konten als Icons
+    accounts.forEach((account) => {
+      const icon = document.createElement("div");
+      icon.className = "kpi-account-icon";
+      icon.title = account.kontoname;
+      icon.textContent = getAccountIcon(account.kontotyp.toLowerCase());
+      iconsContainer.appendChild(icon);
     });
 
   } catch (error) {
