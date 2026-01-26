@@ -32,14 +32,14 @@ class Konto(
     kontoname = Column(
         String(100), nullable=False, unique=True
     )  # z.B. "Girokonto", "Sparkonto"
-    kontonummer = Column(String(34), nullable=False, unique=True)  # IBAN
+    kontonummer = Column(String(34), nullable=True)  # IBAN (optional)
     bankname = Column(String(200), nullable=True)  # z.B. "Sparkasse München"
     kontostand = Column(Float, nullable=False, default=0.0)  # Aktueller Kontostand
     waehrung = Column(String(3), default="EUR")  # Währung
     kontotyp = Column(
         String(50), nullable=False
     )  # z.B. "Girokonto", "Sparkonto", "Kreditkarte"
-    iban = Column(String(34), nullable=False)  # IBAN für Transaktionen
+    iban = Column(String(34), nullable=True)  # IBAN für Transaktionen (optional)
     bic = Column(String(11), nullable=True)  # BIC/SWIFT Code
     farbe = Column(String(7), default="#06d6a6")  # Farbe für Darstellung (Hex-Code)
     erstellt_am = Column(DateTime, default=datetime.now)  # Erstellungsdatum

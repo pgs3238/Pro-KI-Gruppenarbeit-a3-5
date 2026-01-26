@@ -472,17 +472,15 @@ def create_konto(konto: KontoCreate, db: Session = Depends(get_db)):
     if existing:
         raise HTTPException(status_code=400, detail="Kontoname existiert bereits")
 
-    # Prüfe ob Kontonummer (IBAN) schon existiert
-    existing_iban = (
-        db.query(Konto).filter(Konto.kontonummer == konto.kontonummer).first()
-    )
-    if existing_iban:
-        raise HTTPException(status_code=400, detail="Kontonummer existiert bereits")
+    # Leere Kontonummer als None speichern (nicht als leerer String)
+    kontonummer = konto.kontonummer.strip() if konto.kontonummer else None
+    if kontonummer == "":
+        kontonummer = None
 
     new_konto = KontoManager.erstelle_konto(
         session=db,
         kontoname=konto.kontoname,
-        kontonummer=konto.kontonummer,
+        kontonummer=kontonummer,
         kontotyp=konto.kontotyp,
         bankname=konto.bankname,
         kontostand=konto.kontostand,
