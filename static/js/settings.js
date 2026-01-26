@@ -1,14 +1,15 @@
 // ==================== API KEY MANAGEMENT ====================
 
-// API Base URL
-const API_BASE_URL = 'http://localhost:8000';
+// Settings API URL (verwendet globale API_BASE_URL falls vorhanden)
+const SETTINGS_API_URL = 'http://localhost:8000';
 
 /**
  * Lädt den Status des API-Keys vom Server
  */
 async function loadApiKeyStatus() {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/settings/api-key/status`);
+        const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : SETTINGS_API_URL;
+        const response = await fetch(`${baseUrl}/api/settings/api-key/status`);
         if (!response.ok) throw new Error('Fehler beim Laden des API-Key Status');
         
         const data = await response.json();
@@ -31,7 +32,8 @@ async function loadApiKeyStatus() {
  */
 async function saveApiKey(apiKey) {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/settings/api-key`, {
+        const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : SETTINGS_API_URL;
+        const response = await fetch(`${baseUrl}/api/settings/api-key`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -63,7 +65,10 @@ function initApiKeyModal() {
     // Event Listener für den Einstellungs-Button
     const settingsBtn = document.querySelector('.icon-btn[onclick*="apiKeyModal"]');
     if (settingsBtn) {
+        // Entferne das onclick-Attribut und verwende stattdessen addEventListener
+        settingsBtn.removeAttribute('onclick');
         settingsBtn.addEventListener('click', () => {
+            modal.style.display = 'flex';
             loadApiKeyStatus();
         });
     }
@@ -80,7 +85,7 @@ function initApiKeyModal() {
             const apiKey = apiKeyInput.value.trim();
             
             if (!apiKey) {
-                showToast('Bitte geben Sie einen API-Key ein', 'error');
+                showSettingsToast('Bitte geben Sie einen API-Key ein', 'error');
                 return;
             }
             
@@ -92,21 +97,18 @@ function initApiKeyModal() {
                 const result = await saveApiKey(apiKey);
                 
                 if (result.success) {
-                    showToast('API-Key erfolgreich gespeichert!', 'success');
+                    showSettingsToast('API-Key erfolgreich gespeichert!', 'success');
                     
                     // Schließe Modal nach kurzer Verzögerung
                     setTimeout(() => {
                         modal.style.display = 'none';
                         apiKeyInput.value = '';
-                        
-                        // Lade neuen Status
-                        loadApiKeyStatus();
                     }, 1000);
                 } else {
-                    showToast('Fehler beim Speichern', 'error');
+                    showSettingsToast('Fehler beim Speichern', 'error');
                 }
             } catch (error) {
-                showToast(error.message || 'Fehler beim Speichern', 'error');
+                showSettingsToast(error.message || 'Fehler beim Speichern', 'error');
             } finally {
                 // Setze Button zurück
                 newSaveBtn.disabled = false;
@@ -115,18 +117,17 @@ function initApiKeyModal() {
         });
     }
     
-    // Lade initialen Status
-    loadApiKeyStatus();
+    // NICHT automatisch laden - nur wenn Modal geöffnet wird
 }
 
 // ==================== TOAST NOTIFICATIONS ====================
 
 /**
- * Zeigt eine Toast-Benachrichtigung an
+ * Zeigt eine Toast-Benachrichtigung an (für Settings)
  * @param {string} message - Die anzuzeigende Nachricht
  * @param {string} type - Der Typ: 'success', 'error', 'info', 'warning'
  */
-function showToast(message, type = 'info') {
+function showSettingsToast(message, type = 'info') {
     let toastContainer = document.getElementById('toastContainer');
     
     // Erstelle Container falls nicht vorhanden
