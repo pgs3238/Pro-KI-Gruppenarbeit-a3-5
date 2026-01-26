@@ -21,6 +21,7 @@ function showToast(message, type = "success") {
 
 // Daten beim Laden der Seite abrufen
 document.addEventListener("DOMContentLoaded", async () => {
+  setupSankeyControls();  // Event-Listener für Monatspfeile
   await loadDashboardData();
 });
 
@@ -33,6 +34,7 @@ async function loadDashboardData() {
       loadTransactionsPreview(),
       loadCategoriesPreview(),
       loadExpensesTrend(),
+      loadSankeyChart(),
     ]);
   } catch (error) {
     console.error("Fehler beim Laden der Dashboard-Daten:", error);
@@ -428,6 +430,131 @@ async function loadExpensesTrend() {
 
   } catch (error) {
     console.error("Fehler beim Laden des Ausgaben-Trends:", error);
+  }
+}
+
+// ==================== SANKEY DIAGRAMM ====================
+
+// Aktueller Monat für Sankey (global)
+let sankeyCurrentYear = new Date().getFullYear();
+let sankeyCurrentMonth = new Date().getMonth() + 1; // 1-12
+
+// Deutsche Monatsnamen
+const monthNames = [
+  'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+  'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'
+];
+
+// Monatslabel aktualisieren
+function updateSankeyMonthLabel() {
+  const label = document.getElementById('sankeyMonthLabel');
+  if (label) {
+    label.textContent = `${monthNames[sankeyCurrentMonth - 1]} ${sankeyCurrentYear}`;
+  }
+}
+
+// Sankey-Diagramm laden
+async function loadSankeyChart() {
+  const sankeyElement = document.getElementById('sankeyChart');
+  if (!sankeyElement) return;
+
+  // Monatslabel aktualisieren
+  updateSankeyMonthLabel();
+  
+  // Container leeren (wichtig für Monatswechsel)
+  sankeyElement.innerHTML = '<div style="text-align: center; color: #888; padding: 40px;">⏳ Laden...</div>';
+
+  try {
+    // Lade Sankey-Daten für den ausgewählten Monat
+    const response = await fetch(`${API_BASE_URL}/transactions/sankey-data?year=${sankeyCurrentYear}&month=${sankeyCurrentMonth}`);
+    const data = await response.json();
+
+    // Prüfe ob Daten vorhanden
+    if (!data.nodes || data.nodes.length === 0) {
+      sankeyElement.innerHTML = `<div style="text-align: center; color: #888; padding: 40px;">Keine Ausgaben im ${monthNames[sankeyCurrentMonth - 1]} ${sankeyCurrentYear}</div>`;
+      return;
+    }
+
+    // Extrahiere Arrays für Plotly aus den Backend-Daten
+    const nodeLabels = data.nodes.map(n => n.label);
+    const nodeColors = data.nodes.map(n => n.color);
+    
+    const sources = data.links.map(l => l.source);
+    const targets = data.links.map(l => l.target);
+    const values = data.links.map(l => l.value);
+    const linkColors = data.links.map(l => l.color);
+
+    // Plotly Sankey erstellen
+    const trace = {
+      type: 'sankey',
+      orientation: 'h',
+      node: {
+        pad: 15,
+        thickness: 30,
+        line: { color: '#444', width: 0.5 },
+        label: nodeLabels,
+        color: nodeColors,
+        hovertemplate: '<b>%{label}</b><br>%{value:,.2f} €<extra></extra>'
+      },
+      link: {
+        source: sources,
+        target: targets,
+        value: values,
+        color: linkColors,
+        hovertemplate: '%{source.label} → %{target.label}<br><b>%{value:,.2f} €</b><extra></extra>'
+      }
+    };
+
+    const layout = {
+      font: { size: 13, color: '#ccc', family: 'Arial, sans-serif' },
+      paper_bgcolor: 'transparent',
+      plot_bgcolor: 'transparent',
+      margin: { l: 10, r: 10, t: 10, b: 10 }
+    };
+
+    const config = {
+      responsive: true,
+      displayModeBar: false
+    };
+
+    // Container leeren vor dem Rendern
+    sankeyElement.innerHTML = '';
+    Plotly.newPlot(sankeyElement, [trace], layout, config);
+    console.log(`✓ Sankey-Diagramm geladen (${monthNames[sankeyCurrentMonth - 1]} ${sankeyCurrentYear}, ${data.category_count} Kategorien, ${formatCurrency(data.total_expenses)})`);
+
+  } catch (error) {
+    console.error('✗ Fehler beim Laden des Sankey-Diagramms:', error);
+    sankeyElement.innerHTML = '<div style="text-align: center; color: #ff6b6b; padding: 40px;">Fehler beim Laden des Diagramms</div>';
+  }
+}
+
+// Monat wechseln
+function changeSankeyMonth(delta) {
+  sankeyCurrentMonth += delta;
+  
+  // Jahr wechseln wenn nötig
+  if (sankeyCurrentMonth > 12) {
+    sankeyCurrentMonth = 1;
+    sankeyCurrentYear++;
+  } else if (sankeyCurrentMonth < 1) {
+    sankeyCurrentMonth = 12;
+    sankeyCurrentYear--;
+  }
+  
+  // Diagramm neu laden
+  loadSankeyChart();
+}
+
+// Event-Listener für Monatspfeile
+function setupSankeyControls() {
+  const prevBtn = document.getElementById('sankeyPrevMonth');
+  const nextBtn = document.getElementById('sankeyNextMonth');
+  
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => changeSankeyMonth(-1));
+  }
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => changeSankeyMonth(1));
   }
 }
 

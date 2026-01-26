@@ -205,6 +205,129 @@ def get_transactions_formatted(skip: int = 0, limit: int = 100, db: Session = De
     return formatted
 
 
+# ==================== ENDPUNKTE: SANKEY DIAGRAMM ====================
+# WICHTIG: Muss vor /transactions/{transaction_id} stehen, sonst wird "sankey-data" als ID interpretiert
+
+
+@app.get("/transactions/sankey-data")
+def get_sankey_data(
+    year: Optional[int] = None, 
+    month: Optional[int] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Liefert Daten für ein Sankey-Diagramm: Ausgaben → Kategorien
+    
+    Struktur für Plotly:
+    - nodes: Liste mit Label und Farbe für jeden Node
+    - links: source, target, value, color für jeden Flow
+    
+    Args:
+        year: Jahr für die Filterung (Standard: aktuelles Jahr)
+        month: Monat für die Filterung 1-12 (Standard: aktueller Monat)
+    """
+    from datetime import datetime
+    from calendar import monthrange
+    from ..database.models import Category
+    
+    # Standardwerte: aktueller Monat
+    now = datetime.now()
+    if year is None:
+        year = now.year
+    if month is None:
+        month = now.month
+    
+    # Berechne Start- und Enddatum des Monats
+    first_day = datetime(year, month, 1).date()
+    last_day_num = monthrange(year, month)[1]
+    last_day = datetime(year, month, last_day_num).date()
+    
+    # Lade Transaktionen des Monats (nur Ausgaben)
+    transactions = db.query(Transaktion).filter(
+        Transaktion.buchungstag >= first_day,
+        Transaktion.buchungstag <= last_day,
+        Transaktion.betrag < 0  # Nur Ausgaben
+    ).all()
+    
+    if not transactions:
+        return {
+            "nodes": [],
+            "links": [],
+            "total_expenses": 0,
+            "category_count": 0
+        }
+    
+    # Lade alle Kategorien für Lookup
+    categories = {c.id: c for c in db.query(Category).all()}
+    
+    # Sammle Ausgaben pro Kategorie
+    category_expenses = {}  # {kategorie_name: betrag}
+    
+    for t in transactions:
+        # Kategorie-Name ermitteln
+        category_name = "Sonstiges"
+        if t.kategorie_id and t.kategorie_id in categories:
+            category_name = categories[t.kategorie_id].name
+        
+        if category_name not in category_expenses:
+            category_expenses[category_name] = 0
+        
+        category_expenses[category_name] += abs(t.betrag)
+    
+    # Sortiere nach Betrag (größte zuerst)
+    sorted_categories = sorted(
+        category_expenses.items(), 
+        key=lambda x: x[1], 
+        reverse=True
+    )
+    
+    # Berechne Gesamtausgaben
+    total_expenses = sum(amount for _, amount in sorted_categories)
+    
+    # Farbpalette für Kategorien
+    category_colors = [
+        '#3498db', '#9b59b6', '#e67e22', '#1abc9c', '#e74c3c',
+        '#f39c12', '#2ecc71', '#d35400', '#8e44ad', '#16a085',
+        '#c0392b', '#27ae60', '#2980b9', '#f1c40f', '#e91e63'
+    ]
+    
+    # Erstelle Nodes
+    # Node 0: Ausgaben (links)
+    nodes = [{"label": "💸 Ausgaben", "color": "#e74c3c"}]
+    
+    # Nodes 1 bis N: Kategorien (rechts)
+    for idx, (name, amount) in enumerate(sorted_categories):
+        color = category_colors[idx % len(category_colors)]
+        nodes.append({
+            "label": name,
+            "color": color,
+            "value": round(amount, 2)
+        })
+    
+    # Erstelle Links: Ausgaben → Kategorien
+    links = []
+    for idx, (name, amount) in enumerate(sorted_categories):
+        color = category_colors[idx % len(category_colors)]
+        # Füge Transparenz hinzu (66 = 40% opacity in hex)
+        link_color = color + "66"
+        
+        links.append({
+            "source": 0,  # Von "Ausgaben"
+            "target": idx + 1,  # Zur Kategorie
+            "value": round(amount, 2),
+            "color": link_color
+        })
+    
+    return {
+        "nodes": nodes,
+        "links": links,
+        "total_expenses": round(total_expenses, 2),
+        "category_count": len(sorted_categories),
+        "year": year,
+        "month": month
+    }
+
+
 @app.get("/transactions/{transaction_id}", response_model=TransaktionResponse)
 def get_transaction(transaction_id: int, db: Session = Depends(get_db)):
     """Eine Transaktion abrufen"""
@@ -312,78 +435,6 @@ def search_transactions(
         beschreibung=search_params.beschreibung,
         kategorie_name=search_params.kategorie_name,
     )
-
-
-# ==================== ENDPUNKTE: SANKEY DIAGRAMM ====================
-
-
-@app.get("/transactions/sankey-data")
-def get_sankey_data(db: Session = Depends(get_db)):
-    """Liefert Daten für ein Sankey-Diagramm: Kategorien → Einnahmen/Ausgaben"""
-    transactions = db.query(Transaktion).all()
-
-    if not transactions:
-        return {"nodes": [], "links": []}
-
-    # Sammle Kategorien und Beträge
-    category_flows = {}  # {kategorie_name: {expense: betrag, income: betrag}}
-
-    for t in transactions:
-        # Nutze kategorie.name falls kategorie_id gesetzt, sonst "Unbekannt"
-        category = "Unbekannt"
-        if t.kategorie_id and t.kategorie:
-            category = t.kategorie.name
-        
-        if category not in category_flows:
-            category_flows[category] = {"expense": 0, "income": 0}
-
-        if t.betrag < 0:
-            category_flows[category]["expense"] += abs(t.betrag)
-        else:
-            category_flows[category]["income"] += t.betrag
-
-    # Definiere Node-Namen
-    node_names = ["Kategorien"]
-    node_names.extend(sorted(category_flows.keys()))
-    node_names.extend(["Ausgaben", "Einnahmen"])
-
-    # Erstelle Links (Kategorien → Ausgaben/Einnahmen)
-    links = []
-
-    for idx, (category, flows) in enumerate(sorted(category_flows.items()), 1):
-        # Ausgaben-Link
-        if flows["expense"] > 0:
-            links.append(
-                {
-                    "source": idx,
-                    "target": len(node_names) - 2,  # Index von "Ausgaben"
-                    "value": round(flows["expense"], 2),
-                }
-            )
-
-        # Einnahmen-Link
-        if flows["income"] > 0:
-            links.append(
-                {
-                    "source": idx,
-                    "target": len(node_names) - 1,  # Index von "Einnahmen"
-                    "value": round(flows["income"], 2),
-                }
-            )
-
-    # Erstelle Nodes mit Farben
-    node_colors = ["#1f77b4"]  # Kategorien - Blau
-    node_colors.extend(["#aec7e8"] * len(category_flows))  # Kategorien - Hellblau
-    node_colors.append("#ff7f0e")  # Ausgaben - Orange
-    node_colors.append("#2ca02c")  # Einnahmen - Grün
-
-    return {
-        "nodes": [
-            {"name": name, "color": color}
-            for name, color in zip(node_names, node_colors)
-        ],
-        "links": links,
-    }
 
 
 # ==================== ENDPUNKTE: KONTEN ====================
