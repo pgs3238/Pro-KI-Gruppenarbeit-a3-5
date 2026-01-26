@@ -131,9 +131,9 @@
           <button class="api-modal-close" onclick="document.getElementById('apiKeyModal').style.display='none'">&times;</button>
         </div>
         <div class="api-modal-body">
-          <label class="api-label">OpenAI API Key für Finanz-Buddy</label>
-          <input type="password" id="apiKeyInput" class="api-input" placeholder="sk-..." />
-          <small class="api-hint">Ihr API-Key wird lokal gespeichert und nicht an Server übertragen.</small>
+          <label class="api-label">Gemini API Key für Finanz-Buddy</label>
+          <input type="password" id="apiKeyInput" class="api-input" placeholder="AIza..." />
+          <small class="api-hint">Ihr API-Key wird in der .env-Datei auf dem Server gespeichert.</small>
         </div>
         <div class="api-modal-footer">
           <button class="api-btn api-btn-cancel" onclick="document.getElementById('apiKeyModal').style.display='none'">Abbrechen</button>
@@ -143,6 +143,7 @@
     </div>
 
     <!-- ==================== SCRIPTS ==================== -->
+    <script src="/static/js/settings.js"></script>
     <script src="/static/js/chatbot.js"></script>
   </body>
 </html>

@@ -40,6 +40,7 @@ except ImportError:
     print("⚠️ Category Routes nicht verfügbar")
 
 from . import zinsrechner_routes
+from . import settings_routes
 
 # ==================== SETUP ====================
 
@@ -105,6 +106,7 @@ async def root():
 if CHATBOT_AVAILABLE:
     app.include_router(chatbot_routes.router, prefix="/api")
 app.include_router(zinsrechner_routes.router, prefix="/api")
+app.include_router(settings_routes.router, prefix="/api")
 
 # Category-Router registrieren
 if CATEGORY_ROUTES_AVAILABLE:
