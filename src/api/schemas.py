@@ -72,6 +72,7 @@ class TransaktionSearch(BaseModel):
     waehrung: Optional[str] = None
     konto_name: Optional[str] = None
     beschreibung: Optional[str] = None
+    kategorie_name: Optional[str] = None
 
 
 # ==================== KONTO SCHEMAS ====================

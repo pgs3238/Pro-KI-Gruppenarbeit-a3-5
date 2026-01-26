@@ -310,6 +310,7 @@ def search_transactions(
         waehrung=search_params.waehrung,
         konto_name=search_params.konto_name,
         beschreibung=search_params.beschreibung,
+        kategorie_name=search_params.kategorie_name,
     )
 
 
