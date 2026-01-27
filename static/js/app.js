@@ -1,4 +1,7 @@
-// ==================== KONFIGURATION ====================\n// Nutzt API_BASE_URL aus utils.js\nlet availableKategorien = [];  // Cache für Kategorien
+// ==================== KONFIGURATION ====================
+// Nutzt API_BASE_URL aus utils.js
+let availableKategorien = [];  // Cache für Kategorien
+let availableKonten = [];      // Cache für Konten (global)
 
 
 // ==================== KATEGORIEN LADEN ====================
@@ -7,10 +10,10 @@ async function loadKategorien() {
     try {
         availableKategorien = await fetchCategories();
         console.log('✓ Kategorien geladen:', availableKategorien);
-        
+
         // Fülle alle Kategorie-Selects mit den geladenen Kategorien
         updateKategorieSelects();
-        
+
         return availableKategorien;
     } catch (error) {
         console.error('✗ Fehler beim Laden der Kategorien:', error);
@@ -20,29 +23,29 @@ async function loadKategorien() {
 
 function updateKategorieSelects() {
     const selects = document.querySelectorAll('select[name="kategorie"]');
-    
+
     selects.forEach(select => {
         // Merke aktuellen Wert
         const currentValue = select.value;
-        
+
         // Speichere nur die erste Option "Bitte wählen..."
         const firstOption = select.options[0];
         const firstOptionValue = firstOption.value;
         const firstOptionText = firstOption.text;
-        
+
         // Leere das Select komplett
         select.innerHTML = '';
-        
+
         // Füge das "Bitte wählen..." wieder hinzu
         const emptyOption = document.createElement('option');
         emptyOption.value = firstOptionValue;
         emptyOption.text = firstOptionText;
         select.appendChild(emptyOption);
-        
+
         // Gruppiere nach Typ
         const ausgaben = availableKategorien.filter(k => k.category_type === 'Ausgabe');
         const einnahmen = availableKategorien.filter(k => k.category_type === 'Einnahme');
-        
+
         // Füge Ausgaben hinzu
         if (ausgaben.length > 0) {
             const ausgabenGroup = document.createElement('optgroup');
@@ -55,7 +58,7 @@ function updateKategorieSelects() {
             });
             select.appendChild(ausgabenGroup);
         }
-        
+
         // Füge Einnahmen hinzu
         if (einnahmen.length > 0) {
             const einnahmenGroup = document.createElement('optgroup');
@@ -68,7 +71,7 @@ function updateKategorieSelects() {
             });
             select.appendChild(einnahmenGroup);
         }
-        
+
         // Stelle den vorherigen Wert wieder her (falls vorhanden)
         if (currentValue) {
             select.value = currentValue;
@@ -91,11 +94,11 @@ async function loadKonten() {
         const konten = await fetchKonten();
         availableKonten = konten;  // Speichere die Konten für Lookups
         console.log('✓ Konten geladen:', konten);
-        
+
         // Lade den aktuellen Saldo für ALLE Konten
         let totalSaldo = 0;
         const kontenMitSaldo = [];
-        
+
         for (let konto of konten) {
             try {
                 const saldoData = await fetchKontoSaldo(konto.id);
@@ -109,17 +112,17 @@ async function loadKonten() {
                 console.warn(`Fehler beim Laden des Saldos für Konto ${konto.id}:`, error);
             }
         }
-        
+
         // Saldo in der Website anzeigen
         if (totalBalance) {
             totalBalance.textContent = totalSaldo.toFixed(2).replace('.', ',') + '€';
         }
-        
+
         // Konten-Liste clearen (später könnten wir hier einzelne Konten anzeigen)
         if (kontenList) {
             kontenList.innerHTML = '';
         }
-        
+
         console.log('✓ Gesamtsaldo aller Konten:', totalSaldo.toFixed(2) + '€');
         return { balance: totalSaldo };
     } catch (error) {
@@ -139,7 +142,7 @@ async function loadKonten() {
 function createBalanceChart() {
     const chartElement = document.getElementById('balanceChart');
     if (!chartElement) return; // Abbrechen wenn Element nicht existiert
-    
+
     const ctx = chartElement.getContext('2d');
 
     // Berechne die letzten 6 Monate
@@ -250,7 +253,7 @@ async function createSankeyChart() {
         // Lade Sankey-Daten von der API
         const response = await fetch(`${API_BASE_URL}/transactions/sankey-data`);
         const data = await response.json();
-        
+
         if (!data.nodes || data.nodes.length === 0) {
             sankeyElement.innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">Keine Daten verfügbar</div>';
             return;
@@ -259,7 +262,7 @@ async function createSankeyChart() {
         // Prepare data for Plotly
         const nodeNames = data.nodes.map(n => n.name);
         const nodeColors = data.nodes.map(n => n.color || '#1f77b4');
-        
+
         const trace = {
             type: "sankey",
             node: {
@@ -313,10 +316,10 @@ async function createSankeyChart() {
 function setupSearch() {
     const searchBox = document.getElementById('searchBox');
     if (!searchBox) return; // Abbrechen wenn Element nicht existiert
-    
+
     const searchIcon = document.querySelector('.search-icon');
 
-    
+
     // Filterfunktion
     searchBox.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
@@ -338,7 +341,7 @@ function setupSearch() {
 function toggleFabMenu() {
     const fabMenu = document.getElementById('fabMenu');
     const fabBtn = document.querySelector('.fab-btn');
-    
+
     if (fabMenu.style.display === 'none') {
         fabMenu.style.display = 'flex';
         fabBtn.innerHTML = '×';
@@ -355,7 +358,7 @@ function toggleFabMenu() {
 function setupFilterInputs() {
     const filterInputs = document.querySelectorAll('.filter-input');
     const clearBtn = document.getElementById('clearFiltersBtn');
-    
+
     // Suche nur bei Enter-Taste
     filterInputs.forEach((input) => {
         input.addEventListener('keypress', async (e) => {
@@ -366,7 +369,7 @@ function setupFilterInputs() {
             }
         });
     });
-    
+
     // Clear-Button Setup
     if (clearBtn) {
         clearBtn.addEventListener('click', async () => {
@@ -391,7 +394,7 @@ async function performSearch() {
 
     // Sammle alle Filter-Werte über data-Attribute
     const filterInputs = document.querySelectorAll('.filter-input');
-    
+
     const searchParams = {};
     filterInputs.forEach(input => {
         const filterName = input.getAttribute('data-filter');
@@ -412,7 +415,7 @@ async function performSearch() {
     try {
         // Baue den Request Body
         const requestBody = {};
-        
+
         if (searchParams.buchungstag) {
             // Validiere das Datumsformat (TT.MM.JJJJ oder TT-MM-JJJJ)
             const dateRegex = /^\d{2}[.-]\d{2}[.-]\d{4}$/;
@@ -424,7 +427,7 @@ async function performSearch() {
             const isoDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
             requestBody.buchungstag = isoDate;
         }
-        
+
         if (searchParams.beguenstigter) {
             requestBody.beguenstigter = searchParams.beguenstigter;
         }
@@ -444,13 +447,13 @@ async function performSearch() {
             requestBody.beschreibung = searchParams.beschreibung;
         }
         if (searchParams.betrag_min) {
-            const betragMin = parseFloat(searchParams.betrag_min.replace(',','.'));
+            const betragMin = parseFloat(searchParams.betrag_min.replace(',', '.'));
             if (!isNaN(betragMin)) {
                 requestBody.betrag_min_abs = betragMin;
             }
         }
         if (searchParams.betrag_max) {
-            const betragMax = parseFloat(searchParams.betrag_max.replace(',','.'));
+            const betragMax = parseFloat(searchParams.betrag_max.replace(',', '.'));
             if (!isNaN(betragMax)) {
                 requestBody.betrag_max_abs = betragMax;
             }
@@ -476,7 +479,7 @@ async function performSearch() {
         }
 
         const transactions = await response.json();
-        
+
         table.innerHTML = '';
 
         if (transactions.length === 0) {
@@ -496,7 +499,7 @@ async function performSearch() {
                 ? availableKonten.find(k => k.id === t.konto_id)
                 : null;
             const kontoName = konto ? konto.kontoname : '-';
-            
+
             // Kategorie über kategorie_id aus availableKategorien holen
             let kategorie = '-';
             if (t.kategorie_id) {
@@ -536,18 +539,90 @@ async function performSearch() {
 // ==================== PAGE INITIALIZATION ====================
 
 /**
- * Lädt alle Daten wenn die Seite geladen ist
+ * Setzt den Import-Form Handler auf
  */
-document.addEventListener('DOMContentLoaded', async function() {
+function setupImportForm() {
+    const importForm = document.getElementById("importForm");
+    if (!importForm) return;
+
+    importForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData();
+
+        const inputs = importForm.querySelectorAll("input");
+        const kontoSelect = importForm.querySelector("select");
+        const fileInput = importForm.querySelector('input[type="file"]');
+
+        formData.append("header_row", inputs[0].value);
+        formData.append("skip_footer", inputs[6].value);
+
+        const mapping = {
+            buchungstag: inputs[1].value,
+            beguenstigter: inputs[2].value,
+            iban_kontonummer: inputs[3].value,
+            verwendungszweck: inputs[4].value,
+            betrag: inputs[5].value
+        };
+
+        formData.append("mapping", JSON.stringify(mapping));
+        formData.append("konto_id", kontoSelect.value || "");
+        formData.append("file", fileInput.files[0]);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/transactions/import`, {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+                const errorMsg = errorData?.detail || errorData?.message || "Import fehlgeschlagen";
+                throw new Error(errorMsg);
+            }
+
+            showToast("Import erfolgreich", "success");
+            closeImportModal();
+            loadTransactions();
+            loadKonten();
+        } catch (error) {
+            console.error('\u2717 Import fehlgeschlagen:', error);
+            showToast(`Import fehlgeschlagen: ${error.message}`, "error");
+        }
+    });
+}
+
+/**
+ * Lädt alle Daten wenn die Seite geladen ist (konsolidierter Handler)
+ */
+document.addEventListener('DOMContentLoaded', async function () {
     console.log('📱 Website geladen - lade Daten...');
-    await loadKonten();  // Warte bis Konten geladen sind
-    createBalanceChart();
-    createSankeyChart();
+
+    // Lade Kategorien für alle Seiten
+    await loadKategorien();
+
+    // Lade Konten
+    await loadKonten();
+
+    // Setup alle Handler
     setupNavigation();
     setupSearch();
     setupFilterInputs();
-    loadTransactions();
     setupTransactionModal();
+    setupImportForm();
+
+    // Seiten-spezifische Initialisierung
+    if (document.getElementById('transactionsTable')) {
+        await loadTransactions();
+    }
+
+    // Dashboard-spezifische Charts
+    if (document.getElementById('balanceChart')) {
+        createBalanceChart();
+    }
+    if (document.getElementById('sankeyChart')) {
+        createSankeyChart();
+    }
 });
 
 
@@ -559,7 +634,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 async function loadTransactions() {
     const table = document.getElementById('transactionsTable');
     if (!table) return;
-    
+
     table.innerHTML = '<tr><td colspan="8" style="text-align: center;">⏳ Laden...</td></tr>';
 
     try {
@@ -576,7 +651,7 @@ async function loadTransactions() {
         }
 
         const transactions = await response.json();
-        
+
         table.innerHTML = '';
 
         if (transactions.length === 0) {
@@ -587,7 +662,7 @@ async function loadTransactions() {
         // Zeige formatierte Transaktionen (vom Backend)
         transactions.forEach(t => {
             const row = table.insertRow();
-            
+
             row.innerHTML = `
                 <td>${t.datum}</td>
                 <td>${t.beguenstigter}</td>
@@ -618,13 +693,13 @@ async function editTransaction(id) {
         // Lade Transaktion von der API
         const response = await fetch(`${API_BASE_URL}/transactions/${id}`);
         if (!response.ok) throw new Error('Transaktion nicht gefunden');
-        
+
         const transaction = await response.json();
 
         // Konvertiere ISO Datum zu deutschem Format
         const date = new Date(transaction.buchungstag);
         const germanDate = formatDateDE(date, { pad: true });
-        
+
         // Speichere Datum-Informationen
         window.selectedDate = date;
         window.currentMonth = new Date(date);
@@ -636,7 +711,7 @@ async function editTransaction(id) {
         document.querySelector('input[name="verwendungszweck"]').value = transaction.verwendungszweck || '';
         document.querySelector('input[name="betrag"]').value = transaction.betrag;
         document.querySelector('select[name="konto_id"]').value = transaction.konto_id || '';
-        
+
         // Kategorie setzen - nutze kategorie_id falls vorhanden
         if (transaction.kategorie_id) {
             document.querySelector('select[name="kategorie"]').value = transaction.kategorie_id;
@@ -649,12 +724,6 @@ async function editTransaction(id) {
         document.getElementById('transactionForm').dataset.editId = id;
 
         openModal();
-        
-        // TODO ERROR remove this do to wrong function
-        // Wenn ein Konto ausgewählt ist, trigger die onKontoSelect um IBAN zu befüllen
-        // if (transaction.konto_id) {
-        //     onKontoSelect();
-        // }
     } catch (error) {
         console.error('✗ Fehler beim Laden der Transaktion:', error);
         showToast('Transaktion konnte nicht geladen werden', 'error');
@@ -686,64 +755,7 @@ async function deleteTransaction(id) {
     }
 }
 
-/**
- * Transaktionen importieren
- */
-document.addEventListener("DOMContentLoaded", () => {
-  const importForm = document.getElementById("importForm");
-  if (!importForm) return;
 
-  importForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const formData = new FormData();
-
-    const inputs = importForm.querySelectorAll("input");
-    const kontoSelect = importForm.querySelector("select");
-    const fileInput = importForm.querySelector('input[type="file"]');
-
-    formData.append("header_row", inputs[0].value);
-    formData.append("skip_footer", inputs[6].value);
-
-    const mapping = {
-      buchungstag: inputs[1].value,
-      beguenstigter: inputs[2].value,
-      iban_kontonummer: inputs[3].value,
-      verwendungszweck: inputs[4].value,
-      betrag: inputs[5].value
-    };
-
-    formData.append("mapping", JSON.stringify(mapping));
-    formData.append("konto_id", kontoSelect.value || "");
-    formData.append("file", fileInput.files[0]);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/transactions/import`, {
-        method: "POST",
-        body: formData
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        const errorMsg = errorData?.detail || errorData?.message || "Import fehlgeschlagen";
-        throw new Error(errorMsg);
-      }
-
-      showToast("Import erfolgreich", "success");
-      closeImportModal();
-      loadTransactions();
-      loadKonten();
-    } catch (error) {
-      console.error(error);
-      showToast("Import fehlgeschlagen", "error");
-    }
-  });
-});
-
-/**
- * Speichert die verfügbaren Konten für Lookups
- */
-let availableKonten = [];
 
 /**
  * Lädt die verfügbaren Konten in das Konto-Dropdown
@@ -752,14 +764,14 @@ async function loadKontoSelect(targetId = 'kontoSelect') {
     // const kontoSelect = document.getElementById('kontoSelect');
     const kontoSelect = document.getElementById(targetId);
     if (!kontoSelect) return;
-    
+
     try {
         const konten = await fetchKonten();
         availableKonten = konten;  // Speichere die Konten für Lookups
-        
+
         // Behalte die erste leere Option
         kontoSelect.innerHTML = '<option value="">Kein Konto ausgewählt</option>';
-        
+
         // Füge alle Konten als Optionen hinzu
         konten.forEach(konto => {
             const option = document.createElement('option');
@@ -767,14 +779,9 @@ async function loadKontoSelect(targetId = 'kontoSelect') {
             option.textContent = `${konto.kontoname}`;
             kontoSelect.appendChild(option);
         });
-        
-        // TODO Error remove this due to wrong function
-        // Füge Change-Event hinzu, um IBAN automatisch zu füllen
-        // if (targetId === 'kontoSelect') {
-        //     kontoSelect.addEventListener('change', onKontoSelect);
-        // }
     } catch (error) {
-        console.error('Fehler beim Laden der Konten für Dropdown:', error);
+        console.error('\u2717 Fehler beim Laden der Konten für Dropdown:', error);
+        showToast('Fehler beim Laden der Konten', 'error');
     }
 }
 
@@ -784,11 +791,11 @@ async function loadKontoSelect(targetId = 'kontoSelect') {
 function onKontoSelect() {
     const kontoSelect = document.getElementById('kontoSelect');
     const ibanInput = document.querySelector('input[name="iban"]');
-    
+
     if (!kontoSelect || !ibanInput) return;
-    
+
     const selectedKontoId = parseInt(kontoSelect.value);
-    
+
     if (!selectedKontoId) {
         // Kein Konto ausgewählt - IBAN-Feld leeren und editierbar machen
         ibanInput.value = '';
@@ -796,19 +803,10 @@ function onKontoSelect() {
         ibanInput.style.backgroundColor = '';  // Standardfarbe
         return;
     }
-    
+
     // Finde das ausgewählte Konto
     const selectedKonto = availableKonten.find(k => k.id === selectedKontoId);
-    
-
-    // TODO remove function due to it doing the wrong thing!!
-    // if (selectedKonto && selectedKonto.kontonummer) {
-    //     // Trage die IBAN des Kontos ein
-    //     ibanInput.value = selectedKonto.kontonummer;
-    //     // Mache IBAN-Feld readonly
-    //     ibanInput.readOnly = true;
-    //     ibanInput.style.backgroundColor = '#333';  // Dunkler Hintergrund für readonly
-    // }
+    // Hinweis: Die automatische IBAN-Befüllung wurde entfernt, da sie nicht korrekt funktionierte
 }
 
 /**
@@ -817,7 +815,7 @@ function onKontoSelect() {
 function openModal() {
     const modal = document.getElementById('transactionModal');
     if (!modal) return;
-    
+
     modal.classList.add('active');
     setCurrentDate();
     loadKontoSelect();  // Lade Konten in das Dropdown
@@ -829,7 +827,7 @@ function openModal() {
 function closeModal() {
     const modal = document.getElementById('transactionModal');
     if (!modal) return;
-    
+
     modal.classList.remove('active');
     // Formular zurücksetzen
     document.getElementById('transactionForm').reset();
@@ -861,7 +859,7 @@ function closeImportModal() {
 function setCurrentDate() {
     const datumInput = document.getElementById('datumInput');
     if (!datumInput) return;
-    
+
     const today = new Date();
     window.selectedDate = today;
     window.currentMonth = new Date(today);
@@ -894,31 +892,31 @@ function changeMonth(direction) {
  */
 function renderCalendar() {
     if (!window.currentMonth) window.currentMonth = new Date();
-    
+
     const year = window.currentMonth.getFullYear();
     const month = window.currentMonth.getMonth();
-    
+
     // Update header
-    const monthNames = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 
-                       'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+    const monthNames = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+        'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
     const monthYear = document.getElementById('calendarMonthYear');
     if (monthYear) monthYear.textContent = `${monthNames[month]} ${year}`;
-    
+
     // Calculate days
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1;
-    
+
     const calendarDays = document.getElementById('calendarDays');
     if (!calendarDays) return;
-    
+
     calendarDays.innerHTML = '';
-    
+
     // Empty cells for days before month starts
     for (let i = 0; i < adjustedFirstDay; i++) {
         calendarDays.innerHTML += '<span class="calendar-day empty"></span>';
     }
-    
+
     // Days of month
     const today = new Date();
     for (let day = 1; day <= daysInMonth; day++) {
@@ -951,9 +949,9 @@ function setupTransactionModal() {
     const transactionForm = document.getElementById('transactionForm');
     const selects = document.querySelectorAll('select.form-control');
     const ibanInput = document.querySelector('input[name="iban"]');
-    
+
     if (!modal) return;
-    
+
     // Initialize date variables
     if (!window.selectedDate) window.selectedDate = new Date();
     if (!window.currentMonth) window.currentMonth = new Date();
@@ -1049,12 +1047,12 @@ function setupTransactionModal() {
             const value = e.target.value;
             const dateRegex = /^(\d{2})\.(\d{2})\.(\d{4})$/;
             const match = value.match(dateRegex);
-            
+
             if (match) {
                 const day = parseInt(match[1]);
                 const month = parseInt(match[2]);
                 const year = parseInt(match[3]);
-                
+
                 const date = new Date(year, month - 1, day);
                 if (date.getDate() === day && date.getMonth() === month - 1 && date.getFullYear() === year) {
                     window.selectedDate = date;
@@ -1090,16 +1088,3 @@ function setupTransactionModal() {
     wireSelectEmptyClasses(selects);
 }
 
-// ==================== SEITEN-INIT ====================
-
-// Beim Laden der transactions.html Seite
-if (window.location.pathname.includes('transactions')) {
-    document.addEventListener('DOMContentLoaded', async () => {
-        console.log('📄 Transaktionen-Seite geladen');
-        await loadKategorien();  // Lade Kategorien zuerst
-        await loadKonten();  // Lade Konten
-        await loadTransactions();  // Lade Transaktionen
-        setupFilterInputs();  // Setup Filter
-        setupSearch();  // Setup Suche
-    });
-}
