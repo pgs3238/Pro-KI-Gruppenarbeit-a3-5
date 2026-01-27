@@ -1,16 +1,12 @@
 // ==================== API KEY MANAGEMENT ====================
-
-// Settings API URL (verwendet globale API_BASE_URL falls vorhanden)
-// Alle JS-Dateien nutzen einheitlich 'http://localhost:8000' als API_BASE_URL
-const SETTINGS_API_URL = 'http://localhost:8000';
+// Nutzt API_BASE_URL aus utils.js
 
 /**
  * Lädt den Status des API-Keys vom Server
  */
 async function loadApiKeyStatus() {
     try {
-        const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : SETTINGS_API_URL;
-        const response = await fetch(`${baseUrl}/api/settings/api-key/status`);
+        const response = await fetch(`${API_BASE_URL}/api/settings/api-key/status`);
         if (!response.ok) throw new Error('Fehler beim Laden des API-Key Status');
         
         const data = await response.json();
@@ -33,8 +29,7 @@ async function loadApiKeyStatus() {
  */
 async function saveApiKey(apiKey) {
     try {
-        const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : SETTINGS_API_URL;
-        const response = await fetch(`${baseUrl}/api/settings/api-key`, {
+        const response = await fetch(`${API_BASE_URL}/api/settings/api-key`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

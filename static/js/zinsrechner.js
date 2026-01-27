@@ -1,6 +1,7 @@
 // ============ ZINSRECHNER JAVASCRIPT MIT CUSTOM LEGEND ============
+// Nutzt API_BASE_URL aus utils.js
 
-const API_BASE = 'http://localhost:8000/api';
+const ZINS_API = `${API_BASE_URL}/api`;  // Zinsrechner-spezifischer API-Pfad
 let chart = null;
 let berechnungen = [];
 let ausgewaehlteId = null;
@@ -236,15 +237,15 @@ function setupEventListeners() {
     });
     
     document.getElementById('kontoauswahl').addEventListener('change', (e) => {
-        const selectedIban = e.target.value;
-        if (selectedIban) {
-            const konto = kontenListe.find(k => k.iban === selectedIban);
+        const selectedId = e.target.value;
+        if (selectedId) {
+            const konto = kontenListe.find(k => k.id == selectedId);
             if (konto) {
                 document.getElementById('kontostand').value = Math.max(0, Math.round(konto.kontostand));
                 updateSliderLabels();
                 
                 document.getElementById('kontoInfo').textContent = 
-                    `Aktueller Kontostand: ${formatCurrency(konto.kontostand)} (${konto.anzahl_transaktionen} Transaktionen)`;
+                    `Aktueller Kontostand: ${formatCurrency(konto.kontostand)}`;
                 
                 triggereVorschau();
             }
@@ -287,7 +288,7 @@ async function aktualisiereChartMitVorschau() {
     
     if (kontostandTyp === 'aktuell') {
         try {
-            const response = await fetch(`${API_BASE}/kontostand`);
+            const response = await fetch(`${ZINS_API}/kontostand`);
             const data = await response.json();
             if (data.success) {
                 startkapital = data.kontostand;
@@ -317,7 +318,7 @@ async function berechnen() {
     
     if (kontostandTyp === 'aktuell') {
         try {
-            const response = await fetch(`${API_BASE}/kontostand`);
+            const response = await fetch(`${ZINS_API}/kontostand`);
             const data = await response.json();
             if (data.success) {
                 startkapital = data.kontostand;
@@ -390,7 +391,7 @@ async function aktualisieren() {
     
     if (kontostandTyp === 'aktuell') {
         try {
-            const response = await fetch(`${API_BASE}/kontostand`);
+            const response = await fetch(`${ZINS_API}/kontostand`);
             const data = await response.json();
             if (data.success) {
                 startkapital = data.kontostand;
@@ -658,7 +659,7 @@ async function zuruecksetzen() {
     const loeschPromises = [];
     for (let i = 1; i <= 3; i++) {
         loeschPromises.push(
-            fetch(`${API_BASE}/vergleich/loeschen/${i}`, { method: 'DELETE' })
+            fetch(`${ZINS_API}/vergleich/loeschen/${i}`, { method: 'DELETE' })
                 .catch(err => console.error(`Fehler beim Löschen von Vergleich ${i}:`, err))
         );
     }
@@ -703,9 +704,9 @@ async function ladeKonten() {
             
             konten.forEach(konto => {
                 const option = document.createElement('option');
-                option.value = konto.iban;
-                const ibanKurz = konto.iban_kurz || `${konto.iban.substring(0, 4)}...${konto.iban.substring(konto.iban.length - 4)}`;
-                option.textContent = `${ibanKurz} - ${formatCurrency(konto.kontostand)}`;
+                option.value = konto.id;  // Nutze ID statt IBAN
+                // Zeige Kontoname und Saldo
+                option.textContent = `${konto.kontoname} - ${formatCurrency(konto.kontostand)}`;
                 select.appendChild(option);
             });
             
@@ -725,7 +726,7 @@ async function ladeKonten() {
 // ============ API FUNKTIONEN ============
 async function speichereVergleich(dbNummer, verlauf, parameter) {
     try {
-        const response = await fetch(`${API_BASE}/vergleich/speichern`, {
+        const response = await fetch(`${ZINS_API}/vergleich/speichern`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -743,7 +744,7 @@ async function speichereVergleich(dbNummer, verlauf, parameter) {
 
 async function ladeAlleVergleiche() {
     try {
-        const response = await fetch(`${API_BASE}/vergleich/alle`);
+        const response = await fetch(`${ZINS_API}/vergleich/alle`);
         const data = await response.json();
         
         if (data.success && data.vergleiche) {
@@ -775,7 +776,7 @@ async function ladeAlleVergleiche() {
 
 async function loescheVergleich(dbNummer) {
     try {
-        const response = await fetch(`${API_BASE}/vergleich/loeschen/${dbNummer}`, {
+        const response = await fetch(`${ZINS_API}/vergleich/loeschen/${dbNummer}`, {
             method: 'DELETE'
         });
         return await response.json();

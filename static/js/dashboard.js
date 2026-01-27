@@ -1,22 +1,14 @@
-// API Base URL
-const API_BASE_URL = "http://localhost:8000";
+// Dashboard JavaScript - nutzt utils.js für gemeinsame Funktionen
 
-// Toast Notification Funktion
-function showToast(message, type = "success") {
-  const toastContainer = document.getElementById("toastContainer");
-  const toast = document.createElement("div");
-  toast.className = `toast toast-${type}`;
-  toast.textContent = message;
-  toastContainer.appendChild(toast);
-
-  setTimeout(() => {
-    toast.classList.add("show");
-  }, 100);
-
-  setTimeout(() => {
-    toast.classList.remove("show");
-    setTimeout(() => toast.remove(), 300);
-  }, 10000);
+// Toast Notification Funktion (verwendet utils.js showToast wenn verfügbar)
+function showDashboardToast(message, type = "success") {
+  // Nutze die zentrale showToast-Funktion aus utils.js
+  if (typeof showToast === 'function') {
+    showToast(message, type);
+    return;
+  }
+  // Fallback falls utils.js nicht geladen
+  console.log(`[${type}] ${message}`);
 }
 
 // Daten beim Laden der Seite abrufen
@@ -548,13 +540,7 @@ function setupSankeyControls() {
   }
 }
 
-// Helper Funktionen
-function formatCurrency(amount) {
-  return new Intl.NumberFormat("de-DE", {
-    style: "currency",
-    currency: "EUR",
-  }).format(amount);
-}
+// Helper Funktionen - formatCurrency wird aus utils.js verwendet
 
 function getAccountIcon(typ) {
   const icons = {

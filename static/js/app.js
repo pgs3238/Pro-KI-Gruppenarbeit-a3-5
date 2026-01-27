@@ -1,6 +1,4 @@
-// ==================== KONFIGURATION ====================
-const API_BASE_URL = 'http://localhost:8000';
-let availableKategorien = [];  // Cache für Kategorien
+// ==================== KONFIGURATION ====================\n// Nutzt API_BASE_URL aus utils.js\nlet availableKategorien = [];  // Cache für Kategorien
 
 
 // ==================== KATEGORIEN LADEN ====================

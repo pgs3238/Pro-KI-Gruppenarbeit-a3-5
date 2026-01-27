@@ -26,61 +26,13 @@
 
 <body>
     <div class="container">
-        <!-- ============ SIDEBAR ============ -->
-        <aside class="sidebar">
-            <div class="logo">
-                <span>📊</span>
-                <span>FINLY</span>
-            </div>
-
-            <ul class="nav-items">
-                <li class="nav-item">
-                    <button class="nav-link" id="nav-overview" onclick="window.location.href='index.html'">
-                        <span class="nav-icon">📈</span>
-                        <span>Übersicht</span>
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" id="nav-transaction" onclick="window.location.href='transactions.html'">
-                        <span class="nav-icon">💳</span>
-                        <span>Transaktionen</span>
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" id="nav-categories" onclick="window.location.href='kategorien.html'">
-                        <span class="nav-icon">🏷️</span>
-                        <span>Kategorien</span>
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" id="nav-accounts" onclick="window.location.href='konten.html'">
-                        <span class="nav-icon">🏦</span>
-                        <span>Konten</span>
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link active" id="nav-forecast">
-                        <span class="nav-icon">📉</span>
-                        <span>Zinsprognose</span>
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" id="nav-chatbot" onclick="window.location.href='finanz-buddy.html'">
-                        <span class="nav-icon">💬</span>
-                        <span>Finanz-Buddy</span>
-                    </button>
-                </li>
-            </ul>
-        </aside>
+        <!-- Sidebar wird dynamisch geladen -->
+        <div id="sidebar-placeholder"></div>
 
         <!-- ============ HAUPTBEREICH ============ -->
         <div class="main">
-            <!-- ============ HEADER ============ -->
-            <header class="header">
-                <div class="header-right">
-                    <button class="icon-btn" onclick="document.getElementById('apiKeyModal').style.display='flex'">⚙️</button>
-                </div>
-            </header>
+            <!-- Header wird dynamisch geladen -->
+            <div id="header-placeholder"></div>
 
             <!-- ============ CONTENT ============ -->
             <div class="content">
@@ -234,25 +186,10 @@
         </div>
     </div>
 
-    <!-- API Key Modal -->
-    <div id="apiKeyModal" class="api-key-modal">
-      <div class="api-modal-content">
-        <div class="api-modal-header">
-          <h2>API-Einstellungen</h2>
-          <button class="api-modal-close" onclick="document.getElementById('apiKeyModal').style.display='none'">&times;</button>
-        </div>
-        <div class="api-modal-body">
-          <label class="api-label">Gemini API Key für Finanz-Buddy</label>
-          <input type="password" id="apiKeyInput" class="api-input" placeholder="AIza..." />
-          <small class="api-hint">Ihr API-Key wird in der .env-Datei auf dem Server gespeichert.</small>
-        </div>
-        <div class="api-modal-footer">
-          <button class="api-btn api-btn-cancel" onclick="document.getElementById('apiKeyModal').style.display='none'">Abbrechen</button>
-          <button class="api-btn api-btn-save">Speichern</button>
-        </div>
-      </div>
-    </div>
-
+    <!-- Shared Components Script -->
+    <script src="/static/js/utils.js"></script>
+    <script src="/static/js/components.js"></script>
+    <script>initComponents('forecast');</script>
     <script src="/static/js/settings.js"></script>
     <script src="/static/js/zinsrechner.js"></script>
 </body>

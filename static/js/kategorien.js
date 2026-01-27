@@ -1,6 +1,5 @@
-// ============ API KONFIGURATION ============
-// Verwende die API auf localhost:8000, unabhängig davon, wo die HTML serviert wird
-const API_BASE_URL = 'http://localhost:8000';
+// ============ KATEGORIEN JAVASCRIPT ============
+// Nutzt API_BASE_URL aus utils.js
 
 // ============ KATEGORIEN VON BACKEND LADEN ============
 let categoriesData = [];

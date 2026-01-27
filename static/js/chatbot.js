@@ -1,7 +1,5 @@
 // ==================== CHATBOT JAVASCRIPT ====================
-
-// API-Basis-URL (wo unser FastAPI-Backend läuft)
-const API_BASE_URL = "http://localhost:8000";
+// Nutzt API_BASE_URL aus utils.js
 
 // Elemente aus dem HTML holen
 const chatMessages = document.getElementById("chatMessages");

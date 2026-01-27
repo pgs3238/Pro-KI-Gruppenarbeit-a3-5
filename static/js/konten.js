@@ -1,5 +1,5 @@
-// ============ API KONFIGURATION ============
-const API_BASE = 'http://localhost:8000';
+// ============ KONTEN JAVASCRIPT ============
+// Nutzt API_BASE_URL aus utils.js
 
 // ============ BEISPIELDATEN (FALLBACK) ============
 let accountsData = [];
@@ -18,7 +18,7 @@ const accountIcons = {
 
 async function loadAccountsFromAPI() {
     try {
-        const response = await fetch(`${API_BASE}/konten`);
+        const response = await fetch(`${API_BASE_URL}/konten`);
         if (!response.ok) throw new Error(`API Error: ${response.status}`);
         
         const konten = await response.json();
@@ -39,7 +39,7 @@ async function loadAccountsFromAPI() {
         // Lade den aktuellen Saldo (initialstand + transaktionen) für jedes Konto
         for (let account of accountsData) {
             try {
-                const saldoResponse = await fetch(`${API_BASE}/konten/${account.id}/saldo`);
+                const saldoResponse = await fetch(`${API_BASE_URL}/konten/${account.id}/saldo`);
                 if (saldoResponse.ok) {
                     const saldoData = await saldoResponse.json();
                     account.saldo = saldoData.aktueller_saldo;  // Überschreibe mit aktuellem Wert
@@ -72,7 +72,7 @@ async function createAccountAPI(accountData) {
             farbe: accountData.farbe
         };
         
-        const response = await fetch(`${API_BASE}/konten`, {
+        const response = await fetch(`${API_BASE_URL}/konten`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(apiData)
@@ -102,7 +102,7 @@ async function updateAccountAPI(konto_id, accountData) {
             farbe: accountData.farbe
         };
         
-        const response = await fetch(`${API_BASE}/konten/${konto_id}`, {
+        const response = await fetch(`${API_BASE_URL}/konten/${konto_id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(apiData)
@@ -122,7 +122,7 @@ async function updateAccountAPI(konto_id, accountData) {
 
 async function deleteAccountAPI(konto_id) {
     try {
-        const response = await fetch(`${API_BASE}/konten/${konto_id}`, {
+        const response = await fetch(`${API_BASE_URL}/konten/${konto_id}`, {
             method: 'DELETE'
         });
         
