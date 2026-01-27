@@ -1,6 +1,6 @@
 // ============ API KONFIGURATION ============
 // Verwende die API auf localhost:8000, unabhängig davon, wo die HTML serviert wird
-const API_BASE_URL = 'http://localhost:8000/api/categories';
+const API_BASE_URL = 'http://localhost:8000';
 
 // ============ KATEGORIEN VON BACKEND LADEN ============
 let categoriesData = [];
@@ -9,7 +9,7 @@ let categoriesData = [];
 async function loadCategories() {
     try {
         // Kategorien vom Backend laden
-        const response = await fetch(API_BASE_URL);
+        const response = await fetch(`${API_BASE_URL}/api/categories`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -166,7 +166,7 @@ async function deleteCategory(id) {
 
     if (confirm(`Möchten Sie die Kategorie "${category.name}" wirklich löschen?`)) {
         try {
-            const response = await fetch(`http://localhost:8000/api/categories/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/api/categories/${id}`, {
                 method: 'DELETE'
             });
 
@@ -248,7 +248,7 @@ document.getElementById('categoryForm').addEventListener('submit', async (e) => 
         let response;
         if (editId) {
             // Update existierende Kategorie
-            response = await fetch(`http://localhost:8000/api/categories/${editId}`, {
+            response = await fetch(`${API_BASE_URL}/api/categories/${editId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -257,7 +257,7 @@ document.getElementById('categoryForm').addEventListener('submit', async (e) => 
             });
         } else {
             // Erstelle neue Kategorie
-            response = await fetch('http://localhost:8000/api/categories', {
+            response = await fetch(`${API_BASE_URL}/api/categories`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -377,7 +377,7 @@ function closeRulesModal() {
 
 async function loadKeywords(categoryId) {
     try {
-        const response = await fetch(`http://localhost:8000/api/categories/${categoryId}/rules`);
+        const response = await fetch(`${API_BASE_URL}/api/categories/${categoryId}/rules`);
         if (!response.ok) {
             throw new Error('Fehler beim Laden der Regeln');
         }
@@ -419,7 +419,7 @@ async function addKeyword() {
     }
 
     try {
-        const response = await fetch(`http://localhost:8000/api/categories/${currentRulesCategoryId}/rules/keywords`, {
+        const response = await fetch(`${API_BASE_URL}/api/categories/${currentRulesCategoryId}/rules/keywords`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -446,7 +446,7 @@ async function removeKeyword(keyword) {
     if (confirm(`Schlüsselwort "${keyword}" wirklich entfernen?`)) {
         try {
             const encodedKeyword = encodeURIComponent(keyword);
-            const response = await fetch(`http://localhost:8000/api/categories/${currentRulesCategoryId}/rules/keywords/${encodedKeyword}`, {
+            const response = await fetch(`${API_BASE_URL}/api/categories/${currentRulesCategoryId}/rules/keywords/${encodedKeyword}`, {
                 method: 'DELETE'
             });
 

@@ -8,8 +8,8 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv, set_key
 
-# Router erstellen
-router = APIRouter(prefix="/settings", tags=["Settings"])
+# Router erstellen (kein prefix, wird in main.py bei include_router gesetzt)
+router = APIRouter(tags=["Settings"])
 
 
 class ApiKeyUpdate(BaseModel):

@@ -1,7 +1,7 @@
 // ==================== CHATBOT JAVASCRIPT ====================
 
 // API-Basis-URL (wo unser FastAPI-Backend läuft)
-const API_BASE_URL = "http://localhost:8000/api";
+const API_BASE_URL = "http://localhost:8000";
 
 // Elemente aus dem HTML holen
 const chatMessages = document.getElementById("chatMessages");
@@ -77,7 +77,7 @@ async function sendMessage(message) {
   showLoading();
 
   try {
-    const response = await fetch(`${API_BASE_URL}/chatbot/message`, {
+    const response = await fetch(`${API_BASE_URL}/api/chatbot/message`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -115,7 +115,7 @@ async function resetChat() {
 
   try {
     const response = await fetch(
-      `${API_BASE_URL}/chatbot/reset?session_id=${sessionId}`,
+      `${API_BASE_URL}/api/chatbot/reset?session_id=${sessionId}`,
       { method: "POST" }
     );
 

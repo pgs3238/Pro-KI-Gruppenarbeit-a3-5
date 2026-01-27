@@ -1,6 +1,7 @@
 // ==================== API KEY MANAGEMENT ====================
 
 // Settings API URL (verwendet globale API_BASE_URL falls vorhanden)
+// Alle JS-Dateien nutzen einheitlich 'http://localhost:8000' als API_BASE_URL
 const SETTINGS_API_URL = 'http://localhost:8000';
 
 /**

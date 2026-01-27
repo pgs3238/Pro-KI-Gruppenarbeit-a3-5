@@ -106,7 +106,7 @@ async def root():
 if CHATBOT_AVAILABLE:
     app.include_router(chatbot_routes.router, prefix="/api")
 app.include_router(zinsrechner_routes.router, prefix="/api")
-app.include_router(settings_routes.router, prefix="/api")
+app.include_router(settings_routes.router, prefix="/api/settings")
 
 # Category-Router registrieren
 if CATEGORY_ROUTES_AVAILABLE:
