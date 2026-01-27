@@ -5,6 +5,7 @@ Description:
     FastAPI endpoint for importing CSV transactions into the database.
 """
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi.responses import JSONResponse
 import tempfile
 import json
 from pathlib import Path
@@ -42,30 +43,56 @@ async def import_transactions(
     Raises:
         HTTPException: If the uploaded file is not a supported file type.
     """
-    if not file.filename.endswith((".csv", ".xlsx")):
-        raise HTTPException(status_code=400, detail="Invalid file type")
-
-    mapping = json.loads(mapping)
-
-    # Save uploaded file temporarily
-    with tempfile.NamedTemporaryFile(delete=False, suffix=file.filename) as tmp:
-        tmp.write(await file.read())
-        tmp_path = Path(tmp.name)
-
-    session = SessionLocal()
 
     try:
-        importer = CSVTransaktionImporter(
-            session=session,
-            mapping=mapping,
-            header_row=header_row,
-            skip_footer=skip_footer,
-            konto_id=konto_id
-        )
-        importer.import_csv(tmp_path)
 
-        return {"status": "success"}
+        if not file.filename.endswith((".csv", ".xlsx")):
+            #raise HTTPException(status_code=400, detail="Invalid file type")
+            return JSONResponse(status_code=400, content={
+                "status": "error",
+                "message": "Ungültiger Dateityp. Bitte CSV oder XLSX hochladen."
+            })
+        
+        try:
 
-    finally:
-        session.close()
-        tmp_path.unlink(missing_ok=True)
+            mapping = json.loads(mapping)
+        
+        except json.JSONDecodeError:
+            return JSONResponse(status_code=400, content={
+                "status": "error",
+                "message": "Mapping JSON ungültig. Bitte prüfen Sie die Eingabe."
+            })
+
+        # Save uploaded file temporarily
+        with tempfile.NamedTemporaryFile(delete=False, suffix=file.filename) as tmp:
+            tmp.write(await file.read())
+            tmp_path = Path(tmp.name)
+
+        session = SessionLocal()
+
+        try:
+            importer = CSVTransaktionImporter(
+                session=session,
+                mapping=mapping,
+                header_row=header_row,
+                skip_footer=skip_footer,
+                konto_id=konto_id
+            )
+            importer.import_csv(tmp_path)
+                
+            return JSONResponse(status_code=200, content={
+                "status": "success",
+                "message": f"Import erfolgreich für Konto {konto_id}"
+            })
+
+        #return {"status": "success"}
+        finally:
+            session.close()
+            tmp_path.unlink(missing_ok=True)
+
+    except Exception as e:
+        # Catch-all for unexpected errors
+        return JSONResponse(status_code=400, content={
+            "status": "error",
+            "message": str(e)
+        })

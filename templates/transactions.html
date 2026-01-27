@@ -471,5 +471,62 @@
     <!-- ==================== SCRIPTS ==================== -->
     <script src="../static/js/utils.js"></script>
     <script src="../static/js/app.js"></script>
+    <script>
+    document.getElementById("importForm").addEventListener("submit", async function(e) {
+      e.preventDefault(); // prevent default form submission
+
+      const form = e.target;
+      const fileInput = form.querySelector('input[type="file"]');
+      const headerRowInput = form.querySelector('input[placeholder="1"]');
+      const skipFooterInput = form.querySelector('input[placeholder="0"]');
+
+      // Collect the header mapping from inputs
+      const mapping = {
+        buchungstag: form.querySelector('input[placeholder*="Buchungstag"]').value,
+        beguenstigter: form.querySelector('input[placeholder*="Begünstigten"]').value,
+        iban_kontonummer: form.querySelector('input[placeholder*="IBAN"]').value,
+        verwendungszweck: form.querySelector('input[placeholder*="Verwendungszweck"]').value,
+        betrag: form.querySelector('input[placeholder*="Betrag"]').value
+      };
+
+      const kontoSelect = form.querySelector('select[name="konto_id"]');
+
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+      formData.append("header_row", headerRowInput.value);
+      formData.append("skip_footer", skipFooterInput.value);
+      formData.append("mapping", JSON.stringify(mapping));
+      formData.append("konto_id", kontoSelect.value);
+
+      try {
+        const response = await fetch("/transactions/import", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          const errorMessage = data.detail || data.message || "Unbekannter Fehler";
+          showToast(data.detail, "error");
+        } else {
+          showToast(data.message || "Import erfolgreich", "success");
+          form.reset();
+        }
+      } catch (err) {
+        showToast("Unerwarteter Fehler: " + err, "error");
+      }
+    });
+
+    // Simple toast function (you already have toast container in HTML)
+    function showToast(message, type="info") {
+      const container = document.getElementById("toastContainer");
+      const toast = document.createElement("div");
+      toast.className = "toast " + type;
+      toast.innerText = message;
+      container.appendChild(toast);
+      setTimeout(() => container.removeChild(toast), 5000); 
+    }
+    </script>
   </body>
 </html>

@@ -134,15 +134,19 @@ class CSVTransaktionImporter:
         for row in data_rows:
             record = {}
             for model_field, csv_header in self.mapping.items():
-                idx = headers.index(csv_header)
-                value = row[idx].strip()
 
-                if model_field == "buchungstag":
-                    value = self.parse_date(value)
-                elif model_field == "betrag":
-                    value = self.parse_float(value)
+                try:
+                    idx = headers.index(csv_header)
+                    value = row[idx].strip()
 
-                record[model_field] = value
+                    if model_field == "buchungstag":
+                        value = self.parse_date(value)
+                    elif model_field == "betrag":
+                        value = self.parse_float(value)
+
+                    record[model_field] = value
+                except ValueError:
+                    raise ValueError(f'Die Spalte "{csv_header}" wurde in der CSV-Datei nicht gefunden. Bitte überprüfen Sie die Schreibweise.')
 
             record["konto_id"] = self.konto_id
             record["waehrung"] = "EUR"

@@ -4,6 +4,7 @@ from fastapi import UploadFile, File, Form, FastAPI, HTTPException, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date
@@ -563,7 +564,11 @@ async def import_transactions(
 
     except Exception as e:
         # Fehler zurückgeben
-        raise HTTPException(status_code=400, detail=str(e))
+        #raise HTTPException(status_code=400, detail=str(e))
+        return JSONResponse(
+            status_code=400,
+            content={"status": "error", "message": str(e)}
+        )
 
 
 # ==================== ENDPUNKTE: AUTO-KATEGORISIERUNG ====================
