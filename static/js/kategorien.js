@@ -7,12 +7,7 @@ let categoriesData = [];
 // Kategorien laden und anzeigen
 async function loadCategories() {
     try {
-        // Kategorien vom Backend laden
-        const response = await fetch(`${API_BASE_URL}/api/categories`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const categories = await response.json();
+        const categories = await fetchCategories();
         categoriesData = categories;
         renderCategories(categories);
     } catch (error) {
@@ -215,7 +210,7 @@ function closeCategoryModal() {
     document.getElementById('categoryForm').reset();
     document.querySelector('.modal-title').textContent = 'Kategorie hinzufügen';
     delete document.getElementById('categoryForm').dataset.editId;
-    updateSelectColors();
+    updateSelectEmptyClasses(selects);
 }
 
 modal.addEventListener('click', (e) => {
@@ -287,25 +282,10 @@ document.getElementById('categoryForm').addEventListener('submit', async (e) => 
 });
 
 // Select Placeholder Styling
-function updateSelectColor(select) {
-    if (select.value === "") {
-        select.classList.add('empty');
-    } else {
-        select.classList.remove('empty');
-    }
-}
-
-function updateSelectColors() {
-    selects.forEach(select => updateSelectColor(select));
-}
-
-selects.forEach(select => {
-    updateSelectColor(select);
-    select.addEventListener('change', () => updateSelectColor(select));
-});
+wireSelectEmptyClasses(selects);
 
 document.getElementById('categoryForm').addEventListener('reset', () => {
-    setTimeout(() => updateSelectColors(), 0);
+    setTimeout(() => updateSelectEmptyClasses(selects), 0);
 });
 
 // Suchfunktion

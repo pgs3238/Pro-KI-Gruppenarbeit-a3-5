@@ -129,7 +129,7 @@ class CategoryRules(Base):
     category = relationship("Category", backref="rules")
 
     def __repr__(self):
-        return f"<CategoryRules(category='{self.category.name}', keyword='{self.keyword}', source='{self.source}')>"
+        return f"<CategoryRules(category_name='{self.category_name}', keywords='{self.keywords}')>"
 
 
 class CategorizationState(Base):

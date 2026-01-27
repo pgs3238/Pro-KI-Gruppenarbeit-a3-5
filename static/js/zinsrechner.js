@@ -693,8 +693,7 @@ async function zuruecksetzen() {
 // ============ KONTEN LADEN ============
 async function ladeKonten() {
     try {
-        const response = await fetch(`http://localhost:8000/konten`);
-        const konten = await response.json();
+        const konten = await fetchKonten();
         
         if (Array.isArray(konten) && konten.length > 0) {
             kontenListe = konten;
@@ -818,10 +817,4 @@ async function loescheBerechnungById(id) {
     aktualisiereChart();
 }
 
-// ============ HILFSFUNKTIONEN ============
-function formatCurrency(value) {
-    return parseFloat(value).toLocaleString('de-DE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    }) + ' €';
-}
+// (formatCurrency wird zentral aus utils.js verwendet)

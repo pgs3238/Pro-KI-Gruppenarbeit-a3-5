@@ -1,5 +1,6 @@
 # FastAPI REST API für Transaktionsverwaltung (App-Bootstrap & Router-Registrierung)
 
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -28,28 +29,16 @@ except ImportError:
 from . import zinsrechner_routes
 from . import settings_routes
 
-# ==================== SETUP ====================
-
-app = FastAPI(
-    title="Ausgabenverwaltung API",
-    description="REST API für die Verwaltung von Finanztransaktionen",
-    version="1.0.0",
-)
-
 # Globale Service-Instanz
 auto_categorizer = get_auto_categorizer_service()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
+# ==================== LIFESPAN ====================
 
-@app.on_event("startup")
-def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Modernes Lifespan Pattern für Startup/Shutdown Events."""
+    # Startup
     init_db()
     print("✓ API gestartet")
 
@@ -66,6 +55,29 @@ def startup_event():
         state["has_new_transactions"] is None or state["has_new_transactions"] > 0
     ):
         auto_categorizer.run_full_categorization_cycle()
+
+    yield  # App läuft
+
+    # Shutdown (bei Bedarf Cleanup hier hinzufügen)
+    print("✓ API beendet")
+
+
+# ==================== SETUP ====================
+
+app = FastAPI(
+    title="Ausgabenverwaltung API",
+    description="REST API für die Verwaltung von Finanztransaktionen",
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # ==================== STATIC FILES & ROUTER ====================

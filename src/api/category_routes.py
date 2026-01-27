@@ -3,49 +3,16 @@ API-Endpoints für Kategorie-Verwaltung
 """
 
 from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from typing import List
-from datetime import datetime
 
 from ..database import SessionLocal, Category, CategoryRules
 from ..categories.categories import add_category, remove_category, get_categories
 from ..categories.categorizer_rules import Categorizer
 from .dependencies import get_db
+from .schemas import CategoryCreate, CategoryResponse, CategoryRulesResponse, KeywordRequest
 
 router = APIRouter(prefix="/api/categories", tags=["categories"])
-
-
-# ==================== SCHEMAS ====================
-class CategoryCreate(BaseModel):
-    name: str
-    category_type: str  # "Ausgabe" oder "Einnahme"
-    icon: str = "🏷️"  # Default Icon
-    farbe: str = "#06d6a6"  # Default Farbe
-
-
-class CategoryResponse(BaseModel):
-    id: int
-    name: str
-    category_type: str
-    icon: str = "🏷️"
-    farbe: str = "#06d6a6"
-
-    class Config:
-        from_attributes = True
-
-
-class CategoryRulesResponse(BaseModel):
-    id: int
-    category_name: str
-    keywords: List[str]
-
-    class Config:
-        from_attributes = True
-
-
-class KeywordRequest(BaseModel):
-    keyword: str
 
 
 # ==================== ENDPOINTS ====================
@@ -70,9 +37,6 @@ def create_category(category: CategoryCreate, db: Session = Depends(get_db)):
     Nutzt die add_category() Funktion aus dem categories Modul.
     """
     try:
-        # Debug: Logge die empfangenen Daten
-        print(f"DEBUG create_category: Empfangen: name={category.name}, category_type={category.category_type}, icon={category.icon}, farbe={category.farbe}")
-        
         # Validiere category_type
         if category.category_type not in ["Ausgabe", "Einnahme"]:
             raise HTTPException(status_code=400, detail="category_type muss 'Ausgabe' oder 'Einnahme' sein")
@@ -87,7 +51,6 @@ def create_category(category: CategoryCreate, db: Session = Depends(get_db)):
         
         # Lade die neu erstellte Kategorie
         new_category = db.query(Category).filter(Category.name == category.name).first()
-        print(f"DEBUG create_category: Gespeichert: id={new_category.id}, category_type={new_category.category_type}")
         return new_category
 
     except ValueError as e:

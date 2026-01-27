@@ -2,6 +2,7 @@ from datetime import date, datetime, timedelta
 from typing import List, Optional
 import tempfile
 import json
+import os
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
@@ -11,14 +12,18 @@ from ..database.search import search_transaktionen
 from ..database.konto_manager import KontoManager
 from ..database.csv_importer import CSVTransaktionImporter
 from ..categories.auto_categorizer_service import get_auto_categorizer_service
+from ..constants import CHART_COLOR_PALETTE, EXPENSE_COLOR
 from .schemas import (
     TransaktionCreate,
     TransaktionUpdate,
     TransaktionResponse,
     TransaktionSearch,
+    KontoCreate,
+    KontoUpdate,
     KontoResponse,
 )
 from .dependencies import get_db
+from .helpers import get_or_404
 
 router = APIRouter(tags=["Transactions"])
 
@@ -31,20 +36,12 @@ auto_categorizer = get_auto_categorizer_service()
 
 def get_transaction_or_404(transaction_id: int, db: Session):
     """Transaktion laden oder 404 werfen"""
-    transaction = (
-        db.query(Transaktion).filter(Transaktion.id == transaction_id).first()
-    )
-    if not transaction:
-        raise HTTPException(status_code=404, detail="Transaktion nicht gefunden")
-    return transaction
+    return get_or_404(db, Transaktion, transaction_id, detail="Transaktion nicht gefunden")
 
 
 def get_konto_or_404(konto_id: int, db: Session):
     """Konto laden oder 404 werfen"""
-    konto = db.query(Konto).filter(Konto.id == konto_id).first()
-    if not konto:
-        raise HTTPException(status_code=404, detail="Konto nicht gefunden")
-    return konto
+    return get_or_404(db, Konto, konto_id, detail="Konto nicht gefunden")
 
 
 # ==================== ENDPUNKTE: BASIC ====================
@@ -211,32 +208,13 @@ def get_sankey_data(
     # Berechne Gesamtausgaben
     total_expenses = sum(amount for _, amount in sorted_categories)
 
-    # Farbpalette für Kategorien
-    category_colors = [
-        "#3498db",
-        "#9b59b6",
-        "#e67e22",
-        "#1abc9c",
-        "#e74c3c",
-        "#f39c12",
-        "#2ecc71",
-        "#d35400",
-        "#8e44ad",
-        "#16a085",
-        "#c0392b",
-        "#27ae60",
-        "#2980b9",
-        "#f1c40f",
-        "#e91e63",
-    ]
-
     # Erstelle Nodes
     # Node 0: Ausgaben (links)
-    nodes = [{"label": "💸 Ausgaben", "color": "#e74c3c"}]
+    nodes = [{"label": "💸 Ausgaben", "color": EXPENSE_COLOR}]
 
     # Nodes 1 bis N: Kategorien (rechts)
     for idx, (name, amount) in enumerate(sorted_categories):
-        color = category_colors[idx % len(category_colors)]
+        color = CHART_COLOR_PALETTE[idx % len(CHART_COLOR_PALETTE)]
         nodes.append(
             {
                 "label": name,
@@ -248,7 +226,7 @@ def get_sankey_data(
     # Erstelle Links: Ausgaben → Kategorien
     links = []
     for idx, (name, amount) in enumerate(sorted_categories):
-        color = category_colors[idx % len(category_colors)]
+        color = CHART_COLOR_PALETTE[idx % len(CHART_COLOR_PALETTE)]
         # Füge Transparenz hinzu (66 = 40% opacity in hex)
         link_color = color + "66"
 
@@ -560,6 +538,7 @@ async def import_transactions(
       - mapping: JSON { "buchungstag": "Buchungstag", "beguenstigter": "Begünstigter / Auftraggeber", ... }
       - konto_id: ID des Kontos, auf das gebucht wird
     """
+    tmp_path = None
     try:
         # Mapping JSON parsen
         mapping_dict = json.loads(mapping)
@@ -587,4 +566,9 @@ async def import_transactions(
     except Exception as e:
         # Fehler zurückgeben
         raise HTTPException(status_code=400, detail=str(e))
+    finally:
+        # Temporäre Datei immer bereinigen
+        if tmp_path and os.path.exists(tmp_path):
+            os.unlink(tmp_path)
+
 

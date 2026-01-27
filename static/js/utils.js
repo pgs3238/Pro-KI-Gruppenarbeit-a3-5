@@ -5,7 +5,14 @@ const API_BASE_URL = 'http://localhost:8000';
 
 // Toast-Benachrichtigungen
 function showToast(message, type = 'success', duration = 4000) {
-    const container = document.getElementById('toastContainer');
+    let container = document.getElementById('toastContainer');
+    // Robust: Container bei Bedarf anlegen (z.B. wenn initComponents noch nicht lief)
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     
@@ -53,16 +60,92 @@ function formatIBANInput(iban) {
     return cleaned.match(/.{1,4}/g)?.join(' ') || cleaned;
 }
 
-// ============ MODAL FUNKTIONEN ============
+// ============ DATUM ============
 
-// Generische Modal-Öffnung
-function openModal(modalSelector) {
+/**
+ * Formatiert ein Datum ins deutsche Format.
+ * @param {Date|string|number} input
+ * @param {{ pad?: boolean }} options
+ */
+function formatDateDE(input, options = {}) {
+    const { pad = true } = options;
+    const d = input instanceof Date ? input : new Date(input);
+    if (Number.isNaN(d.getTime())) return '';
+    const day = pad ? String(d.getDate()).padStart(2, '0') : String(d.getDate());
+    const month = pad ? String(d.getMonth() + 1).padStart(2, '0') : String(d.getMonth() + 1);
+    const year = d.getFullYear();
+    return `${day}.${month}.${year}`;
+}
+
+// ============ SELECT HELPERS ============
+
+function updateSelectEmptyClass(select) {
+    if (!select) return;
+    if (select.value === "") {
+        select.classList.add('empty');
+    } else {
+        select.classList.remove('empty');
+    }
+}
+
+function updateSelectEmptyClasses(selects) {
+    if (!selects) return;
+    selects.forEach(select => updateSelectEmptyClass(select));
+}
+
+function wireSelectEmptyClasses(selects) {
+    if (!selects) return;
+    selects.forEach(select => {
+        updateSelectEmptyClass(select);
+        select.addEventListener('change', () => updateSelectEmptyClass(select));
+    });
+}
+
+// ============ ICONS ============
+
+function getAccountIcon(typ) {
+    const key = (typ || '').toString().toLowerCase();
+    const icons = {
+        girokonto: "🏦",
+        sparkonto: "💰",
+        kreditkarte: "💳",
+        depot: "📈",
+        bargeld: "💵",
+        sonstiges: "🏦",
+    };
+    return icons[key] || "🏦";
+}
+
+// ============ API HELPERS ============
+
+async function apiGetJson(path) {
+    const response = await fetch(`${API_BASE_URL}${path}`);
+    if (!response.ok) {
+        throw new Error(`API-Fehler: ${response.status}`);
+    }
+    return await response.json();
+}
+
+async function fetchKonten() {
+    return await apiGetJson('/konten');
+}
+
+async function fetchKontoSaldo(kontoId) {
+    return await apiGetJson(`/konten/${kontoId}/saldo`);
+}
+
+async function fetchCategories() {
+    return await apiGetJson('/api/categories');
+}
+
+// ============ MODAL FUNKTIONEN (umbenannt, um Konflikte zu vermeiden) ============
+
+function openModalBySelector(modalSelector) {
     const modal = document.querySelector(modalSelector);
     if (modal) modal.classList.add('active');
 }
 
-// Generische Modal-Schließung
-function closeModal(modalSelector, formSelector = null) {
+function closeModalBySelector(modalSelector, formSelector = null) {
     const modal = document.querySelector(modalSelector);
     if (modal) modal.classList.remove('active');
     

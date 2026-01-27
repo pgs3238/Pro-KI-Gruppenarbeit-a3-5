@@ -5,10 +5,7 @@
 
 async function loadKategorien() {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/categories`);
-        if (!response.ok) throw new Error('Fehler beim Laden der Kategorien');
-        
-        availableKategorien = await response.json();
+        availableKategorien = await fetchCategories();
         console.log('✓ Kategorien geladen:', availableKategorien);
         
         // Fülle alle Kategorie-Selects mit den geladenen Kategorien
@@ -91,10 +88,7 @@ async function loadKonten() {
 
     try {
         // Lade zuerst die verfügbaren Konten
-        const kontenResponse = await fetch(`${API_BASE_URL}/konten`);
-        if (!kontenResponse.ok) throw new Error('Fehler beim Laden der Konten');
-        
-        const konten = await kontenResponse.json();
+        const konten = await fetchKonten();
         availableKonten = konten;  // Speichere die Konten für Lookups
         console.log('✓ Konten geladen:', konten);
         
@@ -104,16 +98,13 @@ async function loadKonten() {
         
         for (let konto of konten) {
             try {
-                const saldoResponse = await fetch(`${API_BASE_URL}/konten/${konto.id}/saldo`);
-                if (saldoResponse.ok) {
-                    const saldoData = await saldoResponse.json();
-                    totalSaldo += saldoData.aktueller_saldo;
-                    kontenMitSaldo.push({
-                        ...konto,
-                        saldo: saldoData.aktueller_saldo
-                    });
-                    console.log(`✓ Saldo für ${konto.kontoname}: ${saldoData.aktueller_saldo}€`);
-                }
+                const saldoData = await fetchKontoSaldo(konto.id);
+                totalSaldo += saldoData.aktueller_saldo;
+                kontenMitSaldo.push({
+                    ...konto,
+                    saldo: saldoData.aktueller_saldo
+                });
+                console.log(`✓ Saldo für ${konto.kontoname}: ${saldoData.aktueller_saldo}€`);
             } catch (error) {
                 console.warn(`Fehler beim Laden des Saldos für Konto ${konto.id}:`, error);
             }
@@ -498,12 +489,7 @@ async function performSearch() {
             const row = table.insertRow();
             const betragClass = t.betrag >= 0 ? 'betrag-positiv' : 'betrag-negativ';
             const betragText = (t.betrag >= 0 ? '+' : '') + t.betrag.toFixed(2).replace('.', ',') + '€';
-            
-            const date = new Date(t.buchungstag);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-            const formattedDate = `${day}.${month}.${year}`;
+            const formattedDate = formatDateDE(t.buchungstag, { pad: true });
 
             //Konto Daten Suchen
             const konto = t.konto_id
@@ -637,7 +623,7 @@ async function editTransaction(id) {
 
         // Konvertiere ISO Datum zu deutschem Format
         const date = new Date(transaction.buchungstag);
-        const germanDate = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
+        const germanDate = formatDateDE(date, { pad: true });
         
         // Speichere Datum-Informationen
         window.selectedDate = date;
@@ -768,10 +754,7 @@ async function loadKontoSelect(targetId = 'kontoSelect') {
     if (!kontoSelect) return;
     
     try {
-        const response = await fetch(`${API_BASE_URL}/konten`);
-        if (!response.ok) throw new Error('Fehler beim Laden der Konten');
-        
-        const konten = await response.json();
+        const konten = await fetchKonten();
         availableKonten = konten;  // Speichere die Konten für Lookups
         
         // Behalte die erste leere Option
@@ -882,10 +865,7 @@ function setCurrentDate() {
     const today = new Date();
     window.selectedDate = today;
     window.currentMonth = new Date(today);
-    const day = String(today.getDate()).padStart(2, '0');
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const year = today.getFullYear();
-    datumInput.value = `${day}.${month}.${year}`;
+    datumInput.value = formatDateDE(today, { pad: true });
 }
 
 /**
@@ -955,7 +935,7 @@ function renderCalendar() {
 function selectDate(day) {
     if (!window.currentMonth) window.currentMonth = new Date();
     window.selectedDate = new Date(window.currentMonth.getFullYear(), window.currentMonth.getMonth(), day);
-    const formattedDate = `${String(day).padStart(2, '0')}.${String(window.currentMonth.getMonth() + 1).padStart(2, '0')}.${window.currentMonth.getFullYear()}`;
+    const formattedDate = formatDateDE(window.selectedDate, { pad: true });
     const datumInput = document.getElementById('datumInput');
     if (datumInput) datumInput.value = formattedDate;
     const calendar = document.getElementById('customCalendar');
@@ -1047,7 +1027,7 @@ function setupTransactionModal() {
         // Reset handler
         transactionForm.addEventListener('reset', () => {
             setTimeout(() => {
-                selects.forEach(select => updateSelectColor(select));
+                updateSelectEmptyClasses(selects);
             }, 0);
         });
     }
@@ -1107,19 +1087,7 @@ function setupTransactionModal() {
         }
     });
 
-    // Select color update handler
-    function updateSelectColor(select) {
-        if (select.value === "") {
-            select.classList.add('empty');
-        } else {
-            select.classList.remove('empty');
-        }
-    }
-
-    selects.forEach(select => {
-        updateSelectColor(select);
-        select.addEventListener('change', () => updateSelectColor(select));
-    });
+    wireSelectEmptyClasses(selects);
 }
 
 // ==================== SEITEN-INIT ====================

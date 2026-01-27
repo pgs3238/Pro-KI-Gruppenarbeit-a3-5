@@ -192,3 +192,46 @@ class ChatStatusResponse(BaseModel):
                 "model_name": "gemini-2.5-flash",
             }
         }
+
+
+# ==================== CATEGORY SCHEMAS ====================
+
+
+class CategoryCreate(BaseModel):
+    """Schema für das Erstellen einer neuen Kategorie"""
+    
+    name: str
+    category_type: str  # "Ausgabe" oder "Einnahme"
+    icon: str = "🏷️"  # Default Icon
+    farbe: str = "#06d6a6"  # Default Farbe
+
+
+class CategoryResponse(BaseModel):
+    """Schema für Kategorie-Responses"""
+    
+    id: int
+    name: str
+    category_type: str
+    icon: str = "🏷️"
+    farbe: str = "#06d6a6"
+
+    class Config:
+        from_attributes = True
+
+
+class CategoryRulesResponse(BaseModel):
+    """Schema für Kategorie-Regeln Responses"""
+    
+    id: int
+    category_name: str
+    keywords: list[str]
+
+    class Config:
+        from_attributes = True
+
+
+class KeywordRequest(BaseModel):
+    """Schema für Keyword-Requests"""
+    
+    keyword: str
+

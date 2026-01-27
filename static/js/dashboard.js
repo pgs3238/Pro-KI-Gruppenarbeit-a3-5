@@ -137,8 +137,7 @@ async function loadKPIs() {
 // Konten Preview laden (für KPI-Karte)
 async function loadAccountsPreview() {
   try {
-    const response = await fetch(`${API_BASE_URL}/konten`);
-    const accounts = await response.json();
+    const accounts = await fetchKonten();
     
     const iconsContainer = document.getElementById("accountsKpiIcons");
     
@@ -168,13 +167,12 @@ async function loadAccountsPreview() {
 // Transaktionen Preview laden
 async function loadTransactionsPreview() {
   try {
-    const [transactionsRes, kontosRes] = await Promise.all([
+    const [transactionsRes, kontos] = await Promise.all([
       fetch(`${API_BASE_URL}/transactions?days=30`),
-      fetch(`${API_BASE_URL}/konten`)
+      fetchKonten(),
     ]);
     
     let transactions = await transactionsRes.json();
-    let kontos = await kontosRes.json();
     
     // Map für Kontonamen erstellen
     const konto_map = {};
@@ -205,7 +203,7 @@ async function loadTransactionsPreview() {
       const amountClass = isPositive ? "positive" : "negative";
       const amountText = isPositive ? `+${formatCurrency(transaction.betrag)}` : formatCurrency(transaction.betrag);
       
-      const date = new Date(transaction.buchungstag).toLocaleDateString("de-DE");
+      const date = formatDateDE(transaction.buchungstag, { pad: false });
       const kontoName = konto_map[transaction.konto_id] || "Konto";
       
       item.innerHTML = `
@@ -230,13 +228,12 @@ async function loadTransactionsPreview() {
 // Kategorien Preview laden
 async function loadCategoriesPreview() {
   try {
-    const [transactionsRes, kategoriesRes] = await Promise.all([
+    const [transactionsRes, kategorien] = await Promise.all([
       fetch(`${API_BASE_URL}/transactions?days=30`),
-      fetch(`${API_BASE_URL}/api/categories`),
+      fetchCategories(),
     ]);
     
     const transactions = await transactionsRes.json();
-    const kategorien = await kategoriesRes.json();
     
     // Berechne das Datum vor 30 Tagen
     const today = new Date();
@@ -540,15 +537,4 @@ function setupSankeyControls() {
   }
 }
 
-// Helper Funktionen - formatCurrency wird aus utils.js verwendet
-
-function getAccountIcon(typ) {
-  const icons = {
-    girokonto: "🏦",
-    sparkonto: "💰",
-    kreditkarte: "💳",
-    depot: "📈",
-    bargeld: "💵",
-  };
-  return icons[typ] || "🏦";
-}
+// Helper Funktionen werden zentral aus utils.js verwendet

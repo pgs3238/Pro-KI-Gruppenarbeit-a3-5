@@ -81,7 +81,7 @@ function initApiKeyModal() {
             const apiKey = apiKeyInput.value.trim();
             
             if (!apiKey) {
-                showSettingsToast('Bitte geben Sie einen API-Key ein', 'error');
+                showToast('Bitte geben Sie einen API-Key ein', 'error');
                 return;
             }
             
@@ -93,7 +93,7 @@ function initApiKeyModal() {
                 const result = await saveApiKey(apiKey);
                 
                 if (result.success) {
-                    showSettingsToast('API-Key erfolgreich gespeichert!', 'success');
+                    showToast('API-Key erfolgreich gespeichert!', 'success');
                     
                     // Schließe Modal nach kurzer Verzögerung
                     setTimeout(() => {
@@ -101,10 +101,10 @@ function initApiKeyModal() {
                         apiKeyInput.value = '';
                     }, 1000);
                 } else {
-                    showSettingsToast('Fehler beim Speichern', 'error');
+                    showToast('Fehler beim Speichern', 'error');
                 }
             } catch (error) {
-                showSettingsToast(error.message || 'Fehler beim Speichern', 'error');
+                showToast(error.message || 'Fehler beim Speichern', 'error');
             } finally {
                 // Setze Button zurück
                 newSaveBtn.disabled = false;
@@ -114,57 +114,6 @@ function initApiKeyModal() {
     }
     
     // NICHT automatisch laden - nur wenn Modal geöffnet wird
-}
-
-// ==================== TOAST NOTIFICATIONS ====================
-
-/**
- * Zeigt eine Toast-Benachrichtigung an (für Settings)
- * @param {string} message - Die anzuzeigende Nachricht
- * @param {string} type - Der Typ: 'success', 'error', 'info', 'warning'
- */
-function showSettingsToast(message, type = 'info') {
-    let toastContainer = document.getElementById('toastContainer');
-    
-    // Erstelle Container falls nicht vorhanden
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.id = 'toastContainer';
-        toastContainer.className = 'toast-container';
-        document.body.appendChild(toastContainer);
-    }
-    
-    // Erstelle Toast Element
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    
-    // Icon basierend auf Typ
-    const icons = {
-        success: '✓',
-        error: '✗',
-        info: 'ℹ',
-        warning: '⚠'
-    };
-    
-    toast.innerHTML = `
-        <span class="toast-icon">${icons[type] || icons.info}</span>
-        <span class="toast-message">${message}</span>
-    `;
-    
-    toastContainer.appendChild(toast);
-    
-    // Animation einblenden (kurze Verzögerung für DOM-Update)
-    requestAnimationFrame(() => {
-        toast.style.opacity = '1';
-        toast.style.transform = 'translateX(0)';
-    });
-    
-    // Automatisch entfernen nach 3 Sekunden
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(400px)';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
 }
 
 // ==================== INITIALISIERUNG ====================

@@ -4,24 +4,11 @@
 // ============ BEISPIELDATEN (FALLBACK) ============
 let accountsData = [];
 
-// Account Icons basierend auf Typ
-const accountIcons = {
-    'girokonto': '💳',
-    'sparkonto': '💰',
-    'kreditkarte': '💸',
-    'depot': '📈',
-    'bargeld': '💵',
-    'sonstiges': '🏦'
-};
-
 // ============ API FUNKTIONEN ============
 
 async function loadAccountsFromAPI() {
     try {
-        const response = await fetch(`${API_BASE_URL}/konten`);
-        if (!response.ok) throw new Error(`API Error: ${response.status}`);
-        
-        const konten = await response.json();
+        const konten = await fetchKonten();
         
         // Konvertiere API-Daten ins Frontend-Format
         accountsData = konten.map(konto => ({
@@ -39,11 +26,8 @@ async function loadAccountsFromAPI() {
         // Lade den aktuellen Saldo (initialstand + transaktionen) für jedes Konto
         for (let account of accountsData) {
             try {
-                const saldoResponse = await fetch(`${API_BASE_URL}/konten/${account.id}/saldo`);
-                if (saldoResponse.ok) {
-                    const saldoData = await saldoResponse.json();
-                    account.saldo = saldoData.aktueller_saldo;  // Überschreibe mit aktuellem Wert
-                }
+                const saldoData = await fetchKontoSaldo(account.id);
+                account.saldo = saldoData.aktueller_saldo;  // Überschreibe mit aktuellem Wert
             } catch (error) {
                 console.warn(`Fehler beim Laden des Saldos für Konto ${account.id}:`, error);
             }
@@ -167,7 +151,7 @@ function loadAccounts() {
         card.className = 'account-card';
         card.innerHTML = `
             <div class="account-card-header" style="background: ${account.farbe};">
-                <span class="account-icon">${accountIcons[account.typ] || '🏦'}</span>
+                <span class="account-icon">${getAccountIcon(account.typ)}</span>
                 <div class="account-actions">
                     <button class="account-action-btn" onclick="editAccount(${account.id})" title="Bearbeiten">✏️</button>
                     <button class="account-action-btn" onclick="deleteAccount(${account.id})" title="Löschen">🗑️</button>
@@ -249,7 +233,7 @@ function closeAccountModal() {
     document.getElementById('accountForm').reset();
     document.querySelector('.modal-title').textContent = 'Konto hinzufügen';
     delete document.getElementById('accountForm').dataset.editId;
-    updateSelectColors();
+    updateSelectEmptyClasses(selects);
 }
 
 modal.addEventListener('click', (e) => {
@@ -298,25 +282,10 @@ document.getElementById('accountForm').addEventListener('submit', (e) => {
 });
 
 // Select Placeholder Styling
-function updateSelectColor(select) {
-    if (select.value === "") {
-        select.classList.add('empty');
-    } else {
-        select.classList.remove('empty');
-    }
-}
-
-function updateSelectColors() {
-    selects.forEach(select => updateSelectColor(select));
-}
-
-selects.forEach(select => {
-    updateSelectColor(select);
-    select.addEventListener('change', () => updateSelectColor(select));
-});
+wireSelectEmptyClasses(selects);
 
 document.getElementById('accountForm').addEventListener('reset', () => {
-    setTimeout(() => updateSelectColors(), 0);
+    setTimeout(() => updateSelectEmptyClasses(selects), 0);
 });
 
 // IBAN Formatierung
@@ -351,37 +320,5 @@ if (searchBox && searchIcon) {
     });
 }
 
-// Initial laden
-loadAccountsFromAPI();
-
-// ============ TOAST NOTIFICATIONS ============
-
-function showToast(message, type = 'success', duration = 4000) {
-    const container = document.getElementById('toastContainer');
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    
-    const icons = {
-        success: '✅',
-        error: '❌',
-        warning: '⚠️',
-        info: 'ℹ️'
-    };
-    
-    toast.innerHTML = `
-        <div class="toast-icon">${icons[type] || icons.info}</div>
-        <div class="toast-content">
-            <div class="toast-message">${message}</div>
-        </div>
-        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
-    `;
-    
-    container.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.classList.add('removing');
-        setTimeout(() => toast.remove(), 300);
-    }, duration);
-}
 // Initial laden
 loadAccountsFromAPI();

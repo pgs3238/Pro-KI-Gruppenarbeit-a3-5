@@ -97,12 +97,9 @@ class CSVTransaktionImporter:
 
         if delimiter_scores:
             # Pick delimiter with highest count (most columns)
-            print(f"DEBUG: Delimiter scores detected: {delimiter_scores}")
             detected = max(delimiter_scores, key=lambda k: delimiter_scores[k])
-            print(f"DEBUG: Chosen delimiter: '{detected}'")
         else:
             # fallback
-            print(f"DEBUG: No suitable delimiter found, falling back to default")
             detected = ";"
 
         return detected
