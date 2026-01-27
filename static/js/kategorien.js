@@ -1,5 +1,5 @@
 // ============ KATEGORIEN JAVASCRIPT ============
-// Nutzt API_BASE_URL aus utils.js
+// Nutzt API_BASE_URL aus utils.js und CATEGORY_ICON_MAP/CATEGORY_COLOR_MAP aus constants.js
 
 // ============ KATEGORIEN VON BACKEND LADEN ============
 let categoriesData = [];
@@ -19,7 +19,7 @@ async function loadCategories() {
 // Kategorien rendern
 function renderCategories(categories) {
     console.log('Alle Kategorien erhalten vom Backend:', categories);
-    
+
     // Nach Typ gruppieren (Ausgabe vs. Einnahme)
     const ausgaben = categories.filter(c => c.category_type === 'Ausgabe');
     const einnahmen = categories.filter(c => c.category_type === 'Einnahme');
@@ -37,7 +37,7 @@ function renderCategories(categories) {
     // Ausgaben-Liste
     const ausgabenList = document.getElementById('ausgabenList');
     ausgabenList.innerHTML = '';
-    
+
     if (ausgaben.length === 0) {
         ausgabenList.innerHTML = '<div class="empty-state">Keine Ausgaben-Kategorien vorhanden</div>';
     } else {
@@ -49,7 +49,7 @@ function renderCategories(categories) {
     // Einnahmen-Liste
     const einnahmenList = document.getElementById('einnahmenList');
     einnahmenList.innerHTML = '';
-    
+
     if (einnahmen.length === 0) {
         einnahmenList.innerHTML = '<div class="empty-state">Keine Einnahmen-Kategorien vorhanden</div>';
     } else {
@@ -63,36 +63,12 @@ function renderCategories(categories) {
 function createCategoryItem(category) {
     const item = document.createElement('div');
     item.className = 'category-item';
-    
-    // Verwende standardmäßige Icons basierend auf dem Namen
-    const iconMap = {
-        'Lebensmittel': '🍔',
-        'Wohnen': '🏠',
-        'Miete': '🏠',
-        'Verkehr': '🚗',
-        'Transport': '🚗',
-        'Unterhaltung': '🎮',
-        'Freizeit': '🎮',
-        'Gehalt': '💼',
-        'Shopping': '🛒',
-        'Versicherung': '🛡️',
-        'Strom & Gas': '⚡',
-        'Internet & Telefon': '📱',
-        'Abos & Mitgliedschaften': '📺',
-        'Rücklagen': '🏦'
-    };
 
-    // Farben basierend auf Kategorie-Typ
-    const colorMap = {
-        'Ausgabe': '#ef4444',
-        'Einnahme': '#06d6a6'
-    };
+    // Verwende das gespeicherte Icon, falls vorhanden, ansonsten Fallback auf CATEGORY_ICON_MAP oder default
+    const icon = category.icon || CATEGORY_ICON_MAP[category.name] || '🏷️';
+    // Verwende die gespeicherte Farbe, falls vorhanden, ansonsten Fallback auf CATEGORY_COLOR_MAP oder default
+    const color = category.farbe || CATEGORY_COLOR_MAP[category.category_type] || '#06d6a6';
 
-    // Verwende das gespeicherte Icon, falls vorhanden, ansonsten Fallback auf iconMap oder default
-    const icon = category.icon || iconMap[category.name] || '🏷️';
-    // Verwende die gespeicherte Farbe, falls vorhanden, ansonsten Fallback auf colorMap oder default
-    const color = category.farbe || colorMap[category.category_type] || '#06d6a6';
-    
     item.innerHTML = `
         <div class="category-item-left">
             <div class="category-item-icon" style="background: ${color};">
@@ -117,7 +93,7 @@ function createCategoryItem(category) {
             </div>
         </div>
     `;
-    
+
     return item;
 }
 
@@ -128,7 +104,7 @@ function editCategory(id) {
 
     document.querySelector('input[name="name"]').value = category.name;
     document.querySelector('select[name="typ"]').value = category.category_type;
-    
+
     // Setze das gespeicherte Icon, falls vorhanden, ansonsten das erste Icon als Default
     const iconToCheck = document.querySelector(`input[name="icon"][value="${category.icon}"]`);
     if (iconToCheck) {
@@ -136,7 +112,7 @@ function editCategory(id) {
     } else {
         document.querySelector('input[name="icon"][value="🍔"]').checked = true;
     }
-    
+
     // Setze die gespeicherte Farbe, falls vorhanden, ansonsten die Default-Farbe
     const colorToCheck = document.querySelector(`input[name="farbe"][value="${category.farbe}"]`);
     if (colorToCheck) {
@@ -144,7 +120,7 @@ function editCategory(id) {
     } else {
         document.querySelector('input[name="farbe"][value="#06d6a6"]').checked = true;
     }
-    
+
     document.querySelector('textarea[name="beschreibung"]').value = '';
 
     document.querySelector('.modal-title').textContent = 'Kategorie bearbeiten';
@@ -189,19 +165,19 @@ function openCategoryModal() {
     if (typSelect && !typSelect.value) {
         typSelect.value = 'Ausgabe';
     }
-    
+
     // Stelle sicher, dass ein Icon ausgewählt ist (Standard: erstes Icon)
     const iconInputs = document.querySelectorAll('input[name="icon"]');
     if (iconInputs.length > 0 && !document.querySelector('input[name="icon"]:checked')) {
         iconInputs[0].checked = true;
     }
-    
+
     // Stelle sicher, dass eine Farbe ausgewählt ist (Standard: erste Farbe)
     const farbeInputs = document.querySelectorAll('input[name="farbe"]');
     if (farbeInputs.length > 0 && !document.querySelector('input[name="farbe"]:checked')) {
         farbeInputs[0].checked = true;
     }
-    
+
     modal.classList.add('active');
 }
 
@@ -225,7 +201,7 @@ document.getElementById('categoryForm').addEventListener('submit', async (e) => 
 
     const iconElement = document.querySelector('input[name="icon"]:checked');
     const farbeElement = document.querySelector('input[name="farbe"]:checked');
-    
+
     console.log('Ausgewähltes Icon:', iconElement ? iconElement.value : 'KEINE AUSWAHL');
     console.log('Ausgewählte Farbe:', farbeElement ? farbeElement.value : 'KEINE AUSWAHL');
 
@@ -296,7 +272,7 @@ if (searchBox && searchIcon) {
     searchBox.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
         searchIcon.style.display = searchTerm ? 'none' : 'block';
-        
+
         const cards = document.querySelectorAll('.category-card:not(.summary-card)');
         cards.forEach(card => {
             const text = card.textContent.toLowerCase();
@@ -317,32 +293,15 @@ function openRulesModal(categoryId, categoryName) {
     currentRulesCategory = categoryName;
     currentRulesCategoryId = categoryId;
     const category = categoriesData.find(c => c.id === categoryId);
-    
+
     if (category) {
-        // Icon basierend auf Kategorienamen
-        const iconMap = {
-            'Lebensmittel': '🍔',
-            'Wohnen': '🏠',
-            'Miete': '🏠',
-            'Verkehr': '🚗',
-            'Transport': '🚗',
-            'Unterhaltung': '🎮',
-            'Freizeit': '🎮',
-            'Gehalt': '💼',
-            'Shopping': '🛒',
-            'Versicherung': '🛡️',
-            'Strom & Gas': '⚡',
-            'Internet & Telefon': '📱',
-            'Abos & Mitgliedschaften': '📺',
-            'Rücklagen': '🏦'
-        };
-        
-        const icon = iconMap[category.name] || '🏷️';
+        // Nutze globale Icon-Map
+        const icon = CATEGORY_ICON_MAP[category.name] || '🏷️';
         document.getElementById('rulesCategoryIcon').textContent = icon;
         document.getElementById('rulesCategoryName').textContent = category.name;
-        
+
         loadKeywords(categoryId);
-        
+
         document.getElementById('rulesModal').classList.add('active');
     }
 }
@@ -363,10 +322,10 @@ async function loadKeywords(categoryId) {
 
         const rulesData = await response.json();
         const keywords = rulesData.keywords || [];
-        
+
         const keywordsList = document.getElementById('keywordsList');
         keywordsList.innerHTML = '';
-        
+
         if (keywords.length === 0) {
             keywordsList.innerHTML = '<div class="empty-state">Keine Schlüsselwörter definiert</div>';
         } else {
@@ -380,7 +339,7 @@ async function loadKeywords(categoryId) {
                 keywordsList.appendChild(tag);
             });
         }
-        
+
         document.getElementById('keywordsCount').textContent = keywords.length;
     } catch (error) {
         console.error('Fehler beim Laden der Schlüsselwörter:', error);
@@ -391,7 +350,7 @@ async function loadKeywords(categoryId) {
 async function addKeyword() {
     const input = document.getElementById('newKeywordInput');
     const keyword = input.value.trim().toLowerCase();
-    
+
     if (!keyword) {
         showToast('Bitte geben Sie ein Schlüsselwort ein!', 'warning');
         return;

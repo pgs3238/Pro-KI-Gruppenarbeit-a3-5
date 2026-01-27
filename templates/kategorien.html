@@ -1,329 +1,266 @@
 <!DOCTYPE html>
 <html lang="de">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FINLY - Kategorien</title>
-    <link rel="stylesheet" href="/static/css/style.css" />
-  </head>
 
-  <body>
-    <div class="container">
-      <!-- Sidebar wird per JavaScript eingefügt -->
-      <div id="sidebar-placeholder"></div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FINLY - Kategorien</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
 
-      <!-- ============ HAUPTBEREICH ============ -->
-      <div class="main">
-        <!-- Header wird per JavaScript eingefügt -->
-        <div id="header-placeholder"></div>
+<body>
+  <div class="container">
+    <!-- Sidebar wird per JavaScript eingefügt -->
+    <div id="sidebar-placeholder"></div>
 
-        <!-- ============ CONTENT ============ -->
-        <div class="content">
-          <div class="page-header">
-            <h1>Kategorien</h1>
-            <p>Organisieren Sie Ihre Ausgaben und Einnahmen</p>
+    <!-- ============ HAUPTBEREICH ============ -->
+    <div class="main">
+      <!-- Header wird per JavaScript eingefügt -->
+      <div id="header-placeholder"></div>
+
+      <!-- ============ CONTENT ============ -->
+      <div class="content">
+        <div class="page-header">
+          <h1>Kategorien</h1>
+          <p>Organisieren Sie Ihre Ausgaben und Einnahmen</p>
+        </div>
+
+        <!-- Statistik-Übersicht -->
+        <div class="stats-overview">
+          <div class="stat-box total">
+            <div class="stat-icon">🏷️</div>
+            <div class="stat-content">
+              <div class="stat-value" id="totalCategories">0</div>
+              <div class="stat-label">Kategorien gesamt</div>
+            </div>
           </div>
-
-          <!-- Statistik-Übersicht -->
-          <div class="stats-overview">
-            <div class="stat-box total">
-              <div class="stat-icon">🏷️</div>
+          <div class="stats-right">
+            <div class="stat-box ausgaben">
+              <div class="stat-icon">💸</div>
               <div class="stat-content">
-                <div class="stat-value" id="totalCategories">0</div>
-                <div class="stat-label">Kategorien gesamt</div>
+                <div class="stat-value" id="ausgabenCategories">0</div>
+                <div class="stat-label">Ausgaben Kategorien</div>
               </div>
             </div>
-            <div class="stats-right">
-              <div class="stat-box ausgaben">
-                <div class="stat-icon">💸</div>
-                <div class="stat-content">
-                  <div class="stat-value" id="ausgabenCategories">0</div>
-                  <div class="stat-label">Ausgaben Kategorien</div>
-                </div>
-              </div>
-              <div class="stat-box einnahmen">
-                <div class="stat-icon">💰</div>
-                <div class="stat-content">
-                  <div class="stat-value" id="einnahmenCategories">0</div>
-                  <div class="stat-label">Einnahmen Kategorien</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Kategorien Sections -->
-          <div class="categories-container">
-            <!-- Ausgaben Section -->
-            <div class="category-section">
-              <div class="section-header ausgaben-header">
-                <h2>💸 Ausgaben Kategorien</h2>
-                <span class="section-count" id="ausgabenCount">0</span>
-              </div>
-              <div class="category-list" id="ausgabenList">
-                <!-- Wird mit JavaScript gefüllt -->
-              </div>
-            </div>
-
-            <!-- Einnahmen Section -->
-            <div class="category-section">
-              <div class="section-header einnahmen-header">
-                <h2>💰 Einnahmen Kategorien</h2>
-                <span class="section-count" id="einnahmenCount">0</span>
-              </div>
-              <div class="category-list" id="einnahmenList">
-                <!-- Wird mit JavaScript gefüllt -->
+            <div class="stat-box einnahmen">
+              <div class="stat-icon">💰</div>
+              <div class="stat-content">
+                <div class="stat-value" id="einnahmenCategories">0</div>
+                <div class="stat-label">Einnahmen Kategorien</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- FAB Button -->
-        <div class="fab-container">
-          <button class="fab-btn" onclick="openCategoryModal()">+</button>
+        <!-- Kategorien Sections -->
+        <div class="categories-container">
+          <!-- Ausgaben Section -->
+          <div class="category-section">
+            <div class="section-header ausgaben-header">
+              <h2>💸 Ausgaben Kategorien</h2>
+              <span class="section-count" id="ausgabenCount">0</span>
+            </div>
+            <div class="category-list" id="ausgabenList">
+              <!-- Wird mit JavaScript gefüllt -->
+            </div>
+          </div>
+
+          <!-- Einnahmen Section -->
+          <div class="category-section">
+            <div class="section-header einnahmen-header">
+              <h2>💰 Einnahmen Kategorien</h2>
+              <span class="section-count" id="einnahmenCount">0</span>
+            </div>
+            <div class="category-list" id="einnahmenList">
+              <!-- Wird mit JavaScript gefüllt -->
+            </div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- ============ MODAL ============ -->
-    <div class="modal-overlay" id="categoryModal">
-      <div class="modal-content">
-        <div
-          class="modal-title"
-          style="
+      <!-- FAB Button -->
+      <div class="fab-container">
+        <button class="fab-btn" onclick="openCategoryModal()">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL ============ -->
+  <div class="modal-overlay" id="categoryModal">
+    <div class="modal-content">
+      <div class="modal-title" style="
             border-bottom: 1px solid #444;
             padding-bottom: 15px;
             margin-bottom: 25px;
             font-size: 18px;
             font-weight: bold;
             color: #fff;
-          "
-        >
-          Kategorie hinzufügen
-        </div>
-        <form id="categoryForm">
-          <div class="form-group">
-            <label class="form-label">Kategoriename</label>
-            <input
-              type="text"
-              name="name"
-              placeholder="z.B. Lebensmittel, Gehalt"
-              required
-              class="form-control"
-            />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Typ</label>
-            <select name="typ" class="form-control" required>
-              <option value="">Bitte wählen...</option>
-              <option value="Ausgabe">Ausgabe</option>
-              <option value="Einnahme">Einnahme</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Icon</label>
-            <div class="icon-picker" id="iconPicker">
-              <input type="radio" name="icon" value="🍔" id="icon1" />
-              <label for="icon1" class="icon-option">🍔</label>
-
-              <input type="radio" name="icon" value="🏠" id="icon2" />
-              <label for="icon2" class="icon-option">🏠</label>
-
-              <input type="radio" name="icon" value="🚗" id="icon3" />
-              <label for="icon3" class="icon-option">🚗</label>
-
-              <input type="radio" name="icon" value="🎮" id="icon4" />
-              <label for="icon4" class="icon-option">🎮</label>
-
-              <input type="radio" name="icon" value="💼" id="icon5" />
-              <label for="icon5" class="icon-option">💼</label>
-
-              <input type="radio" name="icon" value="🎓" id="icon6" />
-              <label for="icon6" class="icon-option">🎓</label>
-
-              <input type="radio" name="icon" value="🏥" id="icon7" />
-              <label for="icon7" class="icon-option">🏥</label>
-
-              <input type="radio" name="icon" value="✈️" id="icon8" />
-              <label for="icon8" class="icon-option">✈️</label>
-
-              <input type="radio" name="icon" value="🎬" id="icon9" />
-              <label for="icon9" class="icon-option">🎬</label>
-
-              <input type="radio" name="icon" value="🛒" id="icon10" />
-              <label for="icon10" class="icon-option">🛒</label>
-
-              <input type="radio" name="icon" value="💰" id="icon11" />
-              <label for="icon11" class="icon-option">💰</label>
-
-              <input type="radio" name="icon" value="📱" id="icon12" />
-              <label for="icon12" class="icon-option">📱</label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Farbe</label>
-            <div class="color-picker">
-              <input
-                type="radio"
-                name="farbe"
-                value="#06d6a6"
-                id="color1"
-                checked
-              />
-              <label
-                for="color1"
-                class="color-option"
-                style="background-color: #06d6a6"
-              ></label>
-
-              <input type="radio" name="farbe" value="#3b82f6" id="color2" />
-              <label
-                for="color2"
-                class="color-option"
-                style="background-color: #3b82f6"
-              ></label>
-
-              <input type="radio" name="farbe" value="#8b5cf6" id="color3" />
-              <label
-                for="color3"
-                class="color-option"
-                style="background-color: #8b5cf6"
-              ></label>
-
-              <input type="radio" name="farbe" value="#f59e0b" id="color4" />
-              <label
-                for="color4"
-                class="color-option"
-                style="background-color: #f59e0b"
-              ></label>
-
-              <input type="radio" name="farbe" value="#ef4444" id="color5" />
-              <label
-                for="color5"
-                class="color-option"
-                style="background-color: #ef4444"
-              ></label>
-
-              <input type="radio" name="farbe" value="#ec4899" id="color6" />
-              <label
-                for="color6"
-                class="color-option"
-                style="background-color: #ec4899"
-              ></label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Beschreibung (optional)</label>
-            <textarea
-              name="beschreibung"
-              placeholder="Beschreibung der Kategorie"
-              class="form-control"
-              rows="3"
-              style="resize: vertical; height: auto"
-            ></textarea>
-          </div>
-
-          <div class="btn-group">
-            <button
-              type="reset"
-              class="btn-cancel"
-              onclick="closeCategoryModal()"
-            >
-              Abbrechen
-            </button>
-            <button type="submit" class="btn-save">Speichern</button>
-          </div>
-        </form>
+          ">
+        Kategorie hinzufügen
       </div>
-    </div>
-
-    <!-- ============ REGELN MODAL ============ -->
-    <div class="modal-overlay" id="rulesModal">
-      <div class="modal-content" style="max-width: 700px">
-        <div
-          class="modal-title"
-          style="
-            border-bottom: 1px solid #444;
-            padding-bottom: 15px;
-            margin-bottom: 25px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #fff;
-          "
-        >
-          Kategorisierungs-Regeln
-        </div>
-
-        <div class="rules-category-info">
-          <span class="rules-category-icon" id="rulesCategoryIcon">🏷️</span>
-          <span class="rules-category-name" id="rulesCategoryName"
-            >Kategorie</span
-          >
+      <form id="categoryForm">
+        <div class="form-group">
+          <label class="form-label">Kategoriename</label>
+          <input type="text" name="name" placeholder="z.B. Lebensmittel, Gehalt" required class="form-control" />
         </div>
 
         <div class="form-group">
-          <label class="form-label">Aktive Schlüsselwörter</label>
-          <p class="form-hint">
-            Transaktionen werden automatisch dieser Kategorie zugeordnet, wenn
-            sie eines dieser Schlüsselwörter enthalten.
-          </p>
-          <div class="keywords-list" id="keywordsList">
-            <!-- Wird mit JavaScript gefüllt -->
+          <label class="form-label">Typ</label>
+          <select name="typ" class="form-control" required>
+            <option value="">Bitte wählen...</option>
+            <option value="Ausgabe">Ausgabe</option>
+            <option value="Einnahme">Einnahme</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Icon</label>
+          <div class="icon-picker" id="iconPicker">
+            <input type="radio" name="icon" value="🍔" id="icon1" />
+            <label for="icon1" class="icon-option">🍔</label>
+
+            <input type="radio" name="icon" value="🏠" id="icon2" />
+            <label for="icon2" class="icon-option">🏠</label>
+
+            <input type="radio" name="icon" value="🚗" id="icon3" />
+            <label for="icon3" class="icon-option">🚗</label>
+
+            <input type="radio" name="icon" value="🎮" id="icon4" />
+            <label for="icon4" class="icon-option">🎮</label>
+
+            <input type="radio" name="icon" value="💼" id="icon5" />
+            <label for="icon5" class="icon-option">💼</label>
+
+            <input type="radio" name="icon" value="🎓" id="icon6" />
+            <label for="icon6" class="icon-option">🎓</label>
+
+            <input type="radio" name="icon" value="🏥" id="icon7" />
+            <label for="icon7" class="icon-option">🏥</label>
+
+            <input type="radio" name="icon" value="✈️" id="icon8" />
+            <label for="icon8" class="icon-option">✈️</label>
+
+            <input type="radio" name="icon" value="🎬" id="icon9" />
+            <label for="icon9" class="icon-option">🎬</label>
+
+            <input type="radio" name="icon" value="🛒" id="icon10" />
+            <label for="icon10" class="icon-option">🛒</label>
+
+            <input type="radio" name="icon" value="💰" id="icon11" />
+            <label for="icon11" class="icon-option">💰</label>
+
+            <input type="radio" name="icon" value="📱" id="icon12" />
+            <label for="icon12" class="icon-option">📱</label>
           </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Neues Schlüsselwort hinzufügen</label>
-          <div class="keyword-input-group">
-            <input
-              type="text"
-              id="newKeywordInput"
-              placeholder="z.B. REWE, Supermarkt, Edeka"
-              class="form-control"
-              onkeypress="if(event.key === 'Enter') addKeyword()"
-            />
-            <button
-              type="button"
-              class="btn-add-keyword"
-              onclick="addKeyword()"
-            >
-              +
-            </button>
+          <label class="form-label">Farbe</label>
+          <div class="color-picker">
+            <input type="radio" name="farbe" value="#06d6a6" id="color1" checked />
+            <label for="color1" class="color-option" style="background-color: #06d6a6"></label>
+
+            <input type="radio" name="farbe" value="#3b82f6" id="color2" />
+            <label for="color2" class="color-option" style="background-color: #3b82f6"></label>
+
+            <input type="radio" name="farbe" value="#8b5cf6" id="color3" />
+            <label for="color3" class="color-option" style="background-color: #8b5cf6"></label>
+
+            <input type="radio" name="farbe" value="#f59e0b" id="color4" />
+            <label for="color4" class="color-option" style="background-color: #f59e0b"></label>
+
+            <input type="radio" name="farbe" value="#ef4444" id="color5" />
+            <label for="color5" class="color-option" style="background-color: #ef4444"></label>
+
+            <input type="radio" name="farbe" value="#ec4899" id="color6" />
+            <label for="color6" class="color-option" style="background-color: #ec4899"></label>
           </div>
-          <small class="form-hint"
-            >Groß-/Kleinschreibung wird ignoriert. Drücken Sie Enter zum
-            Hinzufügen.</small
-          >
         </div>
 
-        <div class="rules-stats">
-          <div class="stat-item">
-            <span class="stat-icon">🔤</span>
-            <span class="stat-text"
-              ><span id="keywordsCount">0</span> Schlüsselwörter</span
-            >
-          </div>
+        <div class="form-group">
+          <label class="form-label">Beschreibung (optional)</label>
+          <textarea name="beschreibung" placeholder="Beschreibung der Kategorie" class="form-control" rows="3"
+            style="resize: vertical; height: auto"></textarea>
         </div>
 
         <div class="btn-group">
-          <button type="button" class="btn-cancel" onclick="closeRulesModal()">
-            Schließen
+          <button type="reset" class="btn-cancel" onclick="closeCategoryModal()">
+            Abbrechen
           </button>
-          <button type="button" class="btn-save" onclick="testRules()">
-            Regeln testen
-          </button>
+          <button type="submit" class="btn-save">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ REGELN MODAL ============ -->
+  <div class="modal-overlay" id="rulesModal">
+    <div class="modal-content" style="max-width: 700px">
+      <div class="modal-title" style="
+            border-bottom: 1px solid #444;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+          ">
+        Kategorisierungs-Regeln
+      </div>
+
+      <div class="rules-category-info">
+        <span class="rules-category-icon" id="rulesCategoryIcon">🏷️</span>
+        <span class="rules-category-name" id="rulesCategoryName">Kategorie</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Aktive Schlüsselwörter</label>
+        <p class="form-hint">
+          Transaktionen werden automatisch dieser Kategorie zugeordnet, wenn
+          sie eines dieser Schlüsselwörter enthalten.
+        </p>
+        <div class="keywords-list" id="keywordsList">
+          <!-- Wird mit JavaScript gefüllt -->
         </div>
       </div>
-    </div>
 
-    <!-- ==================== SCRIPTS ==================== -->
-    <script src="/static/js/utils.js"></script>
-    <script src="/static/js/components.js"></script>
-    <script>document.addEventListener('DOMContentLoaded', () => initComponents('categories'));</script>
-    <script src="/static/js/settings.js"></script>
-    <script src="/static/js/kategorien.js"></script>
-  </body>
+      <div class="form-group">
+        <label class="form-label">Neues Schlüsselwort hinzufügen</label>
+        <div class="keyword-input-group">
+          <input type="text" id="newKeywordInput" placeholder="z.B. REWE, Supermarkt, Edeka" class="form-control"
+            onkeypress="if(event.key === 'Enter') addKeyword()" />
+          <button type="button" class="btn-add-keyword" onclick="addKeyword()">
+            +
+          </button>
+        </div>
+        <small class="form-hint">Groß-/Kleinschreibung wird ignoriert. Drücken Sie Enter zum
+          Hinzufügen.</small>
+      </div>
+
+      <div class="rules-stats">
+        <div class="stat-item">
+          <span class="stat-icon">🔤</span>
+          <span class="stat-text"><span id="keywordsCount">0</span> Schlüsselwörter</span>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button type="button" class="btn-cancel" onclick="closeRulesModal()">
+          Schließen
+        </button>
+        <button type="button" class="btn-save" onclick="testRules()">
+          Regeln testen
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SCRIPTS ==================== -->
+  <script src="/static/js/utils.js"></script>
+  <script src="/static/js/constants.js"></script>
+  <script src="/static/js/components.js"></script>
+  <script>document.addEventListener('DOMContentLoaded', () => initComponents('categories'));</script>
+  <script src="/static/js/settings.js"></script>
+  <script src="/static/js/kategorien.js"></script>
+</body>
+
 </html>
