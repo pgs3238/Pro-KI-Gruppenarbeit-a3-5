@@ -98,10 +98,36 @@ if TEMPLATES_DIR.exists():
 
 # ==================== ROOT & ROUTER ====================
 
+from fastapi.responses import FileResponse
+
 @app.get("/")
 def root():
-    """API Status"""
-    return {"message": "Ausgabenverwaltung API", "version": "1.0.0", "docs": "/docs"}
+    """Startseite (Dashboard)"""
+    return FileResponse(TEMPLATES_DIR / "index.html")
+
+@app.get("/index.html")
+def index_page():
+    return FileResponse(TEMPLATES_DIR / "index.html")
+
+@app.get("/transactions.html")
+def transactions_page():
+    return FileResponse(TEMPLATES_DIR / "transactions.html")
+
+@app.get("/kategorien.html")
+def kategorien_page():
+    return FileResponse(TEMPLATES_DIR / "kategorien.html")
+
+@app.get("/konten.html")
+def konten_page():
+    return FileResponse(TEMPLATES_DIR / "konten.html")
+
+@app.get("/zinsrechner.html")
+def zinsrechner_page():
+    return FileResponse(TEMPLATES_DIR / "zinsrechner.html")
+
+@app.get("/finanz-buddy.html")
+def chatbot_page():
+    return FileResponse(TEMPLATES_DIR / "finanz-buddy.html")
 
 
 # Router registrieren
