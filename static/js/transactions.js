@@ -78,7 +78,7 @@ async function editTransaction(id) {
         // Formular mit Daten befüllen (außer Konto - das kommt nach dem Modal-Öffnen)
         document.querySelector('input[name="datum"]').value = germanDate;
         document.querySelector('input[name="beguenstigter"]').value = transaction.beguenstigter;
-        document.querySelector('input[name="iban"]').value = transaction.iban_kontonummer || '';
+        document.querySelector('input[name="iban"]').value = formatIBAN(transaction.iban_kontonummer || '');
         document.querySelector('input[name="verwendungszweck"]').value = transaction.verwendungszweck || '';
         document.querySelector('input[name="betrag"]').value = transaction.betrag;
 
