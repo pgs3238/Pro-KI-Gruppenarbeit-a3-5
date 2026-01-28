@@ -169,3 +169,4 @@ data/expenses.db
 data/transaktionen_export.csv
 data/expenses.db.backup
 .env
+data/vergleiche/vergleich_3.db
