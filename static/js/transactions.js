@@ -75,13 +75,12 @@ async function editTransaction(id) {
         window.selectedDate = date;
         window.currentMonth = new Date(date);
 
-        // Formular mit Daten befüllen
+        // Formular mit Daten befüllen (außer Konto - das kommt nach dem Modal-Öffnen)
         document.querySelector('input[name="datum"]').value = germanDate;
         document.querySelector('input[name="beguenstigter"]').value = transaction.beguenstigter;
         document.querySelector('input[name="iban"]').value = transaction.iban_kontonummer || '';
         document.querySelector('input[name="verwendungszweck"]').value = transaction.verwendungszweck || '';
         document.querySelector('input[name="betrag"]').value = transaction.betrag;
-        document.querySelector('select[name="konto_id"]').value = transaction.konto_id || '';
 
         // Kategorie setzen - nutze kategorie_id falls vorhanden
         if (transaction.kategorie_id) {
@@ -95,6 +94,13 @@ async function editTransaction(id) {
         document.getElementById('transactionForm').dataset.editId = id;
 
         openModal();
+
+        // Konto nach kurzer Verzögerung setzen (Dropdown wird erst im Modal geladen)
+        if (transaction.konto_id) {
+            setTimeout(() => {
+                document.querySelector('select[name="konto_id"]').value = transaction.konto_id;
+            }, 200);
+        }
     } catch (error) {
         console.error('✗ Fehler beim Laden der Transaktion:', error);
         showToast('Transaktion konnte nicht geladen werden', 'error');

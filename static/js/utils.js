@@ -129,24 +129,3 @@ async function fetchKontoSaldo(kontoId) {
 async function fetchCategories() {
     return await apiGetJson('/api/categories');
 }
-
-// ============ MODAL FUNKTIONEN (umbenannt, um Konflikte zu vermeiden) ============
-
-function openModalBySelector(modalSelector) {
-    const modal = document.querySelector(modalSelector);
-    if (modal) modal.classList.add('active');
-}
-
-function closeModalBySelector(modalSelector, formSelector = null) {
-    const modal = document.querySelector(modalSelector);
-    if (modal) modal.classList.remove('active');
-
-    // Optional: Form zurücksetzen
-    if (formSelector) {
-        const form = document.querySelector(formSelector);
-        if (form) {
-            form.reset();
-            delete form.dataset.editId;
-        }
-    }
-}
