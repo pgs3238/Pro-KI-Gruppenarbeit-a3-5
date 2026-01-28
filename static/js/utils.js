@@ -15,14 +15,14 @@ function showToast(message, type = 'success', duration = 4000) {
     }
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    
+
     const icons = {
         success: '✅',
         error: '❌',
         warning: '⚠️',
         info: 'ℹ️'
     };
-    
+
     toast.innerHTML = `
         <div class="toast-icon">${icons[type] || icons.info}</div>
         <div class="toast-content">
@@ -30,9 +30,9 @@ function showToast(message, type = 'success', duration = 4000) {
         </div>
         <button class="toast-close" onclick="this.parentElement.remove()">×</button>
     `;
-    
+
     container.appendChild(toast);
-    
+
     setTimeout(() => {
         toast.classList.add('removing');
         setTimeout(() => toast.remove(), 300);
@@ -105,15 +105,7 @@ function wireSelectEmptyClasses(selects) {
 
 function getAccountIcon(typ) {
     const key = (typ || '').toString().toLowerCase();
-    const icons = {
-        girokonto: "🏦",
-        sparkonto: "💰",
-        kreditkarte: "💳",
-        depot: "📈",
-        bargeld: "💵",
-        sonstiges: "🏦",
-    };
-    return icons[key] || "🏦";
+    return ACCOUNT_TYPE_ICON_MAP[key] || DEFAULT_ACCOUNT_ICON;
 }
 
 // ============ API HELPERS ============
@@ -148,7 +140,7 @@ function openModalBySelector(modalSelector) {
 function closeModalBySelector(modalSelector, formSelector = null) {
     const modal = document.querySelector(modalSelector);
     if (modal) modal.classList.remove('active');
-    
+
     // Optional: Form zurücksetzen
     if (formSelector) {
         const form = document.querySelector(formSelector);
