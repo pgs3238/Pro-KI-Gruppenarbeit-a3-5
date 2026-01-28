@@ -11,13 +11,16 @@
         .content {
             overflow: hidden !important;
         }
+
         .cards-grid {
             height: calc(100vh - 220px);
         }
+
         .card {
             height: 100%;
             overflow-y: auto;
         }
+
         .chart-container {
             height: calc(100vh - 420px) !important;
         }
@@ -43,7 +46,7 @@
 
                 <!-- Hauptlayout: Links Parameter, Rechts Visualisierung -->
                 <div class="cards-grid" style="grid-template-columns: 1fr 2fr;">
-                    
+
                     <!-- ============ EINGABEBEREICH (LINKS) ============ -->
                     <div class="card" style="padding: 25px;">
                         <div class="card-title" style="margin-bottom: 25px;">Parameter</div>
@@ -53,12 +56,12 @@
                             <label>Startkapital Quelle</label>
                             <div style="display: flex; gap: 15px; margin-top: 8px;">
                                 <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                                    <input type="radio" name="kontostandTyp" value="fiktiv" checked 
+                                    <input type="radio" name="kontostandTyp" value="fiktiv" checked
                                         style="accent-color: #06d6a6;">
                                     <span>Fiktiv</span>
                                 </label>
                                 <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                                    <input type="radio" name="kontostandTyp" value="aktuell" 
+                                    <input type="radio" name="kontostandTyp" value="aktuell"
                                         style="accent-color: #06d6a6;">
                                     <span>Aktueller Kontostand</span>
                                 </label>
@@ -68,7 +71,8 @@
                         <!-- Kontenauswahl (nur bei "Aktueller Kontostand") -->
                         <div class="input-group" id="kontenauswahlGruppe" style="display: none;">
                             <label for="kontoauswahl">Konto auswählen</label>
-                            <select id="kontoauswahl" style="width: 100%; padding: 8px; background: #2a2a2a; color: #ccc; border: 1px solid #444; border-radius: 4px; font-size: 14px;">
+                            <select id="kontoauswahl"
+                                style="width: 100%; padding: 8px; background: #2a2a2a; color: #ccc; border: 1px solid #444; border-radius: 4px; font-size: 14px;">
                                 <option value="">Lade Konten...</option>
                             </select>
                             <div id="kontoInfo" style="margin-top: 8px; font-size: 12px; color: #888;"></div>
@@ -78,9 +82,10 @@
                         <div class="input-group" id="kontostandEingabe">
                             <label for="kontostand">Startkapital (Fiktiv)</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="range" id="kontostand" min="0" max="100000" step="1000" value="1000" 
+                                <input type="range" id="kontostand" min="0" max="100000" step="1000" value="1000"
                                     style="flex: 1; accent-color: #06d6a6;">
-                                <span id="kontostandWert" style="min-width: 100px; text-align: right; font-weight: bold;">1.000,00 €</span>
+                                <span id="kontostandWert"
+                                    style="min-width: 100px; text-align: right; font-weight: bold;">1.000,00 €</span>
                             </div>
                         </div>
 
@@ -88,16 +93,17 @@
                         <div class="input-group">
                             <label for="zinssatz">Zinssatz</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="range" id="zinssatz" min="0" max="10" step="0.1" value="3" 
+                                <input type="range" id="zinssatz" min="0" max="10" step="0.1" value="3"
                                     style="flex: 1; accent-color: #06d6a6;">
-                                <span id="zinssatzWert" style="min-width: 100px; text-align: right; font-weight: bold;">3%</span>
+                                <span id="zinssatzWert"
+                                    style="min-width: 100px; text-align: right; font-weight: bold;">3%</span>
                             </div>
                         </div>
 
                         <!-- Einzahlungsintervall -->
                         <div class="input-group">
                             <label for="intervall">Einzahlungsintervall</label>
-                            <select id="intervall" 
+                            <select id="intervall"
                                 style="width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #444; border-radius: 6px; color: #fff;">
                                 <option value="Monatlich">Monatlich</option>
                                 <option value="Vierteljährlich">Vierteljährlich</option>
@@ -109,9 +115,10 @@
                         <div class="input-group">
                             <label for="einzahlung">Monatliche Einzahlung</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="range" id="einzahlung" min="0" max="5000" step="50" value="100" 
+                                <input type="range" id="einzahlung" min="0" max="5000" step="50" value="100"
                                     style="flex: 1; accent-color: #06d6a6;">
-                                <span id="einzahlungWert" style="min-width: 100px; text-align: right; font-weight: bold;">100,00 €</span>
+                                <span id="einzahlungWert"
+                                    style="min-width: 100px; text-align: right; font-weight: bold;">100,00 €</span>
                             </div>
                         </div>
 
@@ -119,23 +126,24 @@
                         <div class="input-group">
                             <label for="laufzeit">Laufzeit</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="range" id="laufzeit" min="1" max="50" step="1" value="10" 
+                                <input type="range" id="laufzeit" min="1" max="50" step="1" value="10"
                                     style="flex: 1; accent-color: #06d6a6;">
-                                <span id="laufzeitWert" style="min-width: 100px; text-align: right; font-weight: bold;">10 Jahre</span>
+                                <span id="laufzeitWert"
+                                    style="min-width: 100px; text-align: right; font-weight: bold;">10 Jahre</span>
                             </div>
                         </div>
 
                         <!-- Buttons -->
                         <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 10px;">
-                            <button id="berechnenBtn" 
+                            <button id="berechnenBtn"
                                 style="width: 100%; padding: 12px; background: #06d6a6; border: none; border-radius: 6px; color: #1a1a1a; font-weight: bold; cursor: pointer; font-size: 16px;">
                                 Berechnen (Neu)
                             </button>
-                            <button id="aktualisierenBtn" 
+                            <button id="aktualisierenBtn"
                                 style="width: 100%; padding: 12px; background: #4a90e2; border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; display: none;">
                                 Aktualisieren
                             </button>
-                            <button id="resetBtn" 
+                            <button id="resetBtn"
                                 style="width: 100%; padding: 12px; background: #444; border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer;">
                                 Zurücksetzen
                             </button>
@@ -146,34 +154,41 @@
                     <!-- ============ VISUALISIERUNG (RECHTS) ============ -->
                     <div class="card">
                         <!-- Placeholder-Logo (nur sichtbar wenn keine Berechnungen) -->
-                        <div id="placeholderLogo" style="display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 20px;">
+                        <div id="placeholderLogo"
+                            style="display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 20px;">
                             <div style="font-size: 120px;">📊</div>
-                            <div style="font-size: 48px; font-weight: bold; color: #06d6a6; font-family: 'Roboto', sans-serif;">FINLY</div>
+                            <div
+                                style="font-size: 48px; font-weight: bold; color: #06d6a6; font-family: 'Roboto', sans-serif;">
+                                FINLY</div>
                             <div style="font-size: 16px; color: #888; text-align: center; max-width: 400px;">
                                 Erstellen Sie Ihre erste Zinsberechnung, um den Kontoverlauf zu visualisieren
                             </div>
                         </div>
-                        
+
                         <!-- Chart-Bereich (nur sichtbar wenn Berechnungen vorhanden) -->
                         <div id="chartBereich" style="display: none; height: 100%; flex-direction: column;">
                             <!-- Ergebnis-Box oben -->
-                            <div id="ergebnisBox" style="padding: 15px; background: #06d6a6; border-radius: 8px; margin-bottom: 15px; display: none;">
-                                <div style="color: #1a1a1a; font-size: 13px; margin-bottom: 5px;">Endkapital nach <span id="ergebnisJahre"></span> Jahren:</div>
+                            <div id="ergebnisBox"
+                                style="padding: 15px; background: #06d6a6; border-radius: 8px; margin-bottom: 15px; display: none;">
+                                <div style="color: #1a1a1a; font-size: 13px; margin-bottom: 5px;">Endkapital nach <span
+                                        id="ergebnisJahre"></span> Jahren:</div>
                                 <div id="endergebnis" style="color: #1a1a1a; font-size: 24px; font-weight: bold;"></div>
                                 <div style="color: #1a1a1a; font-size: 11px; margin-top: 6px;">
-                                    Eingezahlt: <span id="einzahlungGesamt" style="font-weight: bold;"></span> | 
+                                    Eingezahlt: <span id="einzahlungGesamt" style="font-weight: bold;"></span> |
                                     Zinsen: <span id="zinsenGesamt" style="font-weight: bold;"></span>
                                 </div>
                             </div>
-                            
+
                             <!-- Titel mit Berechnung-Counter -->
-                            <div class="card-title">Kontoverlauf (<span id="berechnungenAnzahl">0</span>/3 Berechnungen)</div>
-                            
+                            <div class="card-title">Kontoverlauf (<span id="berechnungenAnzahl">0</span>/3 Berechnungen)
+                            </div>
+
                             <!-- Custom Legend Container -->
-                            <div id="customLegend" style="margin-bottom: 10px; padding: 6px; border-radius: 6px; min-height: 30px;">
+                            <div id="customLegend"
+                                style="margin-bottom: 10px; padding: 6px; border-radius: 6px; min-height: 30px;">
                                 <div id="legendContainer"></div>
                             </div>
-                            
+
                             <!-- Chart -->
                             <div class="chart-container">
                                 <canvas id="zinsChart"></canvas>
@@ -187,6 +202,7 @@
     </div>
 
     <!-- Shared Components Script -->
+    <script src="/static/js/constants.js"></script>
     <script src="/static/js/utils.js"></script>
     <script src="/static/js/components.js"></script>
     <script>initComponents('forecast');</script>

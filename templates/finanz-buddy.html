@@ -1,72 +1,71 @@
 <!DOCTYPE html>
 <html lang="de">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FINLY - Finanz-Buddy</title>
-    <link rel="stylesheet" href="/static/css/style.css" />
-    <!-- Markdown-Parser für formatierte Bot-Antworten -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  </head>
 
-  <body>
-    <div class="container">
-      <!-- Sidebar wird dynamisch geladen -->
-      <div id="sidebar-placeholder"></div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FINLY - Finanz-Buddy</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <!-- Markdown-Parser für formatierte Bot-Antworten -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
 
-      <!-- ============ HAUPTBEREICH ============ -->
-      <div class="main">
-        <!-- Header wird dynamisch geladen -->
-        <div id="header-placeholder"></div>
+<body>
+  <div class="container">
+    <!-- Sidebar wird dynamisch geladen -->
+    <div id="sidebar-placeholder"></div>
 
-        <!-- ============ CONTENT ============ -->
-        <div class="content">
-          <div class="page-header">
-            <h1>Finanz-Buddy</h1>
-            <p>Dein persönlicher KI-Finanzassistent: Frage mich alles über deine Finanzen!</p>
+    <!-- ============ HAUPTBEREICH ============ -->
+    <div class="main">
+      <!-- Header wird dynamisch geladen -->
+      <div id="header-placeholder"></div>
+
+      <!-- ============ CONTENT ============ -->
+      <div class="content">
+        <div class="page-header">
+          <h1>Finanz-Buddy</h1>
+          <p>Dein persönlicher KI-Finanzassistent: Frage mich alles über deine Finanzen!</p>
+        </div>
+
+        <!-- Reset Button -->
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+          <button id="resetChatBtn"
+            style="padding: 10px 20px; background: #ff6b6b; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background 0.2s;">
+            🔄 Reset Chat
+          </button>
+        </div>
+
+        <!-- Chat-Container -->
+        <div class="chat-container">
+          <!-- Chat-Nachrichten -->
+          <div class="chat-messages" id="chatMessages">
+            <!-- Nachrichten werden hier dynamisch hinzugefügt -->
           </div>
 
-          <!-- Reset Button -->
-          <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
-            <button id="resetChatBtn" style="padding: 10px 20px; background: #ff6b6b; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background 0.2s;">
-              🔄 Reset Chat
+          <!-- Eingabebereich -->
+          <div class="chat-input-container">
+            <textarea id="chatInput" class="chat-input" placeholder="Stelle eine Frage..." rows="1"></textarea>
+            <button id="sendButton" class="chat-send-btn">
+              <span>↑</span>
             </button>
           </div>
 
-          <!-- Chat-Container -->
-          <div class="chat-container">
-            <!-- Chat-Nachrichten -->
-            <div class="chat-messages" id="chatMessages">
-              <!-- Nachrichten werden hier dynamisch hinzugefügt -->
-            </div>
-
-            <!-- Eingabebereich -->
-            <div class="chat-input-container">
-              <textarea
-                id="chatInput"
-                class="chat-input"
-                placeholder="Stelle eine Frage..."
-                rows="1"
-              ></textarea>
-              <button id="sendButton" class="chat-send-btn">
-                <span>↑</span>
-              </button>
-            </div>
-
-            <!-- Lade-Indikator (versteckt standardmäßig) -->
-            <div class="chat-loading" id="chatLoading" style="display: none">
-              <span>🤔 Denke nach...</span>
-            </div>
+          <!-- Lade-Indikator (versteckt standardmäßig) -->
+          <div class="chat-loading" id="chatLoading" style="display: none">
+            <span>🤔 Denke nach...</span>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- ==================== SCRIPTS ==================== -->
-    <script src="/static/js/utils.js"></script>
-    <script src="/static/js/components.js"></script>
-    <script>initComponents('chatbot');</script>
-    <script src="/static/js/settings.js"></script>
-    <script src="/static/js/chatbot.js"></script>
-  </body>
+  <!-- ==================== SCRIPTS ==================== -->
+  <script src="/static/js/constants.js"></script>
+  <script src="/static/js/utils.js"></script>
+  <script src="/static/js/components.js"></script>
+  <script>initComponents('chatbot');</script>
+  <script src="/static/js/settings.js"></script>
+  <script src="/static/js/chatbot.js"></script>
+</body>
+
 </html>
