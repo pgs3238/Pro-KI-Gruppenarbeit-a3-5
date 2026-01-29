@@ -6,8 +6,11 @@ echo "=============================================="
 
 # Prüfen ob venv existiert
 if [ -d "venv" ]; then
-    echo "Aktiviere virtuelle Umgebung..."
-    source venv/bin/activate
+  echo "Aktiviere virtuelle Umgebung 'venv'..."
+  source venv/bin/activate
+elif [ -d ".venv" ]; then
+  echo "Aktiviere virtuelle Umgebung '.venv'..."
+  source .venv/bin/activate
 else
     echo "[ACHTUNG] Keine virtuelle Umgebung 'venv' gefunden!"
     echo "Bitte zuerst 'python3 -m venv venv' ausführen."

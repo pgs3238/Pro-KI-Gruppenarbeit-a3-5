@@ -4,14 +4,16 @@ echo      FINLY - Finanzmanager wird gestartet
 echo ==============================================
 
 :: Pruefen ob venv existiert
-if not exist "venv" (
-    echo [ACHTUNG] Keine virtuelle Umgebung 'venv' gefunden!
+if exist "venv" (
+    echo Aktiviere virtuelle Umgebung 'venv'...
+    call venv\Scripts\activate
+) else if exist ".venv" (
+    echo Aktiviere virtuelle Umgebung '.venv'...
+    call .venv\Scripts\activate
+) else (
+    echo [ACHTUNG] Keine virtuelle Umgebung 'venv' oder '.venv' gefunden!
     echo Bitte zuerst 'python -m venv venv' ausfuehren.
     echo Versuche trotzdem globalen Python zu nutzen...
-) else (
-    echo Aktiviere virtuelle Umgebung...
-    call venv\Scripts\activate
-)
 
 echo.
 echo Starte Webbrowser...
