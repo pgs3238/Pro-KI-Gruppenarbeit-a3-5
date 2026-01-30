@@ -614,7 +614,29 @@ vergleich_X.db: Verwaltung der Zinsprognosen
 
 #### Suche-Modul (`src/database/search.py`)
 
-_Noch zu dokumentieren_
+**Hauptfunktionen:**
+
+- Dynamische Filterung basierend auf mehreren optionalen Kriterien:
+  - Buchungstag
+  - Begünstigter (Name, Teilübereinstimmung, Groß-/Kleinschreibung ignoriert)
+  - Verwendungszweck / Beschreibung
+  - IBAN oder Kontonummer (Leerzeichen werden ignoriert)
+  - Betrag (normal oder absolute Werte)
+  - Konto-Name
+  - Kategorie-Name
+- **Validierung von Betragsbereichen:**
+  - Fehlermeldung, wenn `min > max`
+  - Unterstützung für absolute Werte (betrag_min_abs / betrag_max_abs)
+- **SQL-Abfragen:**
+  - Ergebnisse werden absteigend nach Buchungstag sortiert
+- **Besondere Features:**
+  - Verarbeitung von europäischen Beträgen mit Vorzeichen
+  - Teilübereinstimmungen in Textfeldern (`ilike`)
+  - Flexible Kombination beliebiger Filter gleichzeitig
+
+**Ziel:**
+
+Bereitstellung einer **robusten, vielseitigen Suche,** die es erlaubt, Transaktionen nach allen relevanten Kriterien schnell und korrekt zu filtern
 
 ---
 
