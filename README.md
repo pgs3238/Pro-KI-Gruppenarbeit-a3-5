@@ -100,6 +100,51 @@ Das Chatbot-Modul implementiert einen KI-gestützten Finanzassistenten, der nat�
 
 ---
 
+### Suche
+
+Die erweiterte Suchfunktion ermöglicht das Filtern von Transaktionen nach verschiedenen Kriterien. Sie unterstützt Teiltext-Suche, Datumsfilter, Betragsbereich und Kategorie-Filter.
+
+**Features:**
+- Case-insensitive Suche in Begünstigter, Verwendungszweck und Beschreibung
+- IBAN-Suche mit automatischer Leerzeichen-Ignorierung
+- Absolutbetrags-Filter für vorzeichenunabhängige Suche
+- Kombinierbare Filter für präzise Ergebnisse
+
+**Umgesetzt von:** *Noch füllen*
+
+---
+
+### API
+
+Das API-Modul stellt die RESTful-Schnittstelle der Anwendung bereit. Es basiert auf FastAPI und bietet automatische Dokumentation, Datenvalidierung mit Pydantic und asynchrone Request-Verarbeitung.
+
+**Hauptendpunkte:**
+- `/transactions` – CRUD für Transaktionen
+- `/konten` – CRUD für Konten
+- `/categories` – Kategorieverwaltung
+- `/api/chatbot` – Chatbot-Kommunikation
+- `/api/zinsrechner` – Zinsberechnungen
+- `/import/transactions` – CSV-Import
+
+**Umgesetzt von:** *Noch füllen*
+
+---
+
+### Datenbank
+
+Das Datenbank-Modul verwaltet die Datenpersistenz mit SQLAlchemy ORM und SQLite. Es definiert alle Datenmodelle und bietet spezialisierte Services für Kontoverwaltung, CSV-Import und Transaktionssuche.
+
+**Modelle:**
+- `Konto` – Bankkonten mit Kontostand
+- `Transaktion` – Einnahmen/Ausgaben
+- `Category` – Kategorien mit Icons und Farben
+- `CategoryRules` – Automatische Kategorisierungsregeln
+- `CategorizationState` – Status der Auto-Kategorisierung
+
+**Umgesetzt von:** *Noch füllen*
+
+---
+
 ## Aufbau des Projektes
 
 ### Projektstruktur
