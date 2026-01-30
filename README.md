@@ -246,3 +246,251 @@ src/chatbot/
 - Try-Catch für API-Fehler
 - Benutzerfreundliche Fehlermeldungen
 - Robuste None-Checks bei Datenbankabfragen
+
+---
+
+### 3. API-Modul
+
+#### 3.1 Zielsetzung und Funktionalität
+
+Das API-Modul implementiert die RESTful-Schnittstelle der Anwendung basierend auf FastAPI. Es stellt alle HTTP-Endpunkte für Frontend-Interaktionen bereit, einschließlich CRUD-Operationen für Transaktionen, Konten und Kategorien sowie spezielle Features wie CSV-Import und Zinsrechner.
+
+#### 3.2 Komponenten und Aufbau
+
+**Dateistruktur:**
+
+```
+src/api/
+├── __init__.py                    # Modul-Exports
+├── main.py                        # FastAPI App-Bootstrap & Router-Registrierung
+├── dependencies.py                # Dependency Injection (DB-Sessions)
+├── helpers.py                     # Hilfsfunktionen
+├── schemas.py                     # Pydantic-Schemas für Request/Response Validierung
+├── transactions_routes.py         # Transaktions- und Konto-Endpunkte
+├── category_routes.py             # Kategorie-Endpunkte
+├── auto_categorization_routes.py  # Auto-Kategorisierungs-Endpunkte
+├── chatbot_routes.py              # Chatbot-Endpunkte
+├── zinsrechner_routes.py          # Zinsrechner-Endpunkte
+└── settings_routes.py             # Einstellungs-Endpunkte
+```
+
+**1. `main.py`** - App-Bootstrap
+
+- **FastAPI-Initialisierung**: Erstellt die Hauptanwendung mit Titel, Beschreibung und Version
+- **Lifespan-Pattern**: Modernes Startup/Shutdown-Management
+  - Initialisiert Datenbank beim Start
+  - Führt Auto-Kategorisierung bei Bedarf aus
+- **Middleware**: CORS-Konfiguration für Cross-Origin-Requests
+- **Static Files**: Mounting von `/static` und `/templates` Verzeichnissen
+- **Router-Registrierung**: Bindet alle Sub-Router (transactions, categories, chatbot, etc.)
+- **Seiten-Routen**: Liefert HTML-Seiten für Dashboard, Transaktionen, Kategorien, Konten, Zinsrechner und Finanz-Buddy
+
+**2. `schemas.py`** - Pydantic-Schemas
+
+- **Transaktion-Schemas**:
+  - `TransaktionBase`: Basis-Schema mit allen Feldern
+  - `TransaktionCreate`: Für neue Transaktionen
+  - `TransaktionUpdate`: Für Aktualisierungen (alle Felder optional)
+  - `TransaktionResponse`: Für API-Responses (inkl. ID und Timestamp)
+  - `TransaktionSearch`: Für erweiterte Suchfilter
+- **Konto-Schemas**:
+  - `KontoBase`, `KontoCreate`, `KontoUpdate`, `KontoResponse`
+  - Computed Field `iban_kurz` für gekürzte IBAN-Darstellung
+- **Chatbot-Schemas**: Request/Response-Schemas für Chat-Interaktionen
+- **Category-Schemas**: Schemas für Kategorieverwaltung
+
+**3. `transactions_routes.py`** - Hauptrouter
+
+- **Transaktions-Endpunkte**:
+  - `GET /transactions`: Alle Transaktionen (mit Datumsfilter)
+  - `GET /transactions/formatted`: Formatierte Daten für Frontend
+  - `GET /transactions/{id}`: Einzelne Transaktion
+  - `POST /transactions`: Neue Transaktion erstellen
+  - `PUT /transactions/{id}`: Transaktion aktualisieren
+  - `DELETE /transactions/{id}`: Transaktion löschen
+- **Konto-Endpunkte**:
+  - CRUD-Operationen für Konten
+  - `GET /konten/{id}/saldo`: Kontostand berechnen
+  - `GET /konten/summary`: Konto-Zusammenfassung
+- **Spezial-Endpunkte**:
+  - `GET /transactions/sankey-data`: Daten für Sankey-Diagramm
+  - `POST /search/transactions`: Erweiterte Suche
+  - `POST /import/transactions`: CSV-Import
+
+**4. `dependencies.py`** - Dependency Injection
+
+- `get_db()`: Generator für Datenbank-Sessions
+- Automatisches Session-Management (Öffnen/Schließen)
+
+#### 3.3 Technische Details
+
+**Request/Response-Flow:**
+
+1. HTTP-Request trifft auf FastAPI-Endpunkt
+2. Pydantic-Schema validiert Request-Daten
+3. Dependency Injection stellt DB-Session bereit
+4. Route-Handler führt Geschäftslogik aus
+5. Response wird durch Pydantic-Schema validiert und serialisiert
+
+**Besondere Features:**
+
+- **Automatische Dokumentation**: OpenAPI/Swagger UI unter `/docs`
+- **Datenvalidierung**: Pydantic-Schemas mit Field-Constraints
+- **Error Handling**: HTTPException für standardisierte Fehlercodes
+- **CORS**: Vollständig konfiguriert für Frontend-Zugriff
+
+---
+
+### 4. Datenbank-Modul
+
+#### 4.1 Zielsetzung und Funktionalität
+
+Das Datenbank-Modul verwaltet die Datenpersistenz der Anwendung. Es nutzt SQLAlchemy als ORM und SQLite als Datenbank-Engine. Das Modul definiert alle Datenmodelle, stellt Verbindungsmanagement bereit und bietet spezialisierte Services für CSV-Import, Kontooperationen und Transaktionssuche.
+
+#### 4.2 Komponenten und Aufbau
+
+**Dateistruktur:**
+
+```
+src/database/
+├── __init__.py           # Modul-Exports und zentrale Imports
+├── connection.py         # Datenbankverbindung und Session-Factory
+├── models.py             # SQLAlchemy ORM-Modelle
+├── konto_manager.py      # Konto-Verwaltungsoperationen
+├── csv_importer.py       # CSV-Import-Funktionalität
+└── search.py             # Erweiterte Transaktionssuche
+```
+
+**Datenbankdiagramm:**
+
+```mermaid
+erDiagram
+    KONTEN ||--o{ TRANSAKTIONEN : "hat"
+    CATEGORIES ||--o{ TRANSAKTIONEN : "kategorisiert"
+    CATEGORIES ||--o{ CATEGORY_RULES : "hat Regeln"
+
+    KONTEN {
+        int id PK
+        string kontoname UK
+        string kontonummer
+        string bankname
+        float kontostand
+        string waehrung
+        string kontotyp
+        string iban
+        string bic
+        string farbe
+        datetime erstellt_am
+        datetime aktualisiert_am
+    }
+
+    TRANSAKTIONEN {
+        int id PK
+        int konto_id FK
+        int kategorie_id FK
+        date buchungstag
+        string beguenstigter
+        string verwendungszweck
+        string iban_kontonummer
+        float betrag
+        string waehrung
+        string beschreibung
+        datetime created_at
+    }
+
+    CATEGORIES {
+        int id PK
+        string name UK
+        enum category_type
+        string icon
+        string farbe
+    }
+
+    CATEGORY_RULES {
+        int id PK
+        string category_name FK
+        string keywords
+        datetime created_at
+    }
+
+    CATEGORIZATION_STATE {
+        int id PK
+        int has_new_transactions
+        datetime last_categorization
+        datetime updated_at
+    }
+```
+
+**1. `models.py`** - Datenmodelle
+
+- **`Konto`**: Bankkonto-Modell
+  - Felder: id, kontoname, kontonummer, bankname, kontostand, waehrung, kontotyp, iban, bic, farbe
+  - Timestamps: erstellt_am, aktualisiert_am
+  - Relationship: transaktionen (1:n)
+- **`Transaktion`**: Transaktions-Modell
+  - Felder: id, konto_id, buchungstag, beguenstigter, verwendungszweck, iban_kontonummer, betrag, waehrung, beschreibung, kategorie_id
+  - Relationships: konto, kategorie
+- **`Category`**: Kategorie-Modell
+  - Felder: id, name, category_type (Enum: Ausgabe/Einnahme), icon, farbe
+  - Relationship: transaktionen
+- **`CategoryRules`**: Kategorisierungsregeln
+  - Felder: id, category_name, keywords, created_at
+  - Relationship: category
+- **`CategorizationState`**: Singleton für Kategorisierungs-Status
+  - Felder: has_new_transactions, last_categorization, updated_at
+
+**2. `connection.py`** - Verbindungsmanagement
+
+- **Datenbankpfad**: `data/expenses.db` (relativ zum Projekt-Root)
+- **Engine**: SQLite mit SQLAlchemy
+- **SessionLocal**: Session-Factory für Datenbank-Operationen
+- **Funktionen**:
+  - `init_db()`: Initialisiert Datenbank und lädt Standard-Kategorien
+  - `ensure_categorization_state()`: Stellt Singleton-Eintrag sicher
+
+**3. `konto_manager.py`** - Konto-Manager
+
+- **Klasse `KontoManager`**: Statische Methoden für Kontooperationen
+- **CRUD-Operationen**:
+  - `erstelle_konto()`: Neues Konto anlegen
+  - `hole_konto()` / `hole_konto_by_iban()`: Konto abrufen
+  - `hole_alle_konten()`: Alle Konten laden
+  - `aktualisiere_kontoinformationen()`: Konto-Daten ändern
+  - `lösche_konto()`: Konto mit Transaktionen löschen
+- **Kontostand-Operationen**:
+  - `aktualisiere_kontostand()`: Direktes Setzen
+  - `erhöhe_kontostand()`: Betrag addieren/subtrahieren
+  - `berechne_kontostand_aus_transaktionen()`: Aus Transaktionen berechnen
+  - `aktualisiere_kontostand_aus_transaktionen()`: Automatische Neuberechnung
+
+**4. `csv_importer.py`** - CSV-Import
+
+- **Klasse `CSVTransaktionImporter`**: Importiert Bankumsätze aus CSV-Dateien
+- **Konfiguration**:
+  - session: SQLAlchemy-Session
+  - mapping: Feld-Mapping (Model-Felder → CSV-Spalten)
+  - header_row: Zeile der Spaltenüberschriften
+  - skip_footer: Fußzeilen überspringen
+  - konto_id: Ziel-Konto für Import
+- **Methoden**:
+  - `detect_delimiter()`: Automatische Delimiter-Erkennung (`;`, `,`, `\t`, `|`)
+  - `parse_date()`: Datum-Parsing (Format: dd.mm.yyyy)
+  - `parse_float()`: Europäisches Zahlenformat (1.234,56)
+  - `import_csv()`: Hauptimport-Methode
+
+**5. `search.py`** - Transaktionssuche
+
+- **Funktion `search_transaktionen()`**: Flexible Filtersuche
+- **Unterstützte Filter**:
+  - buchungstag: Exaktes Datum
+  - beguenstigter/verwendungszweck: Teiltext-Suche (case-insensitive)
+  - iban_kontonummer: IBAN-Suche (Leerzeichen ignoriert)
+  - betrag_min/betrag_max: Betragsbereich
+  - betrag_min_abs/betrag_max_abs: Absolutbetrags-Filter
+  - typ: "expense" oder "income"
+  - waehrung, konto_name, beschreibung, kategorie_name
+- **Features**:
+  - OuterJoin für Transaktionen ohne Konto/Kategorie
+  - Validierung: betrag_min ≤ betrag_max
+  - Sortierung nach Buchungstag (absteigend)
+
