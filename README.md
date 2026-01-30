@@ -26,10 +26,9 @@ Ziel von FINLY ist es, einen übersichtlichen Einblick in die eigenen Finanzen z
 
 ### Dashboard
 
-Das Dashboard bietet eine zentrale Übersicht über die finanzielle Situation.
-Neben wesentlichen KPIs werden die monatlichen Ausgaben nach Kategorien visualisiert, unter anderem mithilfe eines **Sankey-Diagramms**. Zusätzlich werden die Top-Ausgabekategorien sowie die Entwicklung der Ausgaben über die letzten Monate dargestellt.
+*Noch füllen*
 
-**Umgesetzt von:** *Noch füllen*
+**Umgesetzt von:** *Arienne Bertram*
 
 ---
 
@@ -37,7 +36,7 @@ Neben wesentlichen KPIs werden die monatlichen Ausgaben nach Kategorien visualis
 
 *Noch füllen*
 
-**Umgesetzt von:** *Noch füllen*
+**Umgesetzt von:** *Emil Horstmann*
 
 ---
 
@@ -106,6 +105,13 @@ Das Chatbot-Modul implementiert einen KI-gestützten Finanzassistenten, der nat�
 
 **Umgesetzt von:** *Noch füllen*
 
+---
+
+### Importer
+
+*Noch füllen*
+
+**Umgesetzt von:** *Noch füllen*
 
 ---
 
@@ -121,7 +127,7 @@ Das API-Modul stellt die RESTful-Schnittstelle der Anwendung bereit. Es basiert 
 - `/api/zinsrechner` – Zinsberechnungen
 - `/import/transactions` – CSV-Import
 
-**Umgesetzt von:** *Noch füllen*
+**Umgesetzt von:** *Emil Horstmann*
 
 ---
 
@@ -136,7 +142,7 @@ Das Datenbank-Modul verwaltet die Datenpersistenz mit SQLAlchemy ORM und SQLite.
 - `CategoryRules` – Automatische Kategorisierungsregeln
 - `CategorizationState` – Status der Auto-Kategorisierung
 
-**Umgesetzt von:** *Noch füllen*
+**Umgesetzt von:** *Emil Horstmann*
 
 ---
 
@@ -436,8 +442,8 @@ Browser öffnen: http://127.0.0.1:8000
 
 | Name | Verantwortungsbereich |
 |------|----------------------|
-| **Arienne Bertram** | UI/UX Programmierung |
-| **Emil Horstmann** | *Noch füllen* |
+| **Arienne Bertram** | *UI/UX Programmierung* |
+| **Emil Horstmann** | *JavaScript, API, Datenbank* |
 | **Paul-Gerhart Siegel** | *Noch füllen* |
 | **Leonardo Fabian Ferreira Pfeiffer** | *Noch füllen* |
 | **Sinan Felix Atay** | *Noch füllen* |
@@ -464,8 +470,7 @@ Browser öffnen: http://127.0.0.1:8000
 | **Plotly.js** | Interaktive Charts (Sankey, etc.) |
 
 ### KI-Integration
-| Technologie | Verwendung |
-|-------------|------------|
-| **Google Gemini API** | KI-Chatbot (Finanzbuddy) |
-| **Gemini 2.5 Flash** | Verwendetes Modell |
-| **Function Calling** | Automatische Datenbankabfragen durch KI |
+| Technologie |
+|-------------|
+| Copilot (Claude Opus/Gemini 3 Pro) |
+
