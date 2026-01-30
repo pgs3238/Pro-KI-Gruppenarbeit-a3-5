@@ -235,7 +235,7 @@ python -m uvicorn src.api.main:app --reload
 Browser öffnen: http://127.0.0.1:8000
 
 ---
-## Aufbau des Projektes
+## Detailierter Aufbau des Projektes
 
 ### Projektstruktur
 
@@ -495,10 +495,10 @@ src/chatbot/
 
 ## Trennung der Verantwortlichkeit
 
-| Name | Verantwortungsbereich |
-|------|----------------------|
-| **Arienne Bertram** | *UI/UX Programmierung* |
-| **Emil Horstmann** | *JavaScript, API, Datenbank* |
+| Name | Verantwortungsbereich | Verwendete KI-Tools |
+|------|----------------------|----------------------|
+| **Arienne Bertram** | *UI/UX Programmierung* | Copilot (Claude Sonnet 4.5) | 
+| **Emil Horstmann** | *JavaScript, API, Datenbank* | Copilot (Claude Opus 4.5/Gemini 3 Pro) |
 | **Paul-Gerhart Siegel** | *Noch füllen* |
 | **Leonardo Fabian Ferreira Pfeiffer** | *Noch füllen* |
 | **Sinan Felix Atay** | *Noch füllen* |
@@ -524,7 +524,7 @@ src/chatbot/
 | **JavaScript** | Interaktivität |
 | **Plotly.js** | Interaktive Charts (Sankey, etc.) |
 
-### KI-Integration
+### Verwendete KI-Tools
 | Technologie |
 |-------------|
 | Copilot (Claude Opus/Gemini 3 Pro) |
