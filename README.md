@@ -491,7 +491,46 @@ src/chatbot/
 
 ---
 
+#### Frontend-Modul (`static/js/`)
 
+*Noch zu dokumentieren*
+
+| Datei | Funktion |
+|-------|----------|
+| `app.js` | *Noch füllen* |
+| `dashboard.js` | *Noch füllen* |
+| `transactions.js` | *Noch füllen* |
+| `kategorien.js` | *Noch füllen* |
+| `konten.js` | *Noch füllen* |
+| `zinsrechner.js` | *Noch füllen* |
+| `chatbot.js` | *Noch füllen* |
+| `search.js` | *Noch füllen* |
+| `calendar.js` | *Noch füllen* |
+| `modals.js` | *Noch füllen* |
+| `components.js` | *Noch füllen* |
+| `utils.js` | *Noch füllen* |
+| `constants.js` | *Noch füllen* |
+| `settings.js` | *Noch füllen* |
+
+---
+
+#### Zinsrechner-Modul (`src/api/zinsrechner_routes.py`)
+
+*Noch zu dokumentieren*
+
+---
+
+#### CSV-Importer (`src/database/csv_importer.py`)
+
+*Noch zu dokumentieren*
+
+---
+
+#### Suche-Modul (`src/database/search.py`)
+
+*Noch zu dokumentieren*
+
+---
 
 ## Trennung der Verantwortlichkeit
 
@@ -523,9 +562,4 @@ src/chatbot/
 | **HTML5/CSS3** | Struktur und Styling |
 | **JavaScript** | Interaktivität |
 | **Plotly.js** | Interaktive Charts (Sankey, etc.) |
-
-### Verwendete KI-Tools
-| Technologie |
-|-------------|
-| Copilot (Claude Opus/Gemini 3 Pro) |
 
