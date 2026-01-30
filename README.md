@@ -163,17 +163,28 @@ Das Chatbot-Modul implementiert einen KI-gestützten Finanzassistenten, der nat�
 
 ### Suche
 
-_Noch füllen_
+Dieses Modul stellt eine flexible Suchfunktion für die in der Datenbank gespeicherten Transaktionen in Finly bereit.
 
-**Umgesetzt von:** _Noch füllen_
+- Transaktionen können dynamisch anhand mehrerer optionaler Kriterien gefiltert werden, darunter:
+**Buchungstag**, **Begünstigter**, ***Verwendungszweck**, **IBAN / Kontonummer**, **Betrag** (inklusive absoluter Beträge) und **Konto**.
+- Es werden nur die Filter angewendet, die tatsächlich angegeben sind.
+- Die Ergebnisse werden standardmäßig nach Buchungstag absteigend sortiert.
+- Das Modul unterstützt außerdem die Validierung von Betragsbereichen und behandelt europäische Darstellung von negativen/positiven Beträgen korrekt.
+
+**Umgesetzt von:** _Paul-Gerhard Siegel_
 
 ---
 
 ### Importer
 
-_Noch füllen_
+Dieses Modul ermöglicht den Import von Banktransaktionen aus CSV-Dateien in Finly. Der Ablauf ist wie folgt:
 
-**Umgesetzt von:** _Noch füllen_
+1. **Dateiauswahl:** Es wird eine CSV-Datei ausgewählt.
+2. **Header & Footer:** Die Headerzeile wird angegeben, und etwaige Footerzeilen können durch Angabe der Anzahl zu entfernender Zeilen ausgeschlossen werden.
+3. **Feldzuordnung:** Die relevanten Felder – Buchungstag, Begünstigter, IBAN des Begünstigten, Verwendungszweck, Betrag und Konto – werden gesetzt und mit den Daten in der CSV abgeglichen.
+4. **Datenbankübertragung:** Sobald alle Felder korrekt zugeordnet sind und die Daten validiert wurden, werden die Transaktionen in die Datenbank übertragen (unter Verwendung von SQLAlchemy).
+
+**Umgesetzt von:** _Paul-Gerhard Siegel_
 
 ---
 
@@ -510,7 +521,28 @@ vergleich_X.db: Verwaltung der Zinsprognosen
 
 #### CSV-Importer (`src/database/csv_importer.py`)
 
-_Noch zu dokumentieren_
+**Hauptfunktionen:**
+
+- Automatische **Delimiter-Erkennung** (`,`, `;`, `Tab`, `|`)
+- **Feldzuordnung:** CSV-Spalten werden benutzerdefiniert den Datenbankfeldern zugeordnet
+- **Datenvalidierung:**
+  - Prüft auf fehlende oder falsch geschriebene Spalten
+  - Konvertiert Datum (`dd.mm.yyyy`) → Python-date
+  - Konvertiert Betrag (europäisches Format `1.234,56`) → float
+  - Meldet leere oder ungültige Zeilen (z.B. Footer)
+- **Importprozess:**
+  - Header- und optionale Footer-Zeilen ausschließen
+  - Zuweisung von optionaler Konto-ID (`konto_id`)
+  - Setzen der Währung auf `EUR`
+  - Speichert alle validierten Transaktionen und commitet die SQLAlchemy-Session
+- **Optionale Parameter:**
+  - header_row: Index der Header-Zeile
+  - skip_footer: Anzahl der zu ignorierenden Zeilen am Ende der Datei
+
+**Ziel:**
+
+- Flexibler, sicherer und robuster Import von unterschiedlich strukturierten CSV-Dateien
+- Sicherstellung konsistenter und korrekter Speicherung in der Datenbank
 
 ---
 
@@ -522,13 +554,13 @@ _Noch zu dokumentieren_
 
 ## Trennung der Verantwortlichkeit
 
-| Name                           | Verantwortungsbereich        | Verwendete KI-Tools                    |
-| ------------------------------ | ---------------------------- | -------------------------------------- |
-| **Arienne Bertram**            | _UI/UX Programmierung_       | Copilot (Claude Sonnet 4.5)            |
-| **Emil Horstmann**             | _JavaScript, API, Datenbank_ | Copilot (Claude Opus 4.5/Gemini 3 Pro) |
-| **Paul-Gerhart Siegel**        | _Noch füllen_                |
-| **Leonardo Ferreira Pfeiffer** | _Kategoriesierung, Chatbot_  | Claude Sonnet 4.5                      |
-| **Sinan Felix Atay**           | _Zinsrechner_                | Copilot (Claude Sonnet 4.5)            |
+| Name                           | Verantwortungsbereich              | Verwendete KI-Tools                    |
+|--------------------------------|------------------------------------|----------------------------------------|
+| **Arienne Bertram**            | _UI/UX Programmierung_             | Copilot (Claude Sonnet 4.5)            |
+| **Emil Horstmann**             | _JavaScript, API, Datenbank_       | Copilot (Claude Opus 4.5/Gemini 3 Pro) |
+| **Paul-Gerhard Siegel**        | _Suche / Filtern, CSV Import & UI_ | Copilot, GPT 5, Gemini 2.0             |
+| **Leonardo Ferreira Pfeiffer** | _Kategoriesierung, Chatbot_        | Claude Sonnet 4.5                      |
+| **Sinan Felix Atay**           | _Zinsrechner_                      | Copilot (Claude Sonnet 4.5)            |
 
 ---
 
