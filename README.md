@@ -119,9 +119,9 @@ Das Categories-Modul ermöglicht die automatische Zuordnung von Transaktionen zu
 
 ### Konten
 
-_Noch füllen_
+Das Konten-Modul verwaltet mehrere Bankkonten mit automatischer Kontostandsberechnung basierend auf Transaktionen. Unterstützt verschiedene Kontotypen, Währungen und bietet CRUD-Operationen für Konten.
 
-**Umgesetzt von:** _Noch füllen_
+**Umgesetzt von:** _Emil Horstmann_
 
 ---
 
@@ -179,17 +179,28 @@ Das Chatbot-Modul implementiert einen KI-gestützten Finanzassistenten, der nat�
 
 ### Suche
 
-_Noch füllen_
+Dieses Modul stellt eine flexible Suchfunktion für die in der Datenbank gespeicherten Transaktionen in Finly bereit.
 
-**Umgesetzt von:** _Noch füllen_
+- Transaktionen können dynamisch anhand mehrerer optionaler Kriterien gefiltert werden, darunter:
+**Buchungstag**, **Begünstigter**, ***Verwendungszweck**, **IBAN / Kontonummer**, **Betrag** (inklusive absoluter Beträge) und **Konto**.
+- Es werden nur die Filter angewendet, die tatsächlich angegeben sind.
+- Die Ergebnisse werden standardmäßig nach Buchungstag absteigend sortiert.
+- Das Modul unterstützt außerdem die Validierung von Betragsbereichen und behandelt europäische Darstellung von negativen/positiven Beträgen korrekt.
+
+**Umgesetzt von:** _Paul-Gerhard Siegel_
 
 ---
 
 ### Importer
 
-_Noch füllen_
+Dieses Modul ermöglicht den Import von Banktransaktionen aus CSV-Dateien in Finly. Der Ablauf ist wie folgt:
 
-**Umgesetzt von:** _Noch füllen_
+1. **Dateiauswahl:** Es wird eine CSV-Datei ausgewählt.
+2. **Header & Footer:** Die Headerzeile wird angegeben, und etwaige Footerzeilen können durch Angabe der Anzahl zu entfernender Zeilen ausgeschlossen werden.
+3. **Feldzuordnung:** Die relevanten Felder – Buchungstag, Begünstigter, IBAN des Begünstigten, Verwendungszweck, Betrag und Konto – werden gesetzt und mit den Daten in der CSV abgeglichen.
+4. **Datenbankübertragung:** Sobald alle Felder korrekt zugeordnet sind und die Daten validiert wurden, werden die Transaktionen in die Datenbank übertragen (unter Verwendung von SQLAlchemy).
+
+**Umgesetzt von:** _Paul-Gerhard Siegel_
 
 ---
 
@@ -391,6 +402,34 @@ erDiagram
         datetime updated_at
     }
 ```
+
+---
+
+#### Konten-Modul (`src/database/konto_manager.py`)
+
+Verwaltung von Bankkonten mit automatischer Kontostandsberechnung. Das Modul bietet umfassende CRUD-Operationen und berechnet Kontostände dynamisch basierend auf zugehörigen Transaktionen.
+
+**Hauptklasse `KontoManager`:**
+
+| Methode | Funktion |
+| ------- | -------- |
+| `create_konto()` | Erstellt neues Bankkonto mit Validierung |
+| `get_all_konten()` | Ruft alle Konten mit berechneten Kontoständen ab |
+| `get_konto_by_id()` | Gibt spezifisches Konto mit Details zurück |
+| `update_konto()` | Aktualisiert Kontoinformationen |
+| `delete_konto()` | Löscht Konto (mit Prüfung auf Transaktionen) |
+| `calculate_kontostand()` | Berechnet aktuellen Kontostand basierend auf Transaktionen |
+
+**Features:**
+- Automatische Kontostandsberechnung durch Summierung aller Transaktionen
+- Unterstützung mehrerer Währungen (EUR, USD, etc.)
+- Verschiedene Kontotypen (Girokonto, Sparkonto, Kreditkarte)
+- Farbzuordnung für UI-Visualisierung
+- IBAN/BIC-Verwaltung
+- Sicherheitsprüfung: Konten mit Transaktionen können nicht gelöscht werden
+
+**Umgesetzt von:** _Emil Horstmann_
+
 ---
 
 #### Categories-Modul (`src/categories/`)
@@ -548,25 +587,68 @@ vergleich_X.db: Verwaltung der Zinsprognosen
 
 #### CSV-Importer (`src/database/csv_importer.py`)
 
-_Noch zu dokumentieren_
+**Hauptfunktionen:**
+
+- Automatische **Delimiter-Erkennung** (`,`, `;`, `Tab`, `|`)
+- **Feldzuordnung:** CSV-Spalten werden benutzerdefiniert den Datenbankfeldern zugeordnet
+- **Datenvalidierung:**
+  - Prüft auf fehlende oder falsch geschriebene Spalten
+  - Konvertiert Datum (`dd.mm.yyyy`) → Python-date
+  - Konvertiert Betrag (europäisches Format `1.234,56`) → float
+  - Meldet leere oder ungültige Zeilen (z.B. Footer)
+- **Importprozess:**
+  - Header- und optionale Footer-Zeilen ausschließen
+  - Zuweisung von optionaler Konto-ID (`konto_id`)
+  - Setzen der Währung auf `EUR`
+  - Speichert alle validierten Transaktionen und commitet die SQLAlchemy-Session
+- **Optionale Parameter:**
+  - header_row: Index der Header-Zeile
+  - skip_footer: Anzahl der zu ignorierenden Zeilen am Ende der Datei
+
+**Ziel:**
+
+- Flexibler, sicherer und robuster Import von unterschiedlich strukturierten CSV-Dateien
+- Sicherstellung konsistenter und korrekter Speicherung in der Datenbank
 
 ---
 
 #### Suche-Modul (`src/database/search.py`)
 
-_Noch zu dokumentieren_
+**Hauptfunktionen:**
+
+- Dynamische Filterung basierend auf mehreren optionalen Kriterien:
+  - Buchungstag
+  - Begünstigter (Name, Teilübereinstimmung, Groß-/Kleinschreibung ignoriert)
+  - Verwendungszweck / Beschreibung
+  - IBAN oder Kontonummer (Leerzeichen werden ignoriert)
+  - Betrag (normal oder absolute Werte)
+  - Konto-Name
+  - Kategorie-Name
+- **Validierung von Betragsbereichen:**
+  - Fehlermeldung, wenn `min > max`
+  - Unterstützung für absolute Werte (betrag_min_abs / betrag_max_abs)
+- **SQL-Abfragen:**
+  - Ergebnisse werden absteigend nach Buchungstag sortiert
+- **Besondere Features:**
+  - Verarbeitung von europäischen Beträgen mit Vorzeichen
+  - Teilübereinstimmungen in Textfeldern (`ilike`)
+  - Flexible Kombination beliebiger Filter gleichzeitig
+
+**Ziel:**
+
+Bereitstellung einer **robusten, vielseitigen Suche,** die es erlaubt, Transaktionen nach allen relevanten Kriterien schnell und korrekt zu filtern
 
 ---
 
 ## Trennung der Verantwortlichkeit
 
-| Name                           | Verantwortungsbereich        | Verwendete KI-Tools                    |
-| ------------------------------ | ---------------------------- | -------------------------------------- |
-| **Arienne Bertram**            | _UI/UX Programmierung_       | Copilot (Claude Sonnet 4.5)            |
-| **Emil Horstmann**             | _JavaScript, API, Datenbank_ | Copilot (Claude Opus 4.5/Gemini 3 Pro) |
-| **Paul-Gerhart Siegel**        | _Noch füllen_                |
-| **Leonardo Ferreira Pfeiffer** | _Kategoriesierung, Chatbot_  | Claude Sonnet 4.5                      |
-| **Sinan Felix Atay**           | _Zinsrechner_                | Copilot (Claude Sonnet 4.5)            |
+| Name                           | Verantwortungsbereich              | Verwendete KI-Tools                    |
+|--------------------------------|------------------------------------|----------------------------------------|
+| **Arienne Bertram**            | _UI/UX Programmierung_             | Copilot (Claude Sonnet 4.5)            |
+| **Emil Horstmann**             | _JavaScript, API, Datenbank_       | Copilot (Claude Opus 4.5/Gemini 3 Pro) |
+| **Paul-Gerhard Siegel**        | _Suche / Filtern, CSV Import & UI_ | Copilot, GPT 5, Gemini 2.0             |
+| **Leonardo Ferreira Pfeiffer** | _Kategoriesierung, Chatbot_        | Claude Sonnet 4.5                      |
+| **Sinan Felix Atay**           | _Zinsrechner_                      | Copilot (Claude Sonnet 4.5)            |
 
 ---
 
