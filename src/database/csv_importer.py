@@ -103,7 +103,7 @@ class CSVTransaktionImporter:
             detected = ";"
 
         return detected
-    
+
     def import_csv(self, file_path):
         """
         Docstring for import_csv
@@ -128,18 +128,46 @@ class CSVTransaktionImporter:
 
         headers = rows[self.header_row]
 
+        missing_headers = [
+            csv_header
+            for csv_header in self.mapping.values()
+            if csv_header not in headers
+]
+
+        if missing_headers:
+            raise ValueError(
+                "CSV-Header nicht gefunden oder falschgeschrieben.\n"
+                f"Fehlende Spalten: {', '.join(missing_headers)}"
+            )
+
+        buchungstag_idx = headers.index(self.mapping["buchungstag"])
+
+        for row_number, row in enumerate(data_rows, start=self.header_row + 2):
+            value = row[buchungstag_idx].strip()
+
+            if not value:
+                raise ValueError(
+                    f"Ungültige Datenzeile in Zeile {row_number}. "
+                    "Die Datei enthält vermutlich eine Footer-Zeile. "
+                    "Bitte prüfen Sie 'skip_footer'."
+                )
+
         for row in data_rows:
             record = {}
             for model_field, csv_header in self.mapping.items():
-                idx = headers.index(csv_header)
-                value = row[idx].strip()
 
-                if model_field == "buchungstag":
-                    value = self.parse_date(value)
-                elif model_field == "betrag":
-                    value = self.parse_float(value)
+                try:
+                    idx = headers.index(csv_header)
+                    value = row[idx].strip()
 
-                record[model_field] = value
+                    if model_field == "buchungstag":
+                        value = self.parse_date(value)
+                    elif model_field == "betrag":
+                        value = self.parse_float(value)
+
+                    record[model_field] = value
+                except ValueError:
+                    raise ValueError(f'Die Spalte "{csv_header}" wurde in der CSV-Datei nicht gefunden. Bitte überprüfen Sie die Schreibweise.')
 
             record["konto_id"] = self.konto_id
             record["waehrung"] = "EUR"
