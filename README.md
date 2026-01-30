@@ -70,9 +70,64 @@ Das Categories-Modul ermöglicht die automatische Zuordnung von Transaktionen zu
 
 ### Zinsprognose
 
-*Noch füllen*
+Funktionsumfang
 
-**Umgesetzt von:** *Noch füllen*
+Investitionsprognosen:
+Darstellung der Kapitalentwicklung über einen frei wählbaren Zeitraum
+Berücksichtigung von Startkapital, Zinssatz, regelmäßigen Einzahlungen und Zinseszins
+Visualisierung als Liniendiagramm
+Reale oder fiktive Daten:
+Fiktiver Modus: Startkapital wird manuell festgelegt
+Realer Modus: Zugriff auf vorhandene Konten aus der FINLY-App, automatisches Laden des aktuellen Kontostands
+
+Vergleich mehrerer Szenarien:
+Bis zu drei Zinsprognosen parallel möglich
+Jede Prognose wird als eigene Kurve dargestellt
+Szenarien können ein- und ausgeblendet, ausgewählt, bearbeitet oder gelöscht werden
+
+
+Bedienkonzept
+
+Parametereinstellungen:
+Wahlschalter (Radio-Buttons) für Startkapital-Quelle (fiktiv / reales Konto) und Einzahlungsintervall
+Slider für Startkapital, Zinssatz, regelmäßige Einzahlung und Laufzeit
+Änderungen werden live visualisiert
+
+Berechnungs-Workflow:
+Neue Berechnung: Klick auf „Berechnen (Neu)“ erstellt eine neue Zinsprognose, fügt eine neue Kurve hinzu und speichert automatisch
+Bearbeiten: Auswahl einer bestehenden Prognose oberhalb der Grafikdarstellung, Parameter anpassen, Klick auf „Aktualisieren“ überschreibt die Prognose
+Zurücksetzen: Klick auf „Zurücksetzen“ setzt alle Parameter zurück, leert Diagramm und löscht Vergleichsdatenbanken
+
+Datenpersistenz und Datenbanken
+
+Kontendatenbank (expenses.db)(nicht von mir erstellt):
+Enthält alle Konten der FINLY-App
+Zugriff über Backend (FastAPI) mittels SQLAlchemy ORM, nur lesend
+
+Vergleichsdatenbanken (vergleich_1.db, vergleich_2.db, vergleich_3.db):
+Eine Datenbank pro Prognose
+Enthält Parameter, Berechnungsverlauf, kumulierte Einzahlungen und Zinsen
+Persistente Speicherung der Prognosen, Wiederherstellung beim Neuladen
+
+
+Technische Verbindung der Komponenten
+
+Frontend → Backend:
+Kommunikation über REST-API (FastAPI)
+Aktionen: Berechnung speichern, Prognosen laden, Prognosen löschen, Kontodaten abrufen
+
+Backend → Datenbanken:
+expenses.db: Zugriff auf Kontodaten der gesamten App
+vergleich_X.db: Verwaltung der Zinsprognosen
+
+
+Code Erstellung und KI Tools:
+
+Visual Studio Code mit Agent Claude Sonnet 4.5 - Übersetzung von erstellten Python Funktionen in JavaScript zur Kompatibilität mit dem Hauptprogramm, Datenbankmanagement
+Chat GPT mit GPT 5.1 - Unterstützung bei der Dokumenterstellung, FastAPI Verbindung Problemanalyse
+Gemini 3 Flash - für die Einarbeitung in GIT Hub und Visual Studio Funktionen
+
+**Umgesetzt von:** Sinan Felix Atay
 
 ---
 
