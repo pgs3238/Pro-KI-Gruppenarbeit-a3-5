@@ -41,7 +41,7 @@ async def lifespan(app: FastAPI):
     """Modernes Lifespan Pattern für Startup/Shutdown Events."""
     # Startup
     init_db()
-    print("✓ API gestartet")
+    print("[OK] API gestartet")
 
     # Auto-Kategorisierung beim Start
     state = auto_categorizer.get_categorization_state()
@@ -60,7 +60,7 @@ async def lifespan(app: FastAPI):
     yield  # App läuft
 
     # Shutdown (bei Bedarf Cleanup hier hinzufügen)
-    print("✓ API beendet")
+    print("[OK] API beendet")
 
 
 # ==================== SETUP ====================

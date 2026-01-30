@@ -171,3 +171,10 @@ data/expenses.db.backup
 .env
 data/vergleiche/*
 examples/transaktionen*
+
+# Node.js / Electron
+node_modules/
+package-lock.json
+dist/
+out/
+*.asar

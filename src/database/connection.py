@@ -48,7 +48,7 @@ def ensure_categorization_state():
             )
             session.add(state)
             session.commit()
-            print("✓ CategorizationState initialisiert")
+            print("[OK] CategorizationState initialisiert")
     finally:
         session.close()
 
@@ -57,7 +57,7 @@ def init_db():
     from .models import Base
 
     Base.metadata.create_all(bind=engine)
-    print(f"✓ Datenbank initialisiert: {DB_PATH}")
+    print(f"[OK] Datenbank initialisiert: {DB_PATH}")
 
     # Lade Standard-Kategorien, falls die Datenbank leer ist
     from src.categories.categories import check_and_load_defaults_categories
