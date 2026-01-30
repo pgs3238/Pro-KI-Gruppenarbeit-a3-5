@@ -102,15 +102,10 @@ Das Chatbot-Modul implementiert einen KI-gestützten Finanzassistenten, der nat�
 
 ### Suche
 
-Die erweiterte Suchfunktion ermöglicht das Filtern von Transaktionen nach verschiedenen Kriterien. Sie unterstützt Teiltext-Suche, Datumsfilter, Betragsbereich und Kategorie-Filter.
-
-**Features:**
-- Case-insensitive Suche in Begünstigter, Verwendungszweck und Beschreibung
-- IBAN-Suche mit automatischer Leerzeichen-Ignorierung
-- Absolutbetrags-Filter für vorzeichenunabhängige Suche
-- Kombinierbare Filter für präzise Ergebnisse
+*Noch füllen*
 
 **Umgesetzt von:** *Noch füllen*
+
 
 ---
 
