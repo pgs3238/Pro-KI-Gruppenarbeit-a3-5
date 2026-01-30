@@ -100,3 +100,32 @@ def get_api_key_status():
         "configured": is_configured,
         "masked_key": masked_key
     }
+
+
+@router.get("/db-status")
+def get_db_status():
+    """
+    Prüft den Status der Datenbankverbindung.
+    Gibt connected=True zurück wenn die DB erreichbar ist.
+    """
+    from sqlalchemy import text
+    from ..database import SessionLocal
+    
+    try:
+        # Versuche eine Verbindung herzustellen und eine einfache Query auszuführen
+        db = SessionLocal()
+        db.execute(text("SELECT 1"))
+        db.close()
+        
+        return {
+            "connected": True,
+            "status": "online",
+            "message": "Datenbankverbindung aktiv"
+        }
+    except Exception as e:
+        return {
+            "connected": False,
+            "status": "offline",
+            "message": f"Datenbankfehler: {str(e)}"
+        }
+

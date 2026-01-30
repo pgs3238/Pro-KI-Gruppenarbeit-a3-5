@@ -35,6 +35,12 @@ function renderSidebar(activePage) {
             <ul class="nav-items">
                 ${navItemsHtml}
             </ul>
+            <div class="sidebar-footer">
+                <div class="db-status" id="dbStatus" title="Datenbankstatus wird geprüft...">
+                    <span class="db-status-dot checking"></span>
+                    <span class="db-status-text">DB: Prüfe...</span>
+                </div>
+            </div>
         </aside>
     `;
 }
@@ -50,6 +56,46 @@ function renderHeader() {
             </div>
         </header>
     `;
+}
+
+/**
+ * Prüft den Status der Datenbankverbindung und aktualisiert die Anzeige
+ */
+async function checkDbStatus() {
+    const statusContainer = document.getElementById('dbStatus');
+    if (!statusContainer) return;
+
+    const dot = statusContainer.querySelector('.db-status-dot');
+    const text = statusContainer.querySelector('.db-status-text');
+
+    try {
+        const response = await fetch('/api/settings/db-status');
+        const data = await response.json();
+
+        if (data.connected) {
+            dot.className = 'db-status-dot online';
+            text.textContent = 'DB: Online';
+            statusContainer.title = data.message;
+        } else {
+            dot.className = 'db-status-dot offline';
+            text.textContent = 'DB: Offline';
+            statusContainer.title = data.message;
+        }
+    } catch (error) {
+        dot.className = 'db-status-dot offline';
+        text.textContent = 'DB: Fehler';
+        statusContainer.title = 'Verbindungsfehler: ' + error.message;
+    }
+}
+
+/**
+ * Startet das periodische Prüfen des DB-Status
+ */
+function startDbStatusPolling(intervalMs = 30000) {
+    // Initial check
+    checkDbStatus();
+    // Alle 30 Sekunden prüfen
+    setInterval(checkDbStatus, intervalMs);
 }
 
 /**
@@ -110,6 +156,9 @@ function initComponents(activePage) {
     if (!document.getElementById('toastContainer')) {
         document.body.insertAdjacentHTML('beforeend', renderToastContainer());
     }
+
+    // DB-Status-Polling starten
+    startDbStatusPolling();
 }
 
 // Export für Module (falls benötigt)
