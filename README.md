@@ -1,5 +1,30 @@
 # FINLY – Persönlicher Ausgabenmanager 📊
 
+## Inhaltsverzeichnis
+
+- [Projektübersicht](#projektübersicht)
+- [Features (Überblick)](#features-überblick)
+- [Funktionalitäten im Detail](#funktionalitäten-im-detail)
+  - [Dashboard](#dashboard)
+  - [Transaktionen](#transaktionen)
+  - [Kategorien](#kategorien)
+  - [Konten](#konten)
+  - [Zinsprognose](#zinsprognose)
+  - [Finanzbuddy](#finanzbuddy)
+  - [Suche](#suche)
+  - [Importer](#importer)
+  - [API](#api)
+  - [Datenbank](#datenbank)
+- [Hinweise zur Ausführung](#hinweise-zur-ausführung)
+- [Detaillierter Aufbau des Projektes](#detailierter-aufbau-des-projektes)
+  - [Projektstruktur](#projektstruktur)
+  - [Datenbank-Schema](#datenbank-schema)
+  - [Module im Detail](#module-im-detail)
+- [Trennung der Verantwortlichkeit](#trennung-der-verantwortlichkeit)
+- [Verwendete Technologien](#verwendete-technologien)
+
+---
+
 ## Projektübersicht
 
 **FINLY** ist ein persönlicher Ausgabenmanager zur Analyse, Verwaltung und Prognose finanzieller Daten.
