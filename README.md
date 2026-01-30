@@ -118,6 +118,7 @@ _Noch füllen_
 - Visualisierung als Liniendiagramm
 
 **Komponenten:**
+
 - `zinsrechner.html` - Buttons, Schieberegler, Texteingabe
 - `zinsrechner.js` - Funktionalitäten(Chart-Initialisierung, Verkabelung Input Felder, Zinsberechnung, Vorschau Option, Operationen: Berechnen, Aktualisieren, Löschen, Zurücksetzen)
 - `vergleich_X.db` - Datenbank wird für die Berechneten Werte erstellt. Jeweils eine pro Berechnung (max. 3)
@@ -474,22 +475,22 @@ src/categories/
 
 _Noch zu dokumentieren_
 
-| Datei | Funktion |
-|-------|----------|
-| `app.js` | *Noch füllen* |
-| `dashboard.js` | *Noch füllen* |
-| `transactions.js` | *Noch füllen* |
-| `kategorien.js` | *Noch füllen* |
-| `konten.js` | *Noch füllen* |
-| `zinsrechner.js` | Chart-Initialisierung, Verkabelung Input Felder, Zinsberechnung, Vorschau Option, Operationen: Berechnen, Aktualisieren, Löschen, Zurücksetzen |
-| `chatbot.js` | *Noch füllen* |
-| `search.js` | *Noch füllen* |
-| `calendar.js` | *Noch füllen* |
-| `modals.js` | *Noch füllen* |
-| `components.js` | *Noch füllen* |
-| `utils.js` | *Noch füllen* |
-| `constants.js` | *Noch füllen* |
-| `settings.js` | *Noch füllen* |
+| Datei             | Funktion                                                                                                                                       |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app.js`          | _Noch füllen_                                                                                                                                  |
+| `dashboard.js`    | _Noch füllen_                                                                                                                                  |
+| `transactions.js` | _Noch füllen_                                                                                                                                  |
+| `kategorien.js`   | _Noch füllen_                                                                                                                                  |
+| `konten.js`       | _Noch füllen_                                                                                                                                  |
+| `zinsrechner.js`  | Chart-Initialisierung, Verkabelung Input Felder, Zinsberechnung, Vorschau Option, Operationen: Berechnen, Aktualisieren, Löschen, Zurücksetzen |
+| `chatbot.js`      | _Noch füllen_                                                                                                                                  |
+| `search.js`       | _Noch füllen_                                                                                                                                  |
+| `calendar.js`     | _Noch füllen_                                                                                                                                  |
+| `modals.js`       | _Noch füllen_                                                                                                                                  |
+| `components.js`   | _Noch füllen_                                                                                                                                  |
+| `utils.js`        | _Noch füllen_                                                                                                                                  |
+| `constants.js`    | _Noch füllen_                                                                                                                                  |
+| `settings.js`     | _Noch füllen_                                                                                                                                  |
 
 ---
 
@@ -521,13 +522,13 @@ _Noch zu dokumentieren_
 
 ## Trennung der Verantwortlichkeit
 
-| Name | Verantwortungsbereich | Verwendete KI-Tools |
-|------|----------------------|----------------------|
-| **Arienne Bertram** | *UI/UX Programmierung* | Copilot (Claude Sonnet 4.5) | 
-| **Emil Horstmann** | *JavaScript, API, Datenbank* | Copilot (Claude Opus 4.5/Gemini 3 Pro) |
-| **Paul-Gerhart Siegel** | *Noch füllen* |
-| **Leonardo Fabian Ferreira Pfeiffer** | *Noch füllen* |
-| **Sinan Felix Atay** | *Zinsrechner* | Copilot (Claude Sonnet 4.5) |
+| Name                           | Verantwortungsbereich        | Verwendete KI-Tools                    |
+| ------------------------------ | ---------------------------- | -------------------------------------- |
+| **Arienne Bertram**            | _UI/UX Programmierung_       | Copilot (Claude Sonnet 4.5)            |
+| **Emil Horstmann**             | _JavaScript, API, Datenbank_ | Copilot (Claude Opus 4.5/Gemini 3 Pro) |
+| **Paul-Gerhart Siegel**        | _Noch füllen_                |
+| **Leonardo Ferreira Pfeiffer** | _Kategoriesierung, Chatbot_  | Claude Sonnet 4.5                      |
+| **Sinan Felix Atay**           | _Zinsrechner_                | Copilot (Claude Sonnet 4.5)            |
 
 ---
 
