@@ -131,6 +131,30 @@ class CSVTransaktionImporter:
 
         headers = rows[self.header_row]
 
+        missing_headers = [
+            csv_header
+            for csv_header in self.mapping.values()
+            if csv_header not in headers
+]
+
+        if missing_headers:
+            raise ValueError(
+                "CSV-Header nicht gefunden oder falschgeschrieben.\n"
+                f"Fehlende Spalten: {', '.join(missing_headers)}"
+            )
+        
+        buchungstag_idx = headers.index(self.mapping["buchungstag"])
+
+        for row_number, row in enumerate(data_rows, start=self.header_row + 2):
+            value = row[buchungstag_idx].strip()
+
+            if not value:
+                raise ValueError(
+                    f"Ungültige Datenzeile in Zeile {row_number}. "
+                    "Die Datei enthält vermutlich eine Footer-Zeile. "
+                    "Bitte prüfen Sie 'skip_footer'."
+                )
+
         for row in data_rows:
             record = {}
             for model_field, csv_header in self.mapping.items():
