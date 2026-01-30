@@ -47,7 +47,6 @@ async def import_transactions(
     try:
 
         if not file.filename.endswith((".csv", ".xlsx")):
-            #raise HTTPException(status_code=400, detail="Invalid file type")
             return JSONResponse(status_code=400, content={
                 "status": "error",
                 "message": "Ungültiger Dateityp. Bitte CSV oder XLSX hochladen."
@@ -70,7 +69,6 @@ async def import_transactions(
 
         session = SessionLocal()
 
-        #try:
         importer = CSVTransaktionImporter(
             session=session,
             mapping=mapping,
@@ -86,7 +84,6 @@ async def import_transactions(
         })
     
     except ValueError as e:
-        # HIER wird dein "Spalte Betra nicht gefunden"-Fehler gefangen!
         return JSONResponse(status_code=400, content={
             "status": "error",
             "message": str(e)
@@ -100,8 +97,6 @@ async def import_transactions(
             "message": str(e)
         })
         
-
-    #return {"status": "success"}
     finally:
         if session:
             session.close()

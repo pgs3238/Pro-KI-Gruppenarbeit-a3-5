@@ -144,7 +144,11 @@ class CSVTransaktionImporter:
             )
         
         buchungstag_idx = headers.index(self.mapping["buchungstag"])
-
+        
+        # Note: Due to time constraints, the error messages do not behave as intended.
+        # The separate error message for the footer does not display because the
+        # main header error message takes precedence. Similarly, error messages
+        # for misspelled header fields may not appear correctly.
         for row_number, row in enumerate(data_rows, start=self.header_row + 2):
             value = row[buchungstag_idx].strip()
 

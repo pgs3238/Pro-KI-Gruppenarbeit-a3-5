@@ -483,6 +483,12 @@
     <script src="/static/js/settings.js"></script>
     <script src="../static/js/app.js"></script>
     <script>
+    /*
+      Author: Paul-Gerhard Siegel
+      Note: This script allows a user to upload a file, define how its columns should be mapped,
+      optionally skip headers or footers, and send everything to a backend server. 
+      The user gets instant feedback via toast notifications, and the form resets after a successful upload.
+    */
     document.getElementById("importForm").addEventListener("submit", async function(e) {
       e.preventDefault(); // prevent default form submission
 
@@ -533,7 +539,6 @@
       }
     });
 
-    // Simple toast function (you already have toast container in HTML)
     function showToast(message, type="info") {
       const container = document.getElementById("toastContainer");
       const toast = document.createElement("div");

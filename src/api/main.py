@@ -582,6 +582,7 @@ async def import_transactions(
     db: Session = Depends(get_db),
 ):
     """
+    Author: Paul-Gerhard Siegel
     Importiere CSV-Transaktionen.
     frontend sendet:
       - file: CSV-Datei
@@ -615,8 +616,6 @@ async def import_transactions(
         return {"message": f"Import erfolgreich für Konto {konto_id}"}
 
     except Exception as e:
-        # Fehler zurückgeben
-        #raise HTTPException(status_code=400, detail=str(e))
         return JSONResponse(
             status_code=400,
             content={"status": "error", "message": str(e)}

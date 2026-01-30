@@ -467,7 +467,6 @@ async function performSearch() {
             }
         }
 
-        // TODO Deactivate
         // Console log to test input values at Filter & Search
         console.log("📤 Suchparameter:", searchParams);
         console.log("📤 Sende Suche an API:", requestBody);
@@ -666,11 +665,6 @@ async function editTransaction(id) {
 
         openModal();
         
-        // TODO ERROR remove this do to wrong function
-        // Wenn ein Konto ausgewählt ist, trigger die onKontoSelect um IBAN zu befüllen
-        // if (transaction.konto_id) {
-        //     onKontoSelect();
-        // }
     } catch (error) {
         console.error('✗ Fehler beim Laden der Transaktion:', error);
         showToast('Transaktion konnte nicht geladen werden', 'error');
@@ -787,11 +781,6 @@ async function loadKontoSelect(targetId = 'kontoSelect') {
             kontoSelect.appendChild(option);
         });
         
-        // TODO Error remove this due to wrong function
-        // Füge Change-Event hinzu, um IBAN automatisch zu füllen
-        // if (targetId === 'kontoSelect') {
-        //     kontoSelect.addEventListener('change', onKontoSelect);
-        // }
     } catch (error) {
         console.error('Fehler beim Laden der Konten für Dropdown:', error);
     }
@@ -819,15 +808,6 @@ function onKontoSelect() {
     // Finde das ausgewählte Konto
     const selectedKonto = availableKonten.find(k => k.id === selectedKontoId);
     
-
-    // TODO remove function due to it doing the wrong thing!!
-    // if (selectedKonto && selectedKonto.kontonummer) {
-    //     // Trage die IBAN des Kontos ein
-    //     ibanInput.value = selectedKonto.kontonummer;
-    //     // Mache IBAN-Feld readonly
-    //     ibanInput.readOnly = true;
-    //     ibanInput.style.backgroundColor = '#333';  // Dunkler Hintergrund für readonly
-    // }
 }
 
 /**
@@ -858,7 +838,7 @@ function closeModal() {
 
 
 /**
- *  
+ *  Modal für import öffnen
  */
 function openImportModal() {
     document.getElementById('importModal').classList.add('active');
@@ -866,7 +846,7 @@ function openImportModal() {
 }
 
 /**
- * 
+ * Modal für import schließen
  */
 function closeImportModal() {
     document.getElementById('importModal').classList.remove('active');
