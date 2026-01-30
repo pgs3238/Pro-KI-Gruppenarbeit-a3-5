@@ -1,37 +1,19 @@
 # Definition der Datenbankmodelle für die Anwendung
 
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Float,
-    Date,
-    DateTime,
-    Enum,
-    ForeignKey,
-)  # Importiere notwendige SQLAlchemy Datentypen
-from sqlalchemy.orm import (
-    declarative_base,  # Basisklasse für ORM-Modelle
-    relationship,  # Beziehung zwischen Tabellen
-)
+from sqlalchemy import (Column, Integer, String, Float, Date, DateTime, Enum, ForeignKey,)  # Importiere notwendige SQLAlchemy Datentypen
+from sqlalchemy.orm import (declarative_base, relationship)  # Basisklasse für ORM-Modelle und Beziehung zwischen Tabellen
 from datetime import datetime
 
-Base = (
-    declarative_base()
-)  # Basisklasse für alle ORM-Modelle um Tabellen in der Datenbank zu repräsentieren
+Base = (declarative_base())  # Basisklasse für alle ORM-Modelle um Tabellen in der Datenbank zu repräsentieren
 
 
-class Konto(
-    Base
-):  # Erbt von Base und repräsentiert die "konten" Tabelle in der Datenbank
+class Konto(Base):  # Erbt von Base und repräsentiert die "konten" Tabelle in der Datenbank
     """Bankkonto mit Kontostand und Kontoinformationen"""
 
     __tablename__ = "konten"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    kontoname = Column(
-        String(100), nullable=False, unique=True
-    )  # z.B. "Girokonto", "Sparkonto"
+    kontoname = Column(String(100), nullable=False, unique=True)  # z.B. "Girokonto", "Sparkonto"
     kontonummer = Column(String(34), nullable=True)  # IBAN (optional)
     bankname = Column(String(200), nullable=True)  # z.B. "Sparkasse München"
     kontostand = Column(Float, nullable=False, default=0.0)  # Aktueller Kontostand
