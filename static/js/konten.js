@@ -6,10 +6,11 @@ let accountsData = [];
 
 // ============ API FUNKTIONEN ============
 
+// Lädt Konten von der API, konvertiert Format und lädt aktuelle Salden
 async function loadAccountsFromAPI() {
     try {
         const konten = await fetchKonten();
-        
+
         // Konvertiere API-Daten ins Frontend-Format
         accountsData = konten.map(konto => ({
             id: konto.id,
@@ -22,7 +23,7 @@ async function loadAccountsFromAPI() {
             waehrung: konto.waehrung,
             farbe: konto.farbe || '#06d6a6'
         }));
-        
+
         // Lade den aktuellen Saldo (initialstand + transaktionen) für jedes Konto
         for (let account of accountsData) {
             try {
@@ -32,7 +33,7 @@ async function loadAccountsFromAPI() {
                 console.warn(`Fehler beim Laden des Saldos für Konto ${account.id}:`, error);
             }
         }
-        
+
         loadAccounts();
     } catch (error) {
         console.error('Fehler beim Laden der Konten:', error);
@@ -42,6 +43,7 @@ async function loadAccountsFromAPI() {
     }
 }
 
+// Erstellt ein neues Konto über die API
 async function createAccountAPI(accountData) {
     try {
         // Konvertiere Frontend-Daten ins API-Format
@@ -55,18 +57,18 @@ async function createAccountAPI(accountData) {
             bic: null,
             farbe: accountData.farbe
         };
-        
+
         const response = await fetch(`${API_BASE_URL}/konten`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(apiData)
         });
-        
+
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.detail || 'Fehler beim Erstellen des Kontos');
         }
-        
+
         return await response.json();
     } catch (error) {
         console.error('Fehler beim Erstellen des Kontos:', error);
@@ -74,6 +76,7 @@ async function createAccountAPI(accountData) {
     }
 }
 
+// Aktualisiert ein bestehendes Konto über die API
 async function updateAccountAPI(konto_id, accountData) {
     try {
         const apiData = {
@@ -85,18 +88,18 @@ async function updateAccountAPI(konto_id, accountData) {
             waehrung: accountData.waehrung,
             farbe: accountData.farbe
         };
-        
+
         const response = await fetch(`${API_BASE_URL}/konten/${konto_id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(apiData)
         });
-        
+
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.detail || 'Fehler beim Aktualisieren des Kontos');
         }
-        
+
         return await response.json();
     } catch (error) {
         console.error('Fehler beim Aktualisieren des Kontos:', error);
@@ -104,12 +107,13 @@ async function updateAccountAPI(konto_id, accountData) {
     }
 }
 
+// Löscht ein Konto über die API
 async function deleteAccountAPI(konto_id) {
     try {
         const response = await fetch(`${API_BASE_URL}/konten/${konto_id}`, {
             method: 'DELETE'
         });
-        
+
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.detail || 'Fehler beim Löschen des Kontos');
@@ -121,6 +125,7 @@ async function deleteAccountAPI(konto_id) {
 }
 
 // ============ KONTEN LADEN UND ANZEIGEN ============
+// Rendert die Konten-Karten (Cards) und die Übersichtskarte in das Grid
 function loadAccounts() {
     const grid = document.getElementById('accountsGrid');
     grid.innerHTML = '';
@@ -175,6 +180,7 @@ function loadAccounts() {
 }
 
 // Hilfsfunktionen
+// Formatiert den internen Kontotyp (slug) in eine lesbare Darstellung
 function formatAccountType(typ) {
     const types = {
         'girokonto': 'Girokonto',
@@ -188,6 +194,7 @@ function formatAccountType(typ) {
 }
 
 // Konto bearbeiten
+// Öffnet das Modal zum Bearbeiten eines Kontos
 function editAccount(id) {
     const account = accountsData.find(a => a.id === id);
     if (!account) return;
@@ -207,6 +214,7 @@ function editAccount(id) {
 }
 
 // Konto löschen
+// Löscht ein Konto nach Bestätigung
 function deleteAccount(id) {
     if (confirm('Möchten Sie dieses Konto wirklich löschen?')) {
         deleteAccountAPI(id)
@@ -224,10 +232,12 @@ function deleteAccount(id) {
 const modal = document.getElementById('accountModal');
 const selects = document.querySelectorAll('select.form-control');
 
+// Öffnet das Modal zum Erstellen oder Bearbeiten
 function openAccountModal() {
     modal.classList.add('active');
 }
 
+// Schließt das Modal und setzt das Formular zurück
 function closeAccountModal() {
     modal.classList.remove('active');
     document.getElementById('accountForm').reset();
@@ -240,7 +250,7 @@ modal.addEventListener('click', (e) => {
     if (e.target === modal) closeAccountModal();
 });
 
-// Form Submit
+// Formular absenden
 document.getElementById('accountForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const form = e.target;
@@ -281,7 +291,7 @@ document.getElementById('accountForm').addEventListener('submit', (e) => {
     }
 });
 
-// Select Placeholder Styling
+// Select-Placeholder-Styling
 wireSelectEmptyClasses(selects);
 
 document.getElementById('accountForm').addEventListener('reset', () => {
@@ -295,9 +305,9 @@ ibanInput.addEventListener('input', (e) => {
     const cursorPos = e.target.selectionStart;
     const oldValue = e.target.value;
     const oldLength = oldValue.length;
-    
+
     e.target.value = formatIBANInput(e.target.value);
-    
+
     const newLength = e.target.value.length;
     const newCursorPos = cursorPos + (newLength - oldLength);
     e.target.setSelectionRange(newCursorPos, newCursorPos);
@@ -311,7 +321,7 @@ if (searchBox && searchIcon) {
     searchBox.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
         searchIcon.style.display = searchTerm ? 'none' : 'block';
-        
+
         const cards = document.querySelectorAll('.account-card:not(.summary-card)');
         cards.forEach(card => {
             const text = card.textContent.toLowerCase();

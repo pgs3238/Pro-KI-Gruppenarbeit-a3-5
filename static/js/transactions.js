@@ -2,6 +2,7 @@
 /**
  * Lädt die Transaktionen von der API (formatiert vom Backend)
  */
+// Lädt die Transaktionen von der API und zeigt sie in der Tabelle an
 async function loadTransactions() {
     const table = document.getElementById('transactionsTable');
     if (!table) return;
@@ -59,6 +60,7 @@ async function loadTransactions() {
 /**
  * Transaktion bearbeiten
  */
+// Öffnet das Modal zum Bearbeiten einer Transaktion und lädt Details
 async function editTransaction(id) {
     try {
         // Lade Transaktion von der API
@@ -110,6 +112,7 @@ async function editTransaction(id) {
 /**
  * Transaktion löschen
  */
+// Löscht eine Transaktion nach Bestätigung
 async function deleteTransaction(id) {
     if (!confirm('Möchten Sie diese Transaktion wirklich löschen?')) return;
 

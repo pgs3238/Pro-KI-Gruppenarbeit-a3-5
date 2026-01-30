@@ -4,24 +4,20 @@ import tempfile
 import json
 import os
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from ..database import Transaktion, Konto
 from ..database.search import search_transaktionen
-from ..database.konto_manager import KontoManager
 from ..database.csv_importer import CSVTransaktionImporter
 from ..categories.auto_categorizer_service import get_auto_categorizer_service
-from ..constants import CHART_COLOR_PALETTE, EXPENSE_COLOR
+from ..constants import CHART_COLOR_PALETTE
 from .schemas import (
     TransaktionCreate,
     TransaktionUpdate,
     TransaktionResponse,
     TransaktionSearch,
-    KontoCreate,
-    KontoUpdate,
-    KontoResponse,
 )
 from .dependencies import get_db
 from .helpers import get_or_404
@@ -35,30 +31,27 @@ auto_categorizer = get_auto_categorizer_service()
 # ==================== HILFSFUNKTIONEN ====================
 
 
+# Hilfsfunktion: Lädt eine Transaktion aus der DB oder wirft 404-Fehler.
 def get_transaction_or_404(transaction_id: int, db: Session):
-    """Transaktion laden oder 404 werfen"""
     return get_or_404(db, Transaktion, transaction_id, detail="Transaktion nicht gefunden")
 
 
+# Hilfsfunktion: Lädt ein Konto aus der DB oder wirft 404-Fehler.
 def get_konto_or_404(konto_id: int, db: Session):
-    """Konto laden oder 404 werfen"""
     return get_or_404(db, Konto, konto_id, detail="Konto nicht gefunden")
 
 
 # ==================== ENDPUNKTE: BASIC ====================
 
 
-@router.get(
-    "",
-)
+@router.get("")
+# GET /transactions - Gibt Liste von Transaktionen zurück (id, buchungstag, beguenstigter, betrag, kategorie, etc.).
 def get_transactions(
     skip: int = 0,
     limit: int = 1000,
     days: int = 30,
     db: Session = Depends(get_db),
 ):
-    """Alle Transaktionen (mit optional Datumsfilter für letzte N Tage)"""
-
     # Wenn days > 0, filtere nach den letzten N Tagen
     if days > 0:
         cutoff_date = datetime.now().date() - timedelta(days=days)
@@ -74,10 +67,10 @@ def get_transactions(
 
 
 @router.get("/formatted/list")
+# GET /transactions/formatted/list - Gibt formatierte Transaktionen für Frontend zurück (datum, betrag mit +/-, iban formatiert).
 def get_transactions_formatted(
     skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ):
-    """Alle Transaktionen mit formatierten Werten für Frontend"""
     transactions = (
         db.query(Transaktion)
         .order_by(Transaktion.buchungstag.desc())
@@ -134,22 +127,12 @@ def get_transactions_formatted(
 
 
 @router.get("/sankey-data")
+# GET /transactions/sankey-data - Gibt Daten für Sankey-Diagramm zurück (nodes, links, total_expenses, category_count).
 def get_sankey_data(
     year: Optional[int] = None,
     month: Optional[int] = None,
     db: Session = Depends(get_db),
 ):
-    """
-    Liefert Daten für ein Sankey-Diagramm: Ausgaben → Kategorien
-
-    Struktur für Plotly:
-    - nodes: Liste mit Label und Farbe für jeden Node
-    - links: source, target, value, color für jeden Flow
-
-    Args:
-        year: Jahr für die Filterung (Standard: aktuelles Jahr)
-        month: Monat für die Filterung 1-12 (Standard: aktueller Monat)
-    """
     from calendar import monthrange
     from ..database.models import Category
 
@@ -211,7 +194,7 @@ def get_sankey_data(
 
     # Erstelle Nodes
     # Node 0: Ausgaben (links)
-    nodes = [{"label": "💸 Ausgaben", "color": EXPENSE_COLOR}]
+    nodes = [{"label": "💸 Ausgaben", "color": "#e74c3c"}]
 
     # Nodes 1 bis N: Kategorien (rechts)
     for idx, (name, amount) in enumerate(sorted_categories):
@@ -250,22 +233,15 @@ def get_sankey_data(
     }
 
 
-@router.get(
-    "/{transaction_id}",
-    response_model=TransaktionResponse,
-)
+@router.get("/{transaction_id}", response_model=TransaktionResponse)
+# GET /transactions/{id} - Gibt eine einzelne Transaktion zurück.
 def get_transaction(transaction_id: int, db: Session = Depends(get_db)):
-    """Eine Transaktion abrufen"""
     return get_transaction_or_404(transaction_id, db)
 
 
-@router.post(
-    "",
-    response_model=TransaktionResponse,
-    status_code=201,
-)
+@router.post("", response_model=TransaktionResponse, status_code=201)
+# POST /transactions - Erstellt neue Transaktion und gibt das erstellte Objekt zurück.
 def create_transaction(transaction: TransaktionCreate, db: Session = Depends(get_db)):
-    """Neue Transaktion erstellen"""
     db_transaction = Transaktion(**transaction.model_dump())
     db.add(db_transaction)
     db.commit()
@@ -281,16 +257,13 @@ def create_transaction(transaction: TransaktionCreate, db: Session = Depends(get
     return db_transaction
 
 
-@router.put(
-    "/{transaction_id}",
-    response_model=TransaktionResponse,
-)
+@router.put("/{transaction_id}", response_model=TransaktionResponse)
+# PUT /transactions/{id} - Aktualisiert Transaktion und gibt das aktualisierte Objekt zurück.
 def update_transaction(
     transaction_id: int,
     transaction_update: TransaktionUpdate,
     db: Session = Depends(get_db),
 ):
-    """Transaktion aktualisieren"""
     db_transaction = get_transaction_or_404(transaction_id, db)
 
     update_data = transaction_update.model_dump(exclude_unset=True)
@@ -302,12 +275,9 @@ def update_transaction(
     return db_transaction
 
 
-@router.delete(
-    "/{transaction_id}",
-    status_code=204,
-)
+@router.delete("/{transaction_id}", status_code=204)
+# DELETE /transactions/{id} - Löscht Transaktion, gibt keinen Inhalt zurück (204 No Content).
 def delete_transaction(transaction_id: int, db: Session = Depends(get_db)):
-    """Transaktion löschen"""
     db_transaction = get_transaction_or_404(transaction_id, db)
     db.delete(db_transaction)
     db.commit()
@@ -316,14 +286,11 @@ def delete_transaction(transaction_id: int, db: Session = Depends(get_db)):
 # ==================== ENDPUNKTE: FILTER & STATISTIKEN ====================
 
 
-@router.get(
-    "/filter/date-range",
-    response_model=List[TransaktionResponse],
-)
+@router.get("/filter/date-range", response_model=List[TransaktionResponse])
+# GET /transactions/filter/date-range - Filtert Transaktionen nach Datumsbereich, gibt Liste zurück.
 def get_transactions_by_date_range(
     start_date: date, end_date: date, db: Session = Depends(get_db)
 ):
-    """Transaktionen nach Datumsbereich filtern"""
     return (
         db.query(Transaktion)
         .filter(
@@ -335,8 +302,8 @@ def get_transactions_by_date_range(
 
 
 @router.get("/stats/summary")
+# GET /transactions/stats/summary - Gibt Dict mit total_income, total_expenses, balance, transaction_count zurück.
 def get_transaction_summary(db: Session = Depends(get_db)):
-    """Finanz-Zusammenfassung"""
     transactions = db.query(Transaktion).all()
 
     total_income = sum(t.betrag for t in transactions if t.betrag > 0)
@@ -353,14 +320,11 @@ def get_transaction_summary(db: Session = Depends(get_db)):
 # ==================== ENDPUNKTE: SEARCH ====================
 
 
-@router.post(
-    "/search",
-    response_model=List[TransaktionResponse],
-)
+@router.post("/search", response_model=List[TransaktionResponse])
+# POST /transactions/search - Sucht Transaktionen mit erweiterten Filtern, gibt Liste zurück.
 def search_transactions(
     search_params: TransaktionSearch, db: Session = Depends(get_db)
 ):
-    """Transaktionen mit erweiterten Suchfiltern"""
     return search_transaktionen(
         session=db,
         buchungstag=search_params.buchungstag,
@@ -381,8 +345,8 @@ def search_transactions(
 
 # ==================== ENDPUNKTE: IMPORT ====================
 
-
 @router.post("/import")
+# POST /transactions/import - Importiert CSV-Datei und gibt {message: string} bei Erfolg zurück.
 async def import_transactions(
     file: UploadFile = File(...),
     header_row: int = Form(...),
@@ -391,15 +355,6 @@ async def import_transactions(
     konto_id: int = Form(...),
     db: Session = Depends(get_db),
 ):
-    """
-    Importiere CSV-Transaktionen.
-    frontend sendet:
-      - file: CSV-Datei
-      - header_row: Zeile der Spaltenüberschriften (1-basiert)
-      - skip_footer: Anzahl der Zeilen am Ende, die übersprungen werden
-      - mapping: JSON { "buchungstag": "Buchungstag", "beguenstigter": "Begünstigter / Auftraggeber", ... }
-      - konto_id: ID des Kontos, auf das gebucht wird
-    """
     tmp_path = None
     try:
         # Mapping JSON parsen

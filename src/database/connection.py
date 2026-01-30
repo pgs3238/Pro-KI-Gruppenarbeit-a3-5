@@ -14,17 +14,17 @@ DB_DIR = (
 DB_DIR.mkdir(exist_ok=True)  # Erstellt den data Ordner, falls er nicht existiert
 DB_PATH = DB_DIR / "expenses.db"  # Datenbankdatei im data Ordner definieren
 
-# SQLite Connection String
+# SQLite Connection String: Definiert die URL zur lokalen SQLite-Datenbank.
 DATABASE_URL = f"sqlite:///{DB_PATH}"
 
-# Engine erstellen
+# Engine erstellen: Hauptkomponente von SQLAlchemy, die die Verbindung zur Datenbank verwaltet.
 engine = create_engine(  # Erstellt die Verbindung zur SQLite-Datenbank
     DATABASE_URL,
     echo=False,  # SQL-Queries in Console ausgeben (für Debugging)
 )
 
-# Session Factory
-# So sind wir in der Lage uns ganz einfach neue Sessions zu erstellen: session1 = SessionLocal(), session2 = SessionLocal(), etc.
+# Session Factory: Erstellt neue Datenbank-Sessions für jede Anfrage.
+# autocommit=False: Transaktionen müssen manuell committed werden (Save-Point).
 SessionLocal = sessionmaker(  # Erstellt eine Session Factory für die Datenbank, die Sessions verwaltet
     autocommit=False,
     autoflush=False,
@@ -32,11 +32,8 @@ SessionLocal = sessionmaker(  # Erstellt eine Session Factory für die Datenbank
 )
 
 
+# ensure_categorization_state - Stellt sicher, dass das Singleton für den Kategorisierungs-Status existiert.
 def ensure_categorization_state():
-    """
-    Stellt sicher, dass der CategorizationState-Eintrag existiert.
-    Erstellt ihn, falls er noch nicht vorhanden ist.
-    """
     from .models import CategorizationState
 
     session = SessionLocal()
@@ -53,6 +50,7 @@ def ensure_categorization_state():
         session.close()
 
 
+# init_db - Erstellt alle Tabellen und initialisiert Standard-Daten (Kategorien).
 def init_db():
     from .models import Base
 

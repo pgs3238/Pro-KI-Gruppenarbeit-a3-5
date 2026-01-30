@@ -1,7 +1,5 @@
 // ==================== MODAL FUNKTIONEN ====================
-/**
- * Modal öffnen
- */
+// Modal öffnen
 function openModal() {
     const modal = document.getElementById('transactionModal');
     if (!modal) return;
@@ -11,9 +9,7 @@ function openModal() {
     loadKontoSelect();  // Lade Konten in das Dropdown
 }
 
-/**
- * Modal schließen
- */
+// Modal schließen
 function closeModal() {
     const modal = document.getElementById('transactionModal');
     if (!modal) return;
@@ -25,24 +21,18 @@ function closeModal() {
     delete document.getElementById('transactionForm').dataset.editId;
 }
 
-/**
- * Import Modal öffnen
- */
+// Import Modal öffnen
 function openImportModal() {
     document.getElementById('importModal').classList.add('active');
     loadKontoSelect('importKontoSelect');
 }
 
-/**
- * Import Modal schließen
- */
+// Import Modal schließen
 function closeImportModal() {
     document.getElementById('importModal').classList.remove('active');
 }
 
-/**
- * Lädt die verfügbaren Konten in das Konto-Dropdown
- */
+// Lädt Konten in das Dropdown
 async function loadKontoSelect(targetId = 'kontoSelect') {
     const kontoSelect = document.getElementById(targetId);
     if (!kontoSelect) return;
@@ -67,9 +57,7 @@ async function loadKontoSelect(targetId = 'kontoSelect') {
     }
 }
 
-/**
- * Event Handler: Wenn Konto ausgewählt wird, IBAN automatisch eintragen
- */
+// Handler für Konto-Auswahl (z.B. IBAN Prefill)
 function onKontoSelect() {
     const kontoSelect = document.getElementById('kontoSelect');
     const ibanInput = document.querySelector('input[name="iban"]');
@@ -91,9 +79,7 @@ function onKontoSelect() {
     // Hinweis: Die automatische IBAN-Befüllung wurde entfernt, da sie nicht korrekt funktionierte
 }
 
-/**
- * Setzt den Import-Form Handler auf
- */
+// Setup für Import-Formular
 function setupImportForm() {
     const importForm = document.getElementById("importForm");
     if (!importForm) return;
@@ -145,9 +131,7 @@ function setupImportForm() {
     });
 }
 
-/**
- * Richte Transaction Modal Setup ein
- */
+// Setup für Transaktions-Modal (Absenden, Zurücksetzen, Datumsvalidierung)
 function setupTransactionModal() {
     const modal = document.getElementById('transactionModal');
     const datumInput = document.getElementById('datumInput');
@@ -157,16 +141,16 @@ function setupTransactionModal() {
 
     if (!modal) return;
 
-    // Initialize date variables
+    // Datumsvariablen initialisieren
     if (!window.selectedDate) window.selectedDate = new Date();
     if (!window.currentMonth) window.currentMonth = new Date();
 
-    // Modal click handler
+    // Modal-Klick-Handler
     modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
     });
 
-    // Form submit handler
+    // Formular-Absende-Handler
     if (transactionForm) {
         transactionForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -227,7 +211,7 @@ function setupTransactionModal() {
             }
         });
 
-        // Reset handler
+        // Zurücksetzen-Handler
         transactionForm.addEventListener('reset', () => {
             setTimeout(() => {
                 updateSelectEmptyClasses(selects);
@@ -235,7 +219,7 @@ function setupTransactionModal() {
         });
     }
 
-    // Datum Input Handler
+    // Datums-Eingabe-Handler
     if (datumInput) {
         datumInput.addEventListener('input', (e) => {
             let value = e.target.value.replace(/\D/g, '');
@@ -281,7 +265,7 @@ function setupTransactionModal() {
         });
     }
 
-    // Close calendar on outside click
+    // Kalender beim Klick außerhalb schließen
     document.addEventListener('click', (e) => {
         const calendar = document.getElementById('customCalendar');
         const dateWrapper = document.querySelector('.date-input-wrapper');

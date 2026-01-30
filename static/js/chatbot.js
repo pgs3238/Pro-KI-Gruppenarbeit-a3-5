@@ -7,7 +7,7 @@ const chatInput = document.getElementById("chatInput");
 const sendButton = document.getElementById("sendButton");
 const chatLoading = document.getElementById("chatLoading");
 
-// Session-ID für diesen User
+// Sitzungs-ID für diesen Benutzer
 const sessionId = `user-${Math.random().toString(36).substr(2, 9)}`;
 
 // Willkommensnachricht (zentrale Definition)
@@ -20,14 +20,12 @@ const WELCOME_MESSAGE = `Hallo! Ich bin dein Finanzassistent. Frag mich zum Beis
 
 // ==================== HILFSFUNKTIONEN ====================
 
-/**
- * Fügt eine Nachricht zum Chat hinzu
- */
+// Fügt eine Nachricht zum Chat hinzu
 function addMessage(text, isUser = false) {
   const messageDiv = document.createElement("div");
   messageDiv.className = `message ${isUser ? "user-message" : "bot-message"}`;
 
-  // Für Bot-Nachrichten: Markdown parsen, für User: Plain-Text
+  // Für Bot-Nachrichten: Markdown parsen, für Benutzer: Nur Text
   const content = isUser ? text : marked.parse(text);
 
   messageDiv.innerHTML = `
@@ -41,32 +39,24 @@ function addMessage(text, isUser = false) {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-/**
- * Zeigt die Willkommensnachricht an
- */
+// Zeigt die Willkommensnachricht an
 function showWelcomeMessage() {
   addMessage(WELCOME_MESSAGE, false);
 }
 
-/**
- * Zeigt den Lade-Indikator an
- */
+// Zeigt den Lade-Indikator an
 function showLoading() {
   chatLoading.style.display = "block";
   sendButton.disabled = true;
 }
 
-/**
- * Versteckt den Lade-Indikator
- */
+// Versteckt den Lade-Indikator
 function hideLoading() {
   chatLoading.style.display = "none";
   sendButton.disabled = false;
 }
 
-/**
- * Sendet eine Nachricht an den Chatbot-Backend
- */
+// Sendet Nachricht an Backend und verarbeitet Antwort
 async function sendMessage(message) {
   if (!message.trim()) return;
 
@@ -103,11 +93,7 @@ async function sendMessage(message) {
   }
 }
 
-/**
- * Zeigt ein styled Bestätigungs-Modal an
- * @param {string} message - Die anzuzeigende Nachricht
- * @param {Function} onConfirm - Callback bei Bestätigung
- */
+// Zeigt ein Bestätigungs-Modal an
 function showConfirmModal(message, onConfirm) {
   // Erstelle Modal falls noch nicht vorhanden
   let modal = document.getElementById('confirmModal');
@@ -137,7 +123,7 @@ function showConfirmModal(message, onConfirm) {
   document.getElementById('confirmModalMessage').textContent = message;
   modal.style.display = 'flex';
 
-  // Event Handlers
+  // Ereignis-Handler
   const closeModal = () => { modal.style.display = 'none'; };
 
   document.getElementById('confirmModalClose').onclick = closeModal;
@@ -148,9 +134,7 @@ function showConfirmModal(message, onConfirm) {
   };
 }
 
-/**
- * Setzt den Chat-Verlauf zurück
- */
+// Setzt den Chat-Verlauf zurück
 function resetChat() {
   showConfirmModal("Möchtest du den Chat-Verlauf wirklich löschen?", async () => {
     try {
@@ -176,7 +160,7 @@ function resetChat() {
   });
 }
 
-// ==================== EVENT LISTENERS ====================
+// ==================== EREIGNIS-LISTENER ====================
 
 sendButton.addEventListener("click", () => {
   sendMessage(chatInput.value);

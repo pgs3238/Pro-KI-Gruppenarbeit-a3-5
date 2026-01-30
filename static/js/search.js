@@ -2,6 +2,7 @@
 /**
  * Aktiviert die Suchfunktion
  */
+// Aktiviert die einfache Textsuche für die Tabelle
 function setupSearch() {
     const searchBox = document.getElementById('searchBox');
     if (!searchBox) return; // Abbrechen wenn Element nicht existiert
@@ -23,6 +24,7 @@ function setupSearch() {
 /**
  * Setup Filter-Inputs für erweiterte Suche
  */
+// Setup Filter-Inputs für erweiterte Suche
 function setupFilterInputs() {
     const filterInputs = document.querySelectorAll('.filter-input');
     const clearBtn = document.getElementById('clearFiltersBtn');
@@ -38,7 +40,7 @@ function setupFilterInputs() {
         });
     });
 
-    // Clear-Button Setup
+    // Zurücksetzen-Button Setup
     if (clearBtn) {
         clearBtn.addEventListener('click', async () => {
             // Alle Filter leeren
@@ -55,6 +57,7 @@ function setupFilterInputs() {
 /**
  * Führt die Suche basierend auf Filter-Inputs durch
  */
+// Führt erweiterte Suche via API durch
 async function performSearch() {
     const table = document.getElementById('transactionsTable');
     if (!table) return;

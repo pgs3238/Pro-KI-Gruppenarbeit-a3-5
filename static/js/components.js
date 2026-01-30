@@ -1,10 +1,7 @@
-// ============ SHARED COMPONENTS ============
+// ============ GEMEINSAME KOMPONENTEN ============
 // Zentrale Komponenten die auf allen Seiten verwendet werden
 
-/**
- * Erstellt die Sidebar-Navigation
- * @param {string} activePage - ID der aktiven Seite (overview, transactions, categories, accounts, forecast, chatbot)
- */
+// Erstellt die Sidebar-Navigation basierend auf der aktiven Seite
 function renderSidebar(activePage) {
     const navItems = [
         { id: 'overview', icon: '📈', label: 'Übersicht', href: 'index.html' },
@@ -45,9 +42,7 @@ function renderSidebar(activePage) {
     `;
 }
 
-/**
- * Erstellt den Header mit Settings-Button
- */
+// Erstellt den Header mit Settings-Button
 function renderHeader() {
     return `
         <header class="header">
@@ -58,9 +53,7 @@ function renderHeader() {
     `;
 }
 
-/**
- * Prüft den Status der Datenbankverbindung und aktualisiert die Anzeige
- */
+// Prüft DB-Verbindung und aktualisiert Status-Anzeige
 async function checkDbStatus() {
     const statusContainer = document.getElementById('dbStatus');
     if (!statusContainer) return;
@@ -88,19 +81,15 @@ async function checkDbStatus() {
     }
 }
 
-/**
- * Startet das periodische Prüfen des DB-Status
- */
+// Startet Polling für DB-Status
 function startDbStatusPolling(intervalMs = 30000) {
-    // Initial check
+    // Initiale Prüfung
     checkDbStatus();
     // Alle 30 Sekunden prüfen
     setInterval(checkDbStatus, intervalMs);
 }
 
-/**
- * Erstellt das API-Key Modal
- */
+// Erstellt das API-Schlüssel-Modal-HTML
 function renderApiKeyModal() {
     return `
         <div id="apiKeyModal" class="api-key-modal">
@@ -131,17 +120,12 @@ function renderApiKeyModal() {
     `;
 }
 
-/**
- * Erstellt den Toast Container
- */
+// Erstellt den Toast-Container
 function renderToastContainer() {
     return `<div id="toastContainer" class="toast-container"></div>`;
 }
 
-/**
- * Initialisiert alle gemeinsamen Komponenten auf der Seite
- * @param {string} activePage - ID der aktiven Seite
- */
+// Initialisiert alle gemeinsamen Komponenten (Sidebar, Header, Modals)
 function initComponents(activePage) {
     // Sidebar einfügen
     const sidebarPlaceholder = document.getElementById('sidebar-placeholder');

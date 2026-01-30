@@ -3,7 +3,7 @@
 // Zentrale API-Konfiguration (wird von allen JS-Dateien verwendet)
 const API_BASE_URL = 'http://localhost:8000/api';
 
-// Toast-Benachrichtigungen
+// Zeigt Toast-Benachrichtigung an
 function showToast(message, type = 'success', duration = 4000) {
     let container = document.getElementById('toastContainer');
     // Robust: Container bei Bedarf anlegen (z.B. wenn initComponents noch nicht lief)
@@ -40,7 +40,7 @@ function showToast(message, type = 'success', duration = 4000) {
 }
 // ============ FORMATIERUNGSFUNKTIONEN ============
 
-// Formatiert Beträge als EUR-Währung
+// Formatiert Zahl als Währung (EUR)(z.B. "1.234,56 €")
 function formatCurrency(amount) {
     return new Intl.NumberFormat('de-DE', {
         style: 'currency',
@@ -49,12 +49,16 @@ function formatCurrency(amount) {
 }
 
 // Formatiert IBAN mit Leerzeichen
+// @param {string} iban - Die unformatierte IBAN
+// @returns {string} Formatierte IBAN
 function formatIBAN(iban) {
     if (!iban) return '';
     return iban.match(/.{1,4}/g).join(' ');
 }
 
-// Formatiert IBAN-Input während Eingabe
+// Formatiert IBAN-Eingabe (entfernt ungültige Zeichen)(Input-Handler).
+// @param {string} iban - Der aktuelle Eingabewert
+// @returns {string} Formatierte IBAN für das Input-Feld
 function formatIBANInput(iban) {
     const cleaned = iban.replace(/\s/g, '').toUpperCase();
     return cleaned.match(/.{1,4}/g)?.join(' ') || cleaned;
@@ -62,11 +66,9 @@ function formatIBANInput(iban) {
 
 // ============ DATUM ============
 
-/**
- * Formatiert ein Datum ins deutsche Format.
- * @param {Date|string|number} input
- * @param {{ pad?: boolean }} options
- */
+// Formatiert ein Datum ins deutsche Format.
+// @param {Date|string|number} input
+// @param {{ pad?: boolean }} options
 function formatDateDE(input, options = {}) {
     const { pad = true } = options;
     const d = input instanceof Date ? input : new Date(input);
@@ -77,8 +79,11 @@ function formatDateDE(input, options = {}) {
     return `${day}.${month}.${year}`;
 }
 
-// ============ SELECT HELPERS ============
+// ============ SELECT-HELFER ============
 
+// Setzt oder entfernt die 'empty' CSS-Klasse für Select-Elemente.
+// Hilft beim Styling von Placeholder-Optionen.
+// @param {HTMLSelectElement} select - Das Select-Element
 function updateSelectEmptyClass(select) {
     if (!select) return;
     if (select.value === "") {
@@ -88,11 +93,15 @@ function updateSelectEmptyClass(select) {
     }
 }
 
+// Aktualisiert Klassen für einzelne Selects
+// @param {NodeList|Array} selects - Liste von Select-Elementen
 function updateSelectEmptyClasses(selects) {
     if (!selects) return;
     selects.forEach(select => updateSelectEmptyClass(select));
 }
 
+// Setzt Klassen für leere Selects (Placeholder-Styling)
+// @param {NodeList|Array} selects - Liste von Select-Elementen
 function wireSelectEmptyClasses(selects) {
     if (!selects) return;
     selects.forEach(select => {
@@ -103,13 +112,19 @@ function wireSelectEmptyClasses(selects) {
 
 // ============ ICONS ============
 
+// Gibt Icon für Kontotyp zurück
+// @param {string} typ - Der Kontotyp (Girokonto, Sparkonto, etc.)
+// @returns {string} Das Icon als Emoji
 function getAccountIcon(typ) {
     const key = (typ || '').toString().toLowerCase();
     return ACCOUNT_TYPE_ICON_MAP[key] || DEFAULT_ACCOUNT_ICON;
 }
 
-// ============ API HELPERS ============
+// ============ API-HELFER ============
 
+// Generische Fetch-Funktion mit Fehlerbehandlung
+// @param {string} path - Der API-Pfad (z.B. '/konten')
+// @returns {Promise<any>} Die JSON-Antwort
 async function apiGetJson(path) {
     const response = await fetch(`${API_BASE_URL}${path}`);
     if (!response.ok) {
@@ -118,14 +133,21 @@ async function apiGetJson(path) {
     return await response.json();
 }
 
+// Lädt Konten via API
+// @returns {Promise<Array>} Liste der Konten
 async function fetchKonten() {
     return await apiGetJson('/konten');
 }
 
+// Lädt Kontosaldo via API
+// @param {number} kontoId - ID des Kontos
+// @returns {Promise<Object>} Saldo-Objekt
 async function fetchKontoSaldo(kontoId) {
     return await apiGetJson(`/konten/${kontoId}/saldo`);
 }
 
+// Lädt Kategorien via API
+// @returns {Promise<Array>} Liste der Kategorien
 async function fetchCategories() {
     return await apiGetJson('/categories');
 }

@@ -2,12 +2,11 @@
 
 from pydantic import BaseModel, Field, computed_field
 from datetime import date, datetime
-from typing import Optional
+from typing import Optional, List
 
 
+# Basis-Schema: Enthält alle gemeinsamen Felder für Transaktionen (buchungstag, beguenstigter, betrag, etc.).
 class TransaktionBase(BaseModel):
-    """Basis-Schema für Transaktionen"""
-
     buchungstag: date = Field(..., description="Datum der Buchung")
     beguenstigter: str = Field(..., max_length=200, description="Empfänger/Zahler")
     verwendungszweck: Optional[str] = Field(
@@ -27,15 +26,13 @@ class TransaktionBase(BaseModel):
     kategorie_id: Optional[int] = Field(None, description="ID der zugeordneten Kategorie")
 
 
+# Request-Schema: Zum Erstellen neuer Transaktionen, erbt alle Felder von TransaktionBase.
 class TransaktionCreate(TransaktionBase):
-    """Schema für das Erstellen einer neuen Transaktion"""
-
     pass
 
 
+# Request-Schema: Zum Aktualisieren von Transaktionen, alle Felder optional.
 class TransaktionUpdate(BaseModel):
-    """Schema für das Aktualisieren einer bestehenden Transaktion"""
-
     buchungstag: Optional[date] = None
     beguenstigter: Optional[str] = Field(None, max_length=200)
     verwendungszweck: Optional[str] = Field(None, max_length=500)
@@ -47,9 +44,8 @@ class TransaktionUpdate(BaseModel):
     kategorie_id: Optional[int] = None
 
 
+# Response-Schema: Gibt Transaktion mit id und created_at zurück, wird von SQLAlchemy-Model konvertiert.
 class TransaktionResponse(TransaktionBase):
-    """Schema für Transaktion-Responses"""
-
     id: int
     created_at: datetime
 
@@ -57,9 +53,8 @@ class TransaktionResponse(TransaktionBase):
         from_attributes = True  # Ermöglicht die Konvertierung von SQLAlchemy-Modellen
 
 
+# Request-Schema: Für erweiterte Suche mit optionalen Filtern (datum, betrag, kategorie, etc.).
 class TransaktionSearch(BaseModel):
-    """Schema für die Suche nach Transaktionen"""
-
     buchungstag: Optional[date] = None
     beguenstigter: Optional[str] = None
     verwendungszweck: Optional[str] = None
@@ -78,9 +73,8 @@ class TransaktionSearch(BaseModel):
 # ==================== KONTO SCHEMAS ====================
 
 
+# Basis-Schema: Enthält alle gemeinsamen Felder für Konten (kontoname, kontotyp, bankname, kontostand, etc.).
 class KontoBase(BaseModel):
-    """Basis-Schema für Konten"""
-
     kontoname: str = Field(..., max_length=100, description="Name des Kontos")
     kontotyp: str = Field(
         ..., description="Typ des Kontos (Girokonto, Sparkonto, etc.)"
@@ -93,15 +87,13 @@ class KontoBase(BaseModel):
     farbe: str = Field("#06d6a6", description="Farbe für die Darstellung")
 
 
+# Request-Schema: Zum Erstellen neuer Konten, erbt alle Felder von KontoBase.
 class KontoCreate(KontoBase):
-    """Schema für das Erstellen eines neuen Kontos"""
-
     pass
 
 
+# Request-Schema: Zum Aktualisieren von Konten, alle Felder optional.
 class KontoUpdate(BaseModel):
-    """Schema für das Aktualisieren eines Kontos"""
-
     kontoname: Optional[str] = Field(None, max_length=100)
     kontotyp: Optional[str] = None
     bankname: Optional[str] = Field(None, max_length=200)
@@ -112,9 +104,8 @@ class KontoUpdate(BaseModel):
     farbe: Optional[str] = None
 
 
+# Response-Schema: Gibt Konto mit id, iban, iban_kurz, erstellt_am, aktualisiert_am zurück.
 class KontoResponse(KontoBase):
-    """Schema für Konto-Responses"""
-
     id: int
     iban: Optional[str] = None
     erstellt_am: datetime
@@ -135,9 +126,8 @@ class KontoResponse(KontoBase):
 # ==================== CHATBOT SCHEMAS ====================
 
 
+# Request-Schema: Für Chatbot-Nachrichten mit message und optionaler session_id.
 class ChatMessageRequest(BaseModel):
-    """Request-Schema für Chatbot-Nachricht"""
-
     message: str
     session_id: Optional[str] = "default"
 
@@ -150,9 +140,8 @@ class ChatMessageRequest(BaseModel):
         }
 
 
+# Response-Schema: Chatbot-Antwort mit response-Text und session_id.
 class ChatMessageResponse(BaseModel):
-    """Response-Schema für Chatbot-Antwort"""
-
     response: str
     session_id: str
 
@@ -165,9 +154,8 @@ class ChatMessageResponse(BaseModel):
         }
 
 
+# Response-Schema: Bestätigung für Chat-Reset mit status und session_id.
 class ChatResetResponse(BaseModel):
-    """Response-Schema für Chat-Reset"""
-
     status: str
     session_id: str
 
@@ -177,9 +165,8 @@ class ChatResetResponse(BaseModel):
         }
 
 
+# Response-Schema: Chatbot-Status mit api_key_configured, active_sessions, model_name.
 class ChatStatusResponse(BaseModel):
-    """Response-Schema für Chatbot-Status"""
-
     api_key_configured: bool
     active_sessions: int
     model_name: str
@@ -197,18 +184,16 @@ class ChatStatusResponse(BaseModel):
 # ==================== CATEGORY SCHEMAS ====================
 
 
+# Request-Schema: Zum Erstellen von Kategorien mit name, category_type, icon, farbe.
 class CategoryCreate(BaseModel):
-    """Schema für das Erstellen einer neuen Kategorie"""
-    
     name: str
     category_type: str  # "Ausgabe" oder "Einnahme"
     icon: str = "🏷️"  # Default Icon
     farbe: str = "#06d6a6"  # Default Farbe
 
 
+# Response-Schema: Gibt Kategorie mit id, name, category_type, icon, farbe zurück.
 class CategoryResponse(BaseModel):
-    """Schema für Kategorie-Responses"""
-    
     id: int
     name: str
     category_type: str
@@ -219,9 +204,8 @@ class CategoryResponse(BaseModel):
         from_attributes = True
 
 
+# Response-Schema: Gibt Kategorie-Regeln mit id, category_name, keywords zurück.
 class CategoryRulesResponse(BaseModel):
-    """Schema für Kategorie-Regeln Responses"""
-    
     id: int
     category_name: str
     keywords: list[str]
@@ -230,8 +214,55 @@ class CategoryRulesResponse(BaseModel):
         from_attributes = True
 
 
+# Request-Schema: Enthält ein einzelnes Keyword für Kategorie-Regeln.
 class KeywordRequest(BaseModel):
-    """Schema für Keyword-Requests"""
-    
     keyword: str
+
+
+# ==================== SETTINGS SCHEMAS ====================
+
+
+class ApiKeyUpdate(BaseModel):
+    """Schema für API-Key Update"""
+    api_key: str
+
+
+class ApiKeyResponse(BaseModel):
+    """Schema für API-Key Response"""
+    success: bool
+    message: str
+
+
+# ==================== ZINSRECHNER SCHEMAS ====================
+
+
+class VergleichParameter(BaseModel):
+    startkapital: float
+    zinssatz: float
+    intervall: str
+    einzahlung: float
+    laufzeit: int
+    kontostandTyp: str
+
+
+class VergleichPunkt(BaseModel):
+    jahr: int
+    periode: int
+    kapital: float
+    einzahlungGesamt: float
+    zinsenGesamt: float
+
+
+class VergleichSpeichern(BaseModel):
+    db_nummer: int
+    verlauf: List[VergleichPunkt]
+    parameter: VergleichParameter
+
+
+class KontoInfo(BaseModel):
+    iban: str
+    iban_kurz: str
+    kontostand: float
+    anzahl_transaktionen: int
+    waehrung: str
 

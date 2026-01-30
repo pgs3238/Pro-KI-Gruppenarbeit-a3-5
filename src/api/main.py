@@ -102,31 +102,38 @@ if TEMPLATES_DIR.exists():
 from fastapi.responses import FileResponse
 
 @app.get("/")
+# GET / - Gibt die Dashboard-Startseite (index.html) als FileResponse zurück.
 def root():
     """Startseite (Dashboard)"""
     return FileResponse(TEMPLATES_DIR / "index.html")
 
 @app.get("/index.html")
+# GET /index.html - Gibt die Dashboard-Seite (index.html) als FileResponse zurück.
 def index_page():
     return FileResponse(TEMPLATES_DIR / "index.html")
 
 @app.get("/transactions.html")
+# GET /transactions.html - Gibt die Transaktionsseite als FileResponse zurück.
 def transactions_page():
     return FileResponse(TEMPLATES_DIR / "transactions.html")
 
 @app.get("/kategorien.html")
+# GET /kategorien.html - Gibt die Kategorienseite als FileResponse zurück.
 def kategorien_page():
     return FileResponse(TEMPLATES_DIR / "kategorien.html")
 
 @app.get("/konten.html")
+# GET /konten.html - Gibt die Kontenseite als FileResponse zurück.
 def konten_page():
     return FileResponse(TEMPLATES_DIR / "konten.html")
 
 @app.get("/zinsrechner.html")
+# GET /zinsrechner.html - Gibt die Zinsrechner-Seite als FileResponse zurück.
 def zinsrechner_page():
     return FileResponse(TEMPLATES_DIR / "zinsrechner.html")
 
 @app.get("/finanz-buddy.html")
+# GET /finanz-buddy.html - Gibt die Chatbot-Seite (Finanz-Buddy) als FileResponse zurück.
 def chatbot_page():
     return FileResponse(TEMPLATES_DIR / "finanz-buddy.html")
 

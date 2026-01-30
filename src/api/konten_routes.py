@@ -11,45 +11,29 @@ from .schemas import KontoCreate, KontoUpdate, KontoResponse
 from .dependencies import get_db
 from .helpers import get_or_404
 
+
 router = APIRouter(prefix="/konten", tags=["Konten"])
-
-
-# ==================== HILFSFUNKTIONEN ====================
-
-
-def get_konto_or_404(konto_id: int, db: Session):
-    """Konto laden oder 404 werfen"""
-    return get_or_404(db, Konto, konto_id, detail="Konto nicht gefunden")
-
 
 # ==================== ENDPUNKTE ====================
 
-
-@router.get(
-    "",
-    response_model=List[KontoResponse],
-)
+@router.get("", response_model=List[KontoResponse])
+# GET /konten - Gibt eine Liste aller Konten zurück (id, kontoname, kontonummer, bankname, kontostand, kontotyp, waehrung, iban, bic, farbe).
 def get_konten(db: Session = Depends(get_db)):
     """Alle Konten abrufen (mit Initialstand)"""
     konten = db.query(Konto).all()
     return konten
 
 
-@router.get(
-    "/{konto_id}",
-    response_model=KontoResponse,
-)
+@router.get("/{konto_id}", response_model=KontoResponse)
+# GET /konten/{id} - Gibt ein Konto-Objekt zurück (id, kontoname, kontonummer, bankname, kontostand, kontotyp, waehrung, iban, bic, farbe).
 def get_konto(konto_id: int, db: Session = Depends(get_db)):
     """Ein einzelnes Konto abrufen (mit Initialstand)"""
-    konto = get_konto_or_404(konto_id, db)
+    konto = get_or_404(db, Konto, konto_id, detail="Konto nicht gefunden")
     return konto
 
 
-@router.post(
-    "",
-    response_model=KontoResponse,
-    status_code=201,
-)
+@router.post("", response_model=KontoResponse, status_code=201)
+# POST /konten - Erstellt ein neues Konto und gibt das erstellte Konto-Objekt zurück.
 def create_konto(konto: KontoCreate, db: Session = Depends(get_db)):
     """Neues Konto erstellen"""
     # Prüfe ob Kontoname schon existiert
@@ -80,17 +64,15 @@ def create_konto(konto: KontoCreate, db: Session = Depends(get_db)):
     return new_konto
 
 
-@router.put(
-    "/{konto_id}",
-    response_model=KontoResponse,
-)
+@router.put("/{konto_id}", response_model=KontoResponse)
+# PUT /konten/{id} - Aktualisiert ein Konto und gibt das aktualisierte Konto-Objekt zurück.
 def update_konto(
     konto_id: int,
     konto_update: KontoUpdate,
     db: Session = Depends(get_db),
 ):
     """Konto aktualisieren"""
-    db_konto = get_konto_or_404(konto_id, db)
+    db_konto = get_or_404(db, Konto, konto_id, detail="Konto nicht gefunden")
 
     # Prüfe ob neuer Kontoname schon existiert (falls er geändert wird)
     if konto_update.kontoname and konto_update.kontoname != db_konto.kontoname:
@@ -109,10 +91,8 @@ def update_konto(
     return db_konto
 
 
-@router.delete(
-    "/{konto_id}",
-    status_code=204,
-)
+@router.delete("/{konto_id}",status_code=204)
+# DELETE /konten/{id} - Löscht ein Konto samt Transaktionen, gibt keinen Inhalt zurück (204 No Content).
 def delete_konto(konto_id: int, db: Session = Depends(get_db)):
     """Konto löschen (mit allen zugehörigen Transaktionen)"""
     success = KontoManager.lösche_konto(db, konto_id)
@@ -122,9 +102,10 @@ def delete_konto(konto_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/{konto_id}/saldo")
+# GET /konten/{id}/saldo - Gibt ein Dict mit konto_id, initialstand und aktueller_saldo (berechnet aus Transaktionen) zurück.
 def get_konto_saldo(konto_id: int, db: Session = Depends(get_db)):
     """Aktuellen Kontostand eines Kontos abrufen (Initialstand + Transaktionen)"""
-    konto = get_konto_or_404(konto_id, db)
+    konto = get_or_404(db, Konto, konto_id, detail="Konto nicht gefunden")
 
     # Berechne aktuellen Kontostand aus Transaktionen
     aktueller_saldo = KontoManager.berechne_kontostand_aus_transaktionen(
@@ -139,6 +120,7 @@ def get_konto_saldo(konto_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/stats/summary")
+# GET /konten/stats/summary - Gibt ein Dict mit total_saldo, konto_count und Liste aller Konten (id, kontoname, kontostand, waehrung) zurück.
 def get_konto_summary(db: Session = Depends(get_db)):
     """Konto-Zusammenfassung (Gesamtsaldo, Kontenanzahl, etc.)"""
     konten = db.query(Konto).all()

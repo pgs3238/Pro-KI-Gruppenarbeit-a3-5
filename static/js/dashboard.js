@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 // Dashboard Daten laden
+// Lädt alle Dashboard-Daten (parallel)
 async function loadDashboardData() {
   try {
     await Promise.all([
@@ -24,6 +25,8 @@ async function loadDashboardData() {
 }
 
 // KPIs laden
+// Lädt KPIs (Einnahmen, Ausgaben, Bilanz) für den aktuellen Monat.
+// Berechnet auch Trends im Vergleich zum Vormonat.
 async function loadKPIs() {
   try {
     // 1. Transaktionen laden (unformatiert für Berechnungen)
@@ -85,7 +88,7 @@ async function loadKPIs() {
     document.getElementById("monthlyBalance").textContent = formatCurrency(monthlyBalance);
 
     // 3. Berechne prozentuale Veränderungen zum vorherigen Monat
-    // Income Change
+    // Einkommensveränderung
     const incomeChangeElem = document.getElementById("incomeChange");
     if (previousMonthIncome > 0) {
       const incomeChangePercent = (((monthlyIncome - previousMonthIncome) / previousMonthIncome) * 100).toFixed(1);
@@ -96,7 +99,7 @@ async function loadKPIs() {
       incomeChangeElem.className = "kpi-change";
     }
 
-    // Expense Change
+    // Ausgabenveränderung
     const expensesChangeElem = document.getElementById("expensesChange");
     if (previousMonthExpenses > 0) {
       const expensesChangePercent = (((monthlyExpenses - previousMonthExpenses) / previousMonthExpenses) * 100).toFixed(1);
@@ -107,7 +110,7 @@ async function loadKPIs() {
       expensesChangeElem.className = "kpi-change";
     }
 
-    // 4. Bilanz-Indicator
+    // 4. Bilanz-Indikator
     const balanceChangePercent = document.getElementById("balanceChangePercent");
     if (monthlyBalance >= 0) {
       balanceChangePercent.textContent = "✓ Positiv";
@@ -124,6 +127,9 @@ async function loadKPIs() {
 }
 
 // Konten Preview laden (für KPI-Karte)
+/**
+ * Lädt eine kleine Vorschau der Konten für die KPI-Karte (als Icons).
+ */
 async function loadAccountsPreview() {
   try {
     const accounts = await fetchKonten();
@@ -154,6 +160,7 @@ async function loadAccountsPreview() {
 }
 
 // Transaktionen Preview laden
+// Lädt letzte Transaktionen für Dashboard-Vorschau.
 async function loadTransactionsPreview() {
   try {
     const [transactionsRes, kontos] = await Promise.all([
@@ -215,6 +222,7 @@ async function loadTransactionsPreview() {
 }
 
 // Kategorien Preview laden
+// Lädt Top Kategorien (Ausgaben) der letzten 30 Tage.
 async function loadCategoriesPreview() {
   try {
     const [transactionsRes, kategorien] = await Promise.all([
@@ -295,6 +303,10 @@ async function loadCategoriesPreview() {
 }
 
 // Einnahmen & Ausgaben Trend Chart laden
+/**
+ * Lädt Diagrammdaten für den Einnahmen/Ausgaben-Verlauf der letzten 6 Monate.
+ * Erstellt ein Line-Chart mit Chart.js.
+ */
 async function loadExpensesTrend() {
   try {
     const response = await fetch(`${API_BASE_URL}/transactions?days=180&limit=10000`);
@@ -445,6 +457,7 @@ let sankeyCurrentMonth = new Date().getMonth() + 1; // 1-12
 // Nutzt MONTH_NAMES_DE aus constants.js
 
 // Monatslabel aktualisieren
+// Aktualisiert das Text-Label für den aktuellen Sankey-Monat (z.B. "Januar 2026").
 function updateSankeyMonthLabel() {
   const label = document.getElementById('sankeyMonthLabel');
   if (label) {
@@ -453,6 +466,7 @@ function updateSankeyMonthLabel() {
 }
 
 // Sankey-Diagramm laden
+// Lädt Sankey-Diagramm für gewählten Monat und Jahr.
 async function loadSankeyChart() {
   const sankeyElement = document.getElementById('sankeyChart');
   if (!sankeyElement) return;
@@ -528,6 +542,7 @@ async function loadSankeyChart() {
 }
 
 // Monat wechseln
+// Ändert Monat für Sankey-Diagramm
 function changeSankeyMonth(delta) {
   sankeyCurrentMonth += delta;
 
@@ -545,6 +560,9 @@ function changeSankeyMonth(delta) {
 }
 
 // Event-Listener für Monatspfeile
+/**
+ * Richtet Event-Listener für die Monats-Navigation beim Sankey-Diagramm ein.
+ */
 function setupSankeyControls() {
   const prevBtn = document.getElementById('sankeyPrevMonth');
   const nextBtn = document.getElementById('sankeyNextMonth');

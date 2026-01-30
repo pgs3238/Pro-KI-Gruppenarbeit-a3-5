@@ -1,9 +1,7 @@
-// ==================== API KEY MANAGEMENT ====================
+// ==================== API-SCHLÜSSEL-VERWALTUNG ====================
 // Nutzt API_BASE_URL aus utils.js
 
-/**
- * Lädt den Status des API-Keys vom Server
- */
+// Lädt den Status des API-Schlüssels vom Server
 async function loadApiKeyStatus() {
     try {
         const response = await fetch(`${API_BASE_URL}/settings/api-key/status`);
@@ -11,7 +9,7 @@ async function loadApiKeyStatus() {
 
         const data = await response.json();
 
-        // Zeige masked key im Input-Feld wenn vorhanden
+        // Zeige maskierten Schlüssel im Eingabefeld, falls vorhanden
         const apiKeyInput = document.getElementById('apiKeyInput');
         if (apiKeyInput && data.masked_key) {
             apiKeyInput.placeholder = `Aktuell: ${data.masked_key}`;
@@ -24,9 +22,7 @@ async function loadApiKeyStatus() {
     }
 }
 
-/**
- * Speichert den API-Key auf dem Server (in .env-Datei)
- */
+// Speichert den API-Schlüssel auf dem Server
 async function saveApiKey(apiKey) {
     try {
         const response = await fetch(`${API_BASE_URL}/settings/api-key`, {
@@ -50,15 +46,13 @@ async function saveApiKey(apiKey) {
     }
 }
 
-/**
- * Initialisiert den API-Key Modal Dialog
- */
+// Initialisiert das API-Schlüssel-Modal
 function initApiKeyModal() {
     // Lade aktuellen Status beim Öffnen des Modals
     const modal = document.getElementById('apiKeyModal');
     if (!modal) return;
 
-    // Event Listener für den Einstellungs-Button
+    // Event-Listener für den Einstellungs-Button
     const settingsBtn = document.querySelector('.icon-btn[onclick*="apiKeyModal"]');
     if (settingsBtn) {
         // Entferne das onclick-Attribut und verwende stattdessen addEventListener
@@ -69,7 +63,7 @@ function initApiKeyModal() {
         });
     }
 
-    // Event Listener für den Speichern-Button
+    // Event-Listener für den Speichern-Button
     const saveBtn = document.querySelector('.api-btn-save');
     if (saveBtn) {
         // Entferne alte Event Listener falls vorhanden
@@ -85,7 +79,7 @@ function initApiKeyModal() {
                 return;
             }
 
-            // Zeige Loading-Zustand
+            // Zeige Ladezustand
             newSaveBtn.disabled = true;
             newSaveBtn.textContent = 'Speichert...';
 

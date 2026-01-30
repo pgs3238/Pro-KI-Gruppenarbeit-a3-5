@@ -6,9 +6,8 @@ from datetime import datetime
 
 Base = (declarative_base())  # Basisklasse für alle ORM-Modelle um Tabellen in der Datenbank zu repräsentieren
 
-
+# Konto Model: Repräsentiert ein Bankkonto mit allen Stammdaten.
 class Konto(Base):  # Erbt von Base und repräsentiert die "konten" Tabelle in der Datenbank
-    """Bankkonto mit Kontostand und Kontoinformationen"""
 
     __tablename__ = "konten"
 
@@ -36,10 +35,8 @@ class Konto(Base):  # Erbt von Base und repräsentiert die "konten" Tabelle in d
         return f"<Konto(id={self.id}, kontoname='{self.kontoname}', kontostand={self.kontostand}€, iban='{self.iban}')>"
 
 
-class Transaktion(
-    Base
-):  # Erbt von Base und repräsentiert die "transaktionen" Tabelle in der Datenbank
-    """Transaktion für Einnahmen und Ausgaben"""
+# Transaktion Model: Einzelne Buchung (Einnahme/Ausgabe) mit Verknüpfung zu Konto und Kategorie.
+class Transaktion(Base):  # Erbt von Base und repräsentiert die "transaktionen" Tabelle in der Datenbank
 
     __tablename__ = "transaktionen"
 
@@ -68,11 +65,8 @@ class Transaktion(
         return f"<Transaktion(id={self.id}, buchungstag={self.buchungstag}, beguenstigter='{self.beguenstigter}', betrag={self.betrag})>"
 
 
+# Category Model: Stammdaten für Kategorien (Name, Typ, Icon, Farbe).
 class Category(Base):  # Erbt von Base und repräsentiert die "categories" Tabelle
-    """
-    Kategorie-Modell für die Klassifizierung von Transaktionen.
-    Jede Transaktion kann einer Kategorie zugeordnet werden (z.B. Lebensmittel, Miete, Gehalt).
-    """
 
     __tablename__ = "categories"
 
@@ -94,11 +88,8 @@ class Category(Base):  # Erbt von Base und repräsentiert die "categories" Tabel
         return f"<Category(name='{self.name}', category_type='{self.category_type}')>"
 
 
+# CategoryRules Model: Speichert Keywords für die automatische Kategorisierung.
 class CategoryRules(Base):
-    """
-    Kategorisierungsregeln für automatische Zuordnung von Transaktionen zu Kategorien basierend auf Schlüsselwörtern.
-    Erweitert oder überschreibt Standard-Regeld aus dem Code.
-    """
 
     __tablename__ = "category_rules"
 
@@ -114,11 +105,8 @@ class CategoryRules(Base):
         return f"<CategoryRules(category_name='{self.category_name}', keywords='{self.keywords}')>"
 
 
+# CategorizationState Model: Singleton-Tabelle für Status der Auto-Kategorisierung (Performance-Optimierung).
 class CategorizationState(Base):
-    """
-    Categorization-Status für Auto-Kategorisierung.
-    Singleton-Tabelle mit nur einem Eintrag (id=1).
-    """
 
     __tablename__ = "categorization_state"
 

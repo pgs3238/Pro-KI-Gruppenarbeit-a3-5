@@ -5,6 +5,7 @@
 let categoriesData = [];
 
 // Kategorien laden und anzeigen
+// Lädt die Kategorien vom Backend und triggert das Rendering
 async function loadCategories() {
     try {
         const categories = await fetchCategories();
@@ -17,6 +18,7 @@ async function loadCategories() {
 }
 
 // Kategorien rendern
+// Rendert die geladenen Kategorien in die Listen (Einnahmen/Ausgaben) und aktualisiert Zähler
 function renderCategories(categories) {
     console.log('Alle Kategorien erhalten vom Backend:', categories);
 
@@ -60,6 +62,7 @@ function renderCategories(categories) {
 }
 
 // Kategorie-Item erstellen
+// Erstellt das HTML-Element für eine einzelne Kategorie-Karte
 function createCategoryItem(category) {
     const item = document.createElement('div');
     item.className = 'category-item';
@@ -98,6 +101,7 @@ function createCategoryItem(category) {
 }
 
 // Kategorie bearbeiten
+// Öffnet das Modal zum Bearbeiten einer Kategorie und füllt das Formular
 function editCategory(id) {
     const category = categoriesData.find(c => c.id === id);
     if (!category) return;
@@ -130,6 +134,7 @@ function editCategory(id) {
 }
 
 // Kategorie löschen
+// Löscht eine Kategorie nach Bestätigung
 async function deleteCategory(id) {
     const category = categoriesData.find(c => c.id === id);
     if (!category) return;
@@ -159,6 +164,7 @@ async function deleteCategory(id) {
 const modal = document.getElementById('categoryModal');
 const selects = document.querySelectorAll('select.form-control');
 
+// Öffnet das Modal zum Erstellen oder Bearbeiten einer Kategorie (setzt Defaults)
 function openCategoryModal() {
     // Stelle sicher, dass ein Typ ausgewählt ist (Standard: Ausgabe)
     const typSelect = document.querySelector('select[name="typ"]');
@@ -181,6 +187,7 @@ function openCategoryModal() {
     modal.classList.add('active');
 }
 
+// Schließt das Kategorie-Modal und setzt das Formular zurück
 function closeCategoryModal() {
     modal.classList.remove('active');
     document.getElementById('categoryForm').reset();
@@ -193,7 +200,7 @@ modal.addEventListener('click', (e) => {
     if (e.target === modal) closeCategoryModal();
 });
 
-// Form Submit
+// Formular absenden
 document.getElementById('categoryForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.target;
@@ -257,7 +264,7 @@ document.getElementById('categoryForm').addEventListener('submit', async (e) => 
     }
 });
 
-// Select Placeholder Styling
+// Select-Placeholder-Styling
 wireSelectEmptyClasses(selects);
 
 document.getElementById('categoryForm').addEventListener('reset', () => {
@@ -289,6 +296,7 @@ loadCategories();
 let currentRulesCategory = null;
 let currentRulesCategoryId = null;
 
+// Öffnet das Regeln-Modal für Keywords einer Kategorie und lädt bestehende Keywords
 function openRulesModal(categoryId, categoryName) {
     currentRulesCategory = categoryName;
     currentRulesCategoryId = categoryId;
@@ -306,6 +314,7 @@ function openRulesModal(categoryId, categoryName) {
     }
 }
 
+// Schließt das Regeln-Modal
 function closeRulesModal() {
     document.getElementById('rulesModal').classList.remove('active');
     document.getElementById('newKeywordInput').value = '';
@@ -313,6 +322,7 @@ function closeRulesModal() {
     currentRulesCategoryId = null;
 }
 
+// Lädt die Keywords (Regeln) für eine Kategorie vom Backend
 async function loadKeywords(categoryId) {
     try {
         const response = await fetch(`${API_BASE_URL}/categories/${categoryId}/rules`);
@@ -347,6 +357,7 @@ async function loadKeywords(categoryId) {
     }
 }
 
+// Fügt ein neues Keyword zur aktuellen Kategorie hinzu
 async function addKeyword() {
     const input = document.getElementById('newKeywordInput');
     const keyword = input.value.trim().toLowerCase();
@@ -380,6 +391,7 @@ async function addKeyword() {
     }
 }
 
+// Entfernt ein Keyword aus der aktuellen Kategorie
 async function removeKeyword(keyword) {
     if (confirm(`Schlüsselwort "${keyword}" wirklich entfernen?`)) {
         try {
@@ -406,7 +418,7 @@ function testRules() {
     showToast('Regeln werden automatisch beim Kategorisieren verwendet.', 'info', 5000);
 }
 
-// Modal Click Outside
+// Modal-Klick außerhalb
 document.getElementById('rulesModal')?.addEventListener('click', (e) => {
     if (e.target.id === 'rulesModal') closeRulesModal();
 });
