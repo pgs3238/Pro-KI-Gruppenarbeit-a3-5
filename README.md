@@ -200,7 +200,41 @@ Das Datenbank-Modul verwaltet die Datenpersistenz mit SQLAlchemy ORM und SQLite.
 **Umgesetzt von:** *Emil Horstmann*
 
 ---
+## Hinweise zur Ausführung
 
+### 🚀 Schnellstart (Windows)
+
+1. **Doppelklicke auf `start.bat`** im Hauptordner
+2. Das Skript prüft alles, startet den Server und öffnet deinen Browser automatisch
+3. Fertig! 🎉
+
+### 🍎 Schnellstart (Mac/Linux)
+
+1. **Terminal öffnen** und zum Projektordner navigieren
+2. `./start.sh` ausführen
+3. Browser öffnet sich automatisch
+
+### 🛠️ Manuelle Installation
+
+```powershell
+# 1. Umgebung erstellen & aktivieren
+python -m venv venv
+.\venv\Scripts\activate  # Windows
+source venv/bin/activate # Mac/Linux
+
+# 2. Abhängigkeiten installieren
+pip install -r requirements.txt
+
+# 3. Optional: API-Key konfigurieren (.env Datei)
+GEMINI_API_KEY=dein_key_hier
+
+# 4. Server starten
+python -m uvicorn src.api.main:app --reload
+```
+
+Browser öffnen: http://127.0.0.1:8000
+
+---
 ## Aufbau des Projektes
 
 ### Projektstruktur
@@ -457,41 +491,7 @@ src/chatbot/
 
 ---
 
-## Hinweise zur Ausführung
 
-### 🚀 Schnellstart (Windows)
-
-1. **Doppelklicke auf `start.bat`** im Hauptordner
-2. Das Skript prüft alles, startet den Server und öffnet deinen Browser automatisch
-3. Fertig! 🎉
-
-### 🍎 Schnellstart (Mac/Linux)
-
-1. **Terminal öffnen** und zum Projektordner navigieren
-2. `./start.sh` ausführen
-3. Browser öffnet sich automatisch
-
-### 🛠️ Manuelle Installation
-
-```powershell
-# 1. Umgebung erstellen & aktivieren
-python -m venv venv
-.\venv\Scripts\activate  # Windows
-source venv/bin/activate # Mac/Linux
-
-# 2. Abhängigkeiten installieren
-pip install -r requirements.txt
-
-# 3. Optional: API-Key konfigurieren (.env Datei)
-GEMINI_API_KEY=dein_key_hier
-
-# 4. Server starten
-python -m uvicorn src.api.main:app --reload
-```
-
-Browser öffnen: http://127.0.0.1:8000
-
----
 
 ## Trennung der Verantwortlichkeit
 
