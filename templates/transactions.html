@@ -499,16 +499,20 @@
       formData.append("konto_id", kontoSelect.value);
 
       try {
-        const response = await fetch("/transactions/import", {
+        //const response = await fetch("/transactions/import", {
+        const response = await fetch("http://localhost:8000/transactions/import", {
           method: "POST",
           body: formData
         });
+     
 
         const data = await response.json();
+        console.log("Daten für Toast:", data);
+        
 
         if (!response.ok) {
           const errorMessage = data.detail || data.message || "Unbekannter Fehler";
-          showToast(data.detail, "error");
+          showToast(data.message, "error");
         } else {
           showToast(data.message || "Import erfolgreich", "success");
           form.reset();

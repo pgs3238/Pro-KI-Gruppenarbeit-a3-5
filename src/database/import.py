@@ -70,29 +70,46 @@ async def import_transactions(
 
         session = SessionLocal()
 
-        try:
-            importer = CSVTransaktionImporter(
-                session=session,
-                mapping=mapping,
-                header_row=header_row,
-                skip_footer=skip_footer,
-                konto_id=konto_id
-            )
-            importer.import_csv(tmp_path)
+        #try:
+        importer = CSVTransaktionImporter(
+            session=session,
+            mapping=mapping,
+            header_row=header_row,
+            skip_footer=skip_footer,
+            konto_id=konto_id
+        )
+        importer.import_csv(tmp_path)
                 
-            return JSONResponse(status_code=200, content={
-                "status": "success",
-                "message": f"Import erfolgreich für Konto {konto_id}"
-            })
-
-        #return {"status": "success"}
-        finally:
-            session.close()
-            tmp_path.unlink(missing_ok=True)
-
-    except Exception as e:
-        # Catch-all for unexpected errors
+        return JSONResponse(status_code=200, content={
+            "status": "success",
+            "message": f"Import erfolgreich für Konto {konto_id}"
+        })
+    
+    except ValueError as e:
+        # HIER wird dein "Spalte Betra nicht gefunden"-Fehler gefangen!
         return JSONResponse(status_code=400, content={
             "status": "error",
             "message": str(e)
         })
+        
+    
+    except Exception as e:
+        # Catch-all for unexpected errors
+        return JSONResponse(status_code=500, content={
+            "status": "error",
+            "message": str(e)
+        })
+        
+
+    #return {"status": "success"}
+    finally:
+        if session:
+            session.close()
+        if tmp_path and tmp_path.exists():
+            try: 
+                # tmp_path.unlink(missing_ok=True)
+                tmp_path.unlink()
+            except Exception as e:
+                print(f"Cleanup Error: {e}")
+
+    
