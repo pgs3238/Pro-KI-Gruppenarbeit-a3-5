@@ -100,12 +100,11 @@ Das Categories-Modul ermöglicht die automatische Zuordnung von Transaktionen zu
 
 - **Hauptklasse `AutoCategorizerService`**: Orchestriert iterative Kategorisierungs- und Lernzyklen
 - **Iterativer Lernzyklus** (`run_full_categorization_cycle()`):
-
-1. Kategorisiert alle unkategorisierten Transaktionen
-2. Zählt aktuelle Keywords
-3. Lernt neue Keywords aus kategorisierten Transaktionen
-4. Prüft ob neue Keywords hinzugefügt wurden
-5. Wiederholt Prozess bis keine neuen Keywords mehr gefunden werden
+  1. Kategorisiert alle unkategorisierten Transaktionen
+  2. Zählt aktuelle Keywords
+  3. Lernt neue Keywords aus kategorisierten Transaktionen
+  4. Prüft ob neue Keywords hinzugefügt wurden
+  5. Wiederholt Prozess bis keine neuen Keywords mehr gefunden werden
 
 - **Automatische Trigger**:
   - **Backend-Start**: Prüft beim Starten der Anwendung automatisch auf neue Transaktionen und führt bei Bedarf einen Lernzyklus aus
