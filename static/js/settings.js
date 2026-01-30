@@ -1,5 +1,4 @@
 // ==================== API-SCHLÜSSEL-VERWALTUNG ====================
-// Nutzt API_BASE_URL aus utils.js
 
 // Lädt den Status des API-Schlüssels vom Server
 async function loadApiKeyStatus() {

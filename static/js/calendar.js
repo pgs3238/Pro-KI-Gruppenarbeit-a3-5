@@ -1,8 +1,5 @@
 // ==================== KALENDER FUNKTIONEN ====================
 
-/**
- * Setze aktuelles Datum als Standardwert
- */
 // Setzt aktuelles Datum als Standardwert
 function setCurrentDate() {
     const datumInput = document.getElementById('datumInput');
@@ -14,9 +11,6 @@ function setCurrentDate() {
     datumInput.value = formatDateDE(today, { pad: true });
 }
 
-/**
- * Kalender umschalten
- */
 // Schaltet Kalender-Sichtbarkeit um
 function toggleCalendar() {
     const calendar = document.getElementById('customCalendar');
@@ -27,9 +21,6 @@ function toggleCalendar() {
     }
 }
 
-/**
- * Wechsel Monat im Kalender
- */
 // Wechselt Kalender-Monat (direction: -1 oder +1)
 function changeMonth(direction) {
     if (!window.currentMonth) window.currentMonth = new Date();
@@ -37,9 +28,6 @@ function changeMonth(direction) {
     renderCalendar();
 }
 
-/**
- * Rendere Kalender
- */
 // Rendert den Kalender für den aktuellen Monat
 function renderCalendar() {
     if (!window.currentMonth) window.currentMonth = new Date();
@@ -76,9 +64,6 @@ function renderCalendar() {
     }
 }
 
-/**
- * Wähle Datum im Kalender
- */
 // Wählt ein Datum aus und aktualisiert Input
 function selectDate(day) {
     if (!window.currentMonth) window.currentMonth = new Date();

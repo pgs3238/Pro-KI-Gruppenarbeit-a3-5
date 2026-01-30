@@ -1,10 +1,6 @@
-// ============ KATEGORIEN JAVASCRIPT ============
-// Nutzt API_BASE_URL aus utils.js und CATEGORY_ICON_MAP/CATEGORY_COLOR_MAP aus constants.js
-
 // ============ KATEGORIEN VON BACKEND LADEN ============
 let categoriesData = [];
 
-// Kategorien laden und anzeigen
 // Lädt die Kategorien vom Backend und triggert das Rendering
 async function loadCategories() {
     try {
@@ -17,7 +13,6 @@ async function loadCategories() {
     }
 }
 
-// Kategorien rendern
 // Rendert die geladenen Kategorien in die Listen (Einnahmen/Ausgaben) und aktualisiert Zähler
 function renderCategories(categories) {
     console.log('Alle Kategorien erhalten vom Backend:', categories);
@@ -61,7 +56,6 @@ function renderCategories(categories) {
     }
 }
 
-// Kategorie-Item erstellen
 // Erstellt das HTML-Element für eine einzelne Kategorie-Karte
 function createCategoryItem(category) {
     const item = document.createElement('div');
@@ -100,7 +94,6 @@ function createCategoryItem(category) {
     return item;
 }
 
-// Kategorie bearbeiten
 // Öffnet das Modal zum Bearbeiten einer Kategorie und füllt das Formular
 function editCategory(id) {
     const category = categoriesData.find(c => c.id === id);
@@ -133,7 +126,6 @@ function editCategory(id) {
     openCategoryModal();
 }
 
-// Kategorie löschen
 // Löscht eine Kategorie nach Bestätigung
 async function deleteCategory(id) {
     const category = categoriesData.find(c => c.id === id);

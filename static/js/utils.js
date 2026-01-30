@@ -48,17 +48,13 @@ function formatCurrency(amount) {
     }).format(amount);
 }
 
-// Formatiert IBAN mit Leerzeichen
-// @param {string} iban - Die unformatierte IBAN
-// @returns {string} Formatierte IBAN
+// Formatiert eine IBAN mit Leerzeichen für bessere Lesbarkeit.
 function formatIBAN(iban) {
     if (!iban) return '';
     return iban.match(/.{1,4}/g).join(' ');
 }
 
-// Formatiert IBAN-Eingabe (entfernt ungültige Zeichen)(Input-Handler).
-// @param {string} iban - Der aktuelle Eingabewert
-// @returns {string} Formatierte IBAN für das Input-Feld
+// Formatiert die IBAN-Eingabe dynamisch während des Tippens.
 function formatIBANInput(iban) {
     const cleaned = iban.replace(/\s/g, '').toUpperCase();
     return cleaned.match(/.{1,4}/g)?.join(' ') || cleaned;
@@ -66,9 +62,7 @@ function formatIBANInput(iban) {
 
 // ============ DATUM ============
 
-// Formatiert ein Datum ins deutsche Format.
-// @param {Date|string|number} input
-// @param {{ pad?: boolean }} options
+// Formatiert ein Datum oder Zeitstempel in das deutsche Format (Tag.Monat.Jahr).
 function formatDateDE(input, options = {}) {
     const { pad = true } = options;
     const d = input instanceof Date ? input : new Date(input);
@@ -81,9 +75,7 @@ function formatDateDE(input, options = {}) {
 
 // ============ SELECT-HELFER ============
 
-// Setzt oder entfernt die 'empty' CSS-Klasse für Select-Elemente.
-// Hilft beim Styling von Placeholder-Optionen.
-// @param {HTMLSelectElement} select - Das Select-Element
+// Setzt oder entfernt die 'empty' CSS-Klasse für Select-Elemente basierend auf dem Wert.
 function updateSelectEmptyClass(select) {
     if (!select) return;
     if (select.value === "") {
@@ -93,15 +85,13 @@ function updateSelectEmptyClass(select) {
     }
 }
 
-// Aktualisiert Klassen für einzelne Selects
-// @param {NodeList|Array} selects - Liste von Select-Elementen
+// Aktualisiert die 'empty' Klasse für eine Liste von Selects.
 function updateSelectEmptyClasses(selects) {
     if (!selects) return;
     selects.forEach(select => updateSelectEmptyClass(select));
 }
 
-// Setzt Klassen für leere Selects (Placeholder-Styling)
-// @param {NodeList|Array} selects - Liste von Select-Elementen
+// Initialisiert Event-Listener für das 'empty' Styling von Selects.
 function wireSelectEmptyClasses(selects) {
     if (!selects) return;
     selects.forEach(select => {
@@ -112,9 +102,7 @@ function wireSelectEmptyClasses(selects) {
 
 // ============ ICONS ============
 
-// Gibt Icon für Kontotyp zurück
-// @param {string} typ - Der Kontotyp (Girokonto, Sparkonto, etc.)
-// @returns {string} Das Icon als Emoji
+// Gibt das passende Emoji-Icon für einen Kontotyp zurück.
 function getAccountIcon(typ) {
     const key = (typ || '').toString().toLowerCase();
     return ACCOUNT_TYPE_ICON_MAP[key] || DEFAULT_ACCOUNT_ICON;
@@ -122,9 +110,7 @@ function getAccountIcon(typ) {
 
 // ============ API-HELFER ============
 
-// Generische Fetch-Funktion mit Fehlerbehandlung
-// @param {string} path - Der API-Pfad (z.B. '/konten')
-// @returns {Promise<any>} Die JSON-Antwort
+// Führt einen GET-Request gegen die API aus und gibt JSON zurück.
 async function apiGetJson(path) {
     const response = await fetch(`${API_BASE_URL}${path}`);
     if (!response.ok) {
@@ -133,21 +119,17 @@ async function apiGetJson(path) {
     return await response.json();
 }
 
-// Lädt Konten via API
-// @returns {Promise<Array>} Liste der Konten
+// Lädt die Liste aller Konten von der API.
 async function fetchKonten() {
     return await apiGetJson('/konten');
 }
 
-// Lädt Kontosaldo via API
-// @param {number} kontoId - ID des Kontos
-// @returns {Promise<Object>} Saldo-Objekt
+// Lädt den aktuellen Saldo eines spezifischen Kontos.
 async function fetchKontoSaldo(kontoId) {
     return await apiGetJson(`/konten/${kontoId}/saldo`);
 }
 
-// Lädt Kategorien via API
-// @returns {Promise<Array>} Liste der Kategorien
+// Lädt die Liste aller Kategorien von der API.
 async function fetchCategories() {
     return await apiGetJson('/categories');
 }

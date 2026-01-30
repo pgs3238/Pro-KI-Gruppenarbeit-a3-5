@@ -1,5 +1,4 @@
 // ============ KONTEN JAVASCRIPT ============
-// Nutzt API_BASE_URL aus utils.js
 
 // ============ BEISPIELDATEN (FALLBACK) ============
 let accountsData = [];
@@ -124,7 +123,6 @@ async function deleteAccountAPI(konto_id) {
     }
 }
 
-// ============ KONTEN LADEN UND ANZEIGEN ============
 // Rendert die Konten-Karten (Cards) und die Übersichtskarte in das Grid
 function loadAccounts() {
     const grid = document.getElementById('accountsGrid');
@@ -179,7 +177,6 @@ function loadAccounts() {
     });
 }
 
-// Hilfsfunktionen
 // Formatiert den internen Kontotyp (slug) in eine lesbare Darstellung
 function formatAccountType(typ) {
     const types = {
@@ -193,7 +190,6 @@ function formatAccountType(typ) {
     return types[typ] || typ;
 }
 
-// Konto bearbeiten
 // Öffnet das Modal zum Bearbeiten eines Kontos
 function editAccount(id) {
     const account = accountsData.find(a => a.id === id);
@@ -213,7 +209,6 @@ function editAccount(id) {
     openAccountModal();
 }
 
-// Konto löschen
 // Löscht ein Konto nach Bestätigung
 function deleteAccount(id) {
     if (confirm('Möchten Sie dieses Konto wirklich löschen?')) {

@@ -1,5 +1,4 @@
 // ==================== MODAL FUNKTIONEN ====================
-// Modal öffnen
 function openModal() {
     const modal = document.getElementById('transactionModal');
     if (!modal) return;

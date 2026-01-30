@@ -1,5 +1,4 @@
 // ==================== CHATBOT JAVASCRIPT ====================
-// Nutzt API_BASE_URL aus utils.js
 
 // Elemente aus dem HTML holen
 const chatMessages = document.getElementById("chatMessages");

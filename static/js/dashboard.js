@@ -1,5 +1,3 @@
-// Dashboard JavaScript - nutzt utils.js für gemeinsame Funktionen
-
 // Daten beim Laden der Seite abrufen
 document.addEventListener("DOMContentLoaded", async () => {
   setupSankeyControls();  // Event-Listener für Monatspfeile
@@ -159,7 +157,6 @@ async function loadAccountsPreview() {
   }
 }
 
-// Transaktionen Preview laden
 // Lädt letzte Transaktionen für Dashboard-Vorschau.
 async function loadTransactionsPreview() {
   try {
@@ -221,7 +218,6 @@ async function loadTransactionsPreview() {
   }
 }
 
-// Kategorien Preview laden
 // Lädt Top Kategorien (Ausgaben) der letzten 30 Tage.
 async function loadCategoriesPreview() {
   try {
@@ -302,11 +298,7 @@ async function loadCategoriesPreview() {
   }
 }
 
-// Einnahmen & Ausgaben Trend Chart laden
-/**
- * Lädt Diagrammdaten für den Einnahmen/Ausgaben-Verlauf der letzten 6 Monate.
- * Erstellt ein Line-Chart mit Chart.js.
- */
+// Lädt Diagrammdaten für den Einnahmen/Ausgaben-Verlauf der letzten 6 Monate.
 async function loadExpensesTrend() {
   try {
     const response = await fetch(`${API_BASE_URL}/transactions?days=180&limit=10000`);
@@ -454,8 +446,6 @@ async function loadExpensesTrend() {
 let sankeyCurrentYear = new Date().getFullYear();
 let sankeyCurrentMonth = new Date().getMonth() + 1; // 1-12
 
-// Nutzt MONTH_NAMES_DE aus constants.js
-
 // Monatslabel aktualisieren
 // Aktualisiert das Text-Label für den aktuellen Sankey-Monat (z.B. "Januar 2026").
 function updateSankeyMonthLabel() {
@@ -541,7 +531,6 @@ async function loadSankeyChart() {
   }
 }
 
-// Monat wechseln
 // Ändert Monat für Sankey-Diagramm
 function changeSankeyMonth(delta) {
   sankeyCurrentMonth += delta;
@@ -559,10 +548,7 @@ function changeSankeyMonth(delta) {
   loadSankeyChart();
 }
 
-// Event-Listener für Monatspfeile
-/**
- * Richtet Event-Listener für die Monats-Navigation beim Sankey-Diagramm ein.
- */
+// Richtet Event-Listener für die Monats-Navigation beim Sankey-Diagramm ein.
 function setupSankeyControls() {
   const prevBtn = document.getElementById('sankeyPrevMonth');
   const nextBtn = document.getElementById('sankeyNextMonth');
@@ -574,5 +560,3 @@ function setupSankeyControls() {
     nextBtn.addEventListener('click', () => changeSankeyMonth(1));
   }
 }
-
-// Helper Funktionen werden zentral aus utils.js verwendet
