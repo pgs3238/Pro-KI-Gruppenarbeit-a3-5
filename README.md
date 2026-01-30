@@ -70,20 +70,6 @@ Ziel von FINLY ist es, einen übersichtlichen Einblick in die eigenen Finanzen z
 
 Das Frontend wurde als Single Page Application programmiert und besteht aus HTML für die Struktur, CSS für die Gestaltung und JavaScript. Mit einem modernen und dunklen Design soll eine intuitive Bedienung und ein professionelles Auftreten für ein besseres Verständnis ermöglicht werden. Für die Visualisierung wurden Chart.js (Linien- und Balkendiagramme) und Plotly.js (Sankey-Diagramme) eingesetzt.
 
-### Dashboard
-
-Das Dashboard ermöglicht eine Übersicht über die wichtigsten Finanz-Informationen zusammenfassend dargestellt. Alle Daten werden in Echtzeit aus der Datenbank geladen und verarbeitet.
-
-**Komponenten**
-
-- KPI-Karten (Kennzahlen des aktuellen Monats: Einnahmen und Ausgaben mit Veränderung zum Vormonat, Bilanz und Konten-Übersicht)
-- Sankey-Diagramm (Zur Geldfluss-Visualisierung nach Kategorien pro Monat)
-- Top Ausgaben Kategorien (Die größten Ausgabekategorien der letzten 30 Tage als Balkendiagramm mit Link zur vollständigen Kategorieverwaltung)
-- Ausgaben-Trend (Liniendiagramm der Ausgaben der letzten 6 Monate)
-- Letzte Transaktionen (Die 5 neusten Transaktionen mit Link zur vollständigen Transaktionsübersicht)
-
-
-
 **Umgesetzt von:** _Arienne Bertram_
 
 ---
@@ -246,6 +232,8 @@ Das Datenbank-Modul verwaltet die Datenpersistenz mit SQLAlchemy ORM und SQLite.
 2. Das Skript prüft alles, startet den Server und öffnet deinen Browser automatisch
 3. Fertig! 🎉
 
+> 💡 **Tipp:** Unter Windows kann auch die portable Python-Version verwendet werden. Diese befindet sich im Ordner `portable/` und benötigt keine Installation.
+
 ### 🍎 Schnellstart (Mac/Linux)
 
 1. **Terminal öffnen** und zum Projektordner navigieren
@@ -350,61 +338,68 @@ SQLAlchemy ORM mit SQLite. Das Modul verwaltet die komplette Datenpersistenz der
 
 ```mermaid
 erDiagram
-    KONTEN ||--o{ TRANSAKTIONEN : "hat"
-    CATEGORIES ||--o{ TRANSAKTIONEN : "kategorisiert"
-    CATEGORIES ||--o{ CATEGORY_RULES : "hat Regeln"
+    KONTEN ||--o{ TRANSAKTIONEN : "1:n hat"
+    CATEGORIES ||--o{ TRANSAKTIONEN : "1:n kategorisiert"
+    CATEGORIES ||--o{ CATEGORY_RULES : "1:n hat Regeln"
 
     KONTEN {
-        int id PK
-        string kontoname UK
-        string kontonummer
-        string bankname
-        float kontostand
-        string waehrung
-        string kontotyp
-        string iban
-        string bic
-        string farbe
+        int id PK "Primärschlüssel"
+        string kontoname UK "Eindeutiger Name"
+        string kontonummer "IBAN (optional)"
+        string bankname "z.B. Sparkasse"
+        float kontostand "Aktueller Stand"
+        string waehrung "EUR, USD, etc."
+        string kontotyp "Girokonto, Sparkonto, Depot"
+        string iban "IBAN für Transaktionen"
+        string bic "BIC/SWIFT Code"
+        string farbe "Hex-Code für UI"
         datetime erstellt_am
         datetime aktualisiert_am
     }
 
     TRANSAKTIONEN {
-        int id PK
-        int konto_id FK
-        int kategorie_id FK
-        date buchungstag
-        string beguenstigter
-        string verwendungszweck
-        string iban_kontonummer
-        float betrag
-        string waehrung
-        string beschreibung
+        int id PK "Primärschlüssel"
+        int konto_id FK "Fremdschlüssel zu KONTEN (nullable)"
+        int kategorie_id FK "Fremdschlüssel zu CATEGORIES (nullable)"
+        date buchungstag "Datum der Buchung"
+        string beguenstigter "Empfänger/Sender"
+        string verwendungszweck "Buchungstext"
+        string iban_kontonummer "IBAN der Gegenseite"
+        float betrag "Positiv=Einnahme, Negativ=Ausgabe"
+        string waehrung "EUR"
+        string beschreibung "Optionale Notiz"
         datetime created_at
     }
 
     CATEGORIES {
-        int id PK
-        string name UK
-        enum category_type
-        string icon
-        string farbe
+        int id PK "Primärschlüssel"
+        string name UK "Eindeutiger Kategoriename"
+        enum category_type "Ausgabe oder Einnahme"
+        string icon "Emoji für UI"
+        string farbe "Hex-Code für UI"
     }
 
     CATEGORY_RULES {
-        int id PK
-        string category_name FK
-        string keywords
+        int id PK "Primärschlüssel"
+        string category_name FK "Fremdschlüssel zu CATEGORIES.name"
+        string keywords "Komma-separierte Keywords"
         datetime created_at
     }
 
     CATEGORIZATION_STATE {
-        int id PK
-        int has_new_transactions
-        datetime last_categorization
+        int id PK "Singleton (immer 1)"
+        int has_new_transactions "Counter seit letzter Kategorisierung"
+        datetime last_categorization "Zeitstempel"
         datetime updated_at
     }
 ```
+
+**Beziehungen:**
+| Beziehung | Typ | Beschreibung |
+|-----------|-----|--------------|
+| `KONTEN` → `TRANSAKTIONEN` | 1:n | Ein Konto kann viele Transaktionen haben |
+| `CATEGORIES` → `TRANSAKTIONEN` | 1:n | Eine Kategorie kann viele Transaktionen haben |
+| `CATEGORIES` → `CATEGORY_RULES` | 1:n | Eine Kategorie kann viele Regeln (Keywords) haben |
 
 ---
 
@@ -553,7 +548,52 @@ src/categories/
 
 #### Frontend-Modul (`static/js/`)
 
-JavaScript-Module für die Benutzeroberfläche und Interaktivität.
+JavaScript-Module für die Benutzeroberfläche und Interaktivität. Das Frontend wurde als Single Page Application programmiert und besteht aus HTML für die Struktur, CSS für die Gestaltung und JavaScript. Mit einem modernen und dunklen Design soll eine intuitive Bedienung und ein professionelles Auftreten für ein besseres Verständnis ermöglicht werden. Für die Visualisierung wurden Chart.js (Linien- und Balkendiagramme) und Plotly.js (Sankey-Diagramme) eingesetzt.
+
+**Seiten:**
+
+**Dashboard (`dashboard.js`, `index.html`)**
+Übersicht über die wichtigsten Finanz-Informationen. Alle Daten werden in Echtzeit aus der Datenbank geladen.
+- KPI-Karten: Einnahmen/Ausgaben des aktuellen Monats mit Veränderung zum Vormonat, Bilanz und Konten-Übersicht
+- Sankey-Diagramm: Geldfluss-Visualisierung nach Kategorien pro Monat
+- Top Ausgaben Kategorien: Balkendiagramm der größten Ausgabekategorien (30 Tage)
+- Ausgaben-Trend: Liniendiagramm der letzten 6 Monate
+- Letzte Transaktionen: Die 5 neuesten Transaktionen
+
+**Transaktionen (`transactions.js`, `transactions.html`)**
+Verwaltung aller Einnahmen und Ausgaben mit umfangreichen Such- und Filterfunktionen.
+- CRUD-Operationen für Transaktionen
+- Tabellenanzeige mit Sortierung und Paginierung
+- Filter nach Datum, Kategorie, Betrag, Begünstigter
+- CSV-Import von Bankdaten
+
+**Kategorien (`kategorien.js`, `kategorien.html`)**
+Verwaltung der Transaktionskategorien mit visueller Anpassung.
+- Erstellen, Bearbeiten und Löschen von Kategorien
+- Icon- und Farbauswahl für jede Kategorie
+- Regelbasierte Keywords für automatische Kategorisierung
+- Unterscheidung zwischen Einnahmen und Ausgaben
+
+**Konten (`konten.js`, `konten.html`)**
+Verwaltung mehrerer Bankkonten mit Kontostandsberechnung.
+- Übersicht aller Konten mit aktuellem Saldo
+- CRUD-Operationen für Konten
+- Unterstützung verschiedener Kontotypen (Girokonto, Sparkonto, Depot)
+- Farbcodierung für bessere Unterscheidung
+
+**Zinsrechner (`zinsrechner.js`, `zinsrechner.html`)**
+Berechnung und Visualisierung von Sparplänen mit Zinseszins-Effekt.
+- Eingabe von Startkapital, Zinssatz, Einzahlungen und Laufzeit
+- Interaktives Liniendiagramm mit Kapitalentwicklung
+- Vergleich von bis zu 3 verschiedenen Szenarien
+- Speichern und Laden von Berechnungen
+
+**Finanzbuddy (`chatbot.js`, `finanz-buddy.html`)**
+KI-basierter Chatbot für Finanzfragen (powered by Google Gemini).
+- Chat-Interface mit Nachrichtenverlauf
+- Zugriff auf Transaktions- und Kontodaten für personalisierte Antworten
+- Session-basierte Konversationen
+- Zurücksetzen des Chat-Verlaufs
 
 | Datei             | Funktion                                                                                                                                       |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -647,7 +687,7 @@ Bereitstellung einer **robusten, vielseitigen Suche,** die es erlaubt, Transakti
 
 | Name                           | Verantwortungsbereich              | Verwendete KI-Tools                    |
 |--------------------------------|------------------------------------|----------------------------------------|
-| **Arienne Bertram**            | _UI/UX Programmierung_             | Copilot (Claude Sonnet 4.5)            |
+| **Arienne Bertram**            | _UI/UX Programmierung, Tests_             | Copilot (Claude Sonnet 4.5)            |
 | **Emil Horstmann**             | _JavaScript, API, Datenbank_       | Copilot (Claude Opus 4.5/Gemini 3 Pro) |
 | **Paul-Gerhard Siegel**        | _Suche / Filtern, CSV Import & UI_ | Copilot, GPT 5, Gemini 2.0             |
 | **Leonardo Ferreira Pfeiffer** | _Kategoriesierung, Chatbot_        | Claude Sonnet 4.5                      |
