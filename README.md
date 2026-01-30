@@ -1,5 +1,4 @@
-# FINLY – Persönlicher Ausgabenmanager 📊
-
+# 📊 FINLY – Persönlicher Ausgabenmanager 
 ## Inhaltsverzeichnis
 
 - [FINLY – Persönlicher Ausgabenmanager 📊](#finly--persönlicher-ausgabenmanager-)
@@ -23,7 +22,6 @@
     - [🛠️ Manuelle Installation](#️-manuelle-installation)
   - [Detailierter Aufbau des Projektes](#detailierter-aufbau-des-projektes)
     - [Projektstruktur](#projektstruktur)
-    - [Datenbank-Schema](#datenbank-schema)
     - [Module im Detail](#module-im-detail)
       - [API-Modul (`src/api/`)](#api-modul-srcapi)
       - [Datenbank-Modul (`src/database/`)](#datenbank-modul-srcdatabase)
@@ -42,10 +40,10 @@
 
 ## Projektübersicht
 
-**FINLY** ist ein persönlicher Ausgabenmanager zur Analyse, Verwaltung und Prognose finanzieller Daten.
+📊 **FINLY** ist ein persönlicher Ausgabenmanager zur Analyse, Verwaltung und Prognose finanzieller Daten.
 Das Projekt wurde von der **Gruppe a3–5** im Rahmen des Moduls „Programmieren für KI" im Wintersemester 2025/2026 an der Fachhochschule Südwestfalen entwickelt.
 
-Ziel von FINLY ist es, einen übersichtlichen Einblick in die eigenen Finanzen zu geben. Es bietet die Möglichkeit, diese zu verwalten, zu erfassen und zu visualisieren.
+Ziel von FINLY ist es, einen übersichtlichen Einblick in die eigenen Finanzen zu geben. Es bietet mit verschiedensten Features die Möglichkeit, diese zu verwalten, zu erfassen und zu visualisieren.
 
 ---
 
@@ -59,14 +57,32 @@ Ziel von FINLY ist es, einen übersichtlichen Einblick in die eigenen Finanzen z
 | **Konten**        | Verwaltung mehrerer Bankkonten mit Kontostandsberechnung               |
 | **Zinsprognose**  | Berechnung von Sparplänen und Zinseszins-Prognosen                     |
 | **Finanzbuddy**   | KI-basierter Chatbot für Finanzfragen (powered by Google Gemini)       |
+| **Suche**         | Erweiterte Suchfunktionen mit Filtern und Datumsbereichen              |
+| **Importer**      | CSV-Import für Transaktionsdaten verschiedener Banken                  |
+| **API**           | RESTful-Schnittstelle für Frontend-Backend-Kommunikation               |
+| **Datenbank**     | SQLite-Datenpersistenz mit SQLAlchemy ORM                              |
 
 ---
 
 ## Funktionalitäten im Detail
 
+### Frontend
+
+Das Frontend wurde als Single Page Application programmiert und besteht aus HTML für die Struktur, CSS für die Gestaltung und JavaScript. Mit einem modernen und dunklen Design soll eine intuitive Bedienung und ein professionelles Auftreten für ein besseres Verständnis ermöglicht werden. Für die Visualisierung wurden Chart.js (Linien- und Balkendiagramme) und Plotly.js (Sankey-Diagramme) eingesetzt.
+
 ### Dashboard
 
-_Noch füllen_
+Das Dashboard ermöglicht eine Übersicht über die wichtigsten Finanz-Informationen zusammenfassend dargestellt. Alle Daten werden in Echtzeit aus der Datenbank geladen und verarbeitet.
+
+**Komponenten**
+
+- KPI-Karten (Kennzahlen des aktuellen Monats: Einnahmen und Ausgaben mit Veränderung zum Vormonat, Bilanz und Konten-Übersicht)
+- Sankey-Diagramm (Zur Geldfluss-Visualisierung nach Kategorien pro Monat)
+- Top Ausgaben Kategorien (Die größten Ausgabekategorien der letzten 30 Tage als Balkendiagramm mit Link zur vollständigen Kategorieverwaltung)
+- Ausgaben-Trend (Liniendiagramm der Ausgaben der letzten 6 Monate)
+- Letzte Transaktionen (Die 5 neusten Transaktionen mit Link zur vollständigen Transaktionsübersicht)
+
+
 
 **Umgesetzt von:** _Arienne Bertram_
 
@@ -74,7 +90,7 @@ _Noch füllen_
 
 ### Transaktionen
 
-_Noch füllen_
+Das Transaktionsmodul verwaltet alle Einnahmen und Ausgaben mit umfangreichen Such- und Filterfunktionen. Benutzer können Transaktionen erstellen, bearbeiten, löschen und nach verschiedenen Kriterien filtern (Datum, Kategorie, Betrag, Begünstigter).
 
 **Umgesetzt von:** _Emil Horstmann_
 
@@ -103,9 +119,9 @@ Das Categories-Modul ermöglicht die automatische Zuordnung von Transaktionen zu
 
 ### Konten
 
-_Noch füllen_
+Das Konten-Modul verwaltet mehrere Bankkonten mit automatischer Kontostandsberechnung basierend auf Transaktionen. Unterstützt verschiedene Kontotypen, Währungen und bietet CRUD-Operationen für Konten.
 
-**Umgesetzt von:** _Noch füllen_
+**Umgesetzt von:** _Emil Horstmann_
 
 ---
 
@@ -278,8 +294,56 @@ FINLY/
 │   └── js/                  # Frontend JavaScript
 └── templates/               # HTML-Seiten
 ```
+---
 
-### Datenbank-Schema
+### Module/Funktionen im Detail
+
+#### API-Modul (`src/api/`)
+
+FastAPI-basierte REST-Schnittstelle mit Pydantic-Validierung. Das Modul stellt alle Backend-Endpunkte bereit und verarbeitet HTTP-Requests vom Frontend. Es verwendet asynchrone Request-Verarbeitung und bietet automatische OpenAPI-Dokumentation unter `/docs`.
+
+| Datei                           | Funktion                                                 |
+| ------------------------------- | -------------------------------------------------------- |
+| `main.py`                       | App-Bootstrap, Router-Registrierung, Lifespan-Management |
+| `schemas.py`                    | Pydantic-Schemas für Request/Response                    |
+| `transactions_routes.py`        | Transaktions- und Konto-Endpunkte                        |
+| `category_routes.py`            | Kategorie-Endpunkte                                      |
+| `chatbot_routes.py`             | Chatbot-Endpunkte                                        |
+| `zinsrechner_routes.py`         | Zinsrechner-Endpunkte                                    |
+| `dependencies.py`               | Dependency Injection für Datenbank-Sessions              |
+| `helpers.py`                    | Hilfsfunktionen für API-Operationen                      |
+| `settings_routes.py`            | Einstellungs-Endpunkte                                   |
+| `auto_categorization_routes.py` | Endpunkte für automatische Kategorisierung               |
+
+**Hauptendpunkte:**
+- `GET/POST/PUT/DELETE /transactions` – CRUD für Transaktionen
+- `GET/POST/PUT/DELETE /konten` – CRUD für Konten
+- `GET/POST/DELETE /categories` – Kategorieverwaltung
+- `POST /api/chatbot` – Chatbot-Anfragen an Gemini
+- `POST /api/zinsrechner` – Zinsberechnungen speichern/laden
+- `POST /import/transactions` – CSV-Import
+
+---
+
+#### Datenbank-Modul (`src/database/`)
+
+SQLAlchemy ORM mit SQLite. Das Modul verwaltet die komplette Datenpersistenz der Anwendung. Es definiert alle Datenmodelle, stellt die Datenbankverbindung her und bietet spezialisierte Services für verschiedene Domänen wie Kontoverwaltung und Transaktionssuche.
+
+| Datei              | Funktion                                         |
+| ------------------ | ------------------------------------------------ |
+| `models.py`        | ORM-Modelle (Konto, Transaktion, Category, etc.) |
+| `connection.py`    | Datenbankverbindung und Session-Factory          |
+| `konto_manager.py` | CRUD-Operationen für Konten                      |
+| `csv_importer.py`  | CSV-Import mit Auto-Delimiter-Erkennung          |
+| `search.py`        | Erweiterte Transaktionssuche mit Filtern         |
+
+**Kernfunktionen:**
+- **Session-Management**: Automatische Erstellung und Verwaltung von Datenbank-Sessions
+- **ORM-Mapping**: Python-Objekte werden automatisch in Datenbanktabellen übersetzt
+- **Migrations-frei**: SQLite-Datenbank wird bei Bedarf automatisch erstellt
+- **Beziehungen**: Foreign-Key-Beziehungen zwischen Konten, Transaktionen und Kategorien
+
+**Datenbank-Schema:**
 
 ```mermaid
 erDiagram
@@ -339,32 +403,34 @@ erDiagram
     }
 ```
 
-### Module im Detail
+---
 
-#### API-Modul (`src/api/`)
+#### Konten-Modul (`src/database/konto_manager.py`)
 
-FastAPI-basierte REST-Schnittstelle mit Pydantic-Validierung.
+Verwaltung von Bankkonten mit automatischer Kontostandsberechnung. Das Modul bietet umfassende CRUD-Operationen und berechnet Kontostände dynamisch basierend auf zugehörigen Transaktionen.
 
-| Datei                    | Funktion                                                 |
-| ------------------------ | -------------------------------------------------------- |
-| `main.py`                | App-Bootstrap, Router-Registrierung, Lifespan-Management |
-| `schemas.py`             | Pydantic-Schemas für Request/Response                    |
-| `transactions_routes.py` | Transaktions- und Konto-Endpunkte                        |
-| `category_routes.py`     | Kategorie-Endpunkte                                      |
-| `chatbot_routes.py`      | Chatbot-Endpunkte                                        |
-| `zinsrechner_routes.py`  | Zinsrechner-Endpunkte                                    |
+**Hauptklasse `KontoManager`:**
 
-#### Datenbank-Modul (`src/database/`)
+| Methode | Funktion |
+| ------- | -------- |
+| `create_konto()` | Erstellt neues Bankkonto mit Validierung |
+| `get_all_konten()` | Ruft alle Konten mit berechneten Kontoständen ab |
+| `get_konto_by_id()` | Gibt spezifisches Konto mit Details zurück |
+| `update_konto()` | Aktualisiert Kontoinformationen |
+| `delete_konto()` | Löscht Konto (mit Prüfung auf Transaktionen) |
+| `calculate_kontostand()` | Berechnet aktuellen Kontostand basierend auf Transaktionen |
 
-SQLAlchemy ORM mit SQLite.
+**Features:**
+- Automatische Kontostandsberechnung durch Summierung aller Transaktionen
+- Unterstützung mehrerer Währungen (EUR, USD, etc.)
+- Verschiedene Kontotypen (Girokonto, Sparkonto, Kreditkarte)
+- Farbzuordnung für UI-Visualisierung
+- IBAN/BIC-Verwaltung
+- Sicherheitsprüfung: Konten mit Transaktionen können nicht gelöscht werden
 
-| Datei              | Funktion                                         |
-| ------------------ | ------------------------------------------------ |
-| `models.py`        | ORM-Modelle (Konto, Transaktion, Category, etc.) |
-| `connection.py`    | Datenbankverbindung und Session-Factory          |
-| `konto_manager.py` | CRUD-Operationen für Konten                      |
-| `csv_importer.py`  | CSV-Import mit Auto-Delimiter-Erkennung          |
-| `search.py`        | Erweiterte Transaktionssuche mit Filtern         |
+**Umgesetzt von:** _Emil Horstmann_
+
+---
 
 #### Categories-Modul (`src/categories/`)
 
@@ -484,24 +550,24 @@ src/categories/
 
 #### Frontend-Modul (`static/js/`)
 
-_Noch zu dokumentieren_
+JavaScript-Module für die Benutzeroberfläche und Interaktivität.
 
 | Datei             | Funktion                                                                                                                                       |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `app.js`          | _Noch füllen_                                                                                                                                  |
-| `dashboard.js`    | _Noch füllen_                                                                                                                                  |
-| `transactions.js` | _Noch füllen_                                                                                                                                  |
-| `kategorien.js`   | _Noch füllen_                                                                                                                                  |
-| `konten.js`       | _Noch füllen_                                                                                                                                  |
+| `app.js`          | Haupt-Initialisierung, Navigation und Routing zwischen den Seiten                                                                              |
+| `dashboard.js`    | Dashboard-Visualisierungen, Statistiken und Übersichtsdiagramme                                                                                |
+| `transactions.js` | CRUD-Operationen für Transaktionen, Tabellenanzeige und Filterung                                                                              |
+| `kategorien.js`   | Kategorieverwaltung, Farbauswahl und Icon-Zuweisung                                                                                            |
+| `konten.js`       | Kontoverwaltung mit Anzeige der Kontostände und Kontodetails                                                                                   |
 | `zinsrechner.js`  | Chart-Initialisierung, Verkabelung Input Felder, Zinsberechnung, Vorschau Option, Operationen: Berechnen, Aktualisieren, Löschen, Zurücksetzen |
-| `chatbot.js`      | _Noch füllen_                                                                                                                                  |
-| `search.js`       | _Noch füllen_                                                                                                                                  |
-| `calendar.js`     | _Noch füllen_                                                                                                                                  |
-| `modals.js`       | _Noch füllen_                                                                                                                                  |
-| `components.js`   | _Noch füllen_                                                                                                                                  |
-| `utils.js`        | _Noch füllen_                                                                                                                                  |
-| `constants.js`    | _Noch füllen_                                                                                                                                  |
-| `settings.js`     | _Noch füllen_                                                                                                                                  |
+| `chatbot.js`      | Chat-Interface, Nachrichtenversand und Antwortanzeige des Finanzbuddy                                                                          |
+| `search.js`       | Erweiterte Suchfunktionen mit Filteroptionen und Ergebnisanzeige                                                                               |
+| `calendar.js`     | Kalenderkomponente für Datumsauswahl und Zeitraumfilter                                                                                        |
+| `modals.js`       | Verwaltung von Modal-Dialogen für Formulare und Bestätigungen                                                                                  |
+| `components.js`   | Wiederverwendbare UI-Komponenten und Bausteine                                                                                                 |
+| `utils.js`        | Hilfsfunktionen für Formatierung, Validierung und API-Aufrufe                                                                                  |
+| `constants.js`    | Globale Konstanten, API-Endpunkte und Konfigurationswerte                                                                                      |
+| `settings.js`     | Einstellungsverwaltung und Benutzereinstellungen                                                                                               |
 
 ---
 
@@ -584,3 +650,4 @@ _Noch zu dokumentieren_
 | **HTML5/CSS3** | Struktur und Styling              |
 | **JavaScript** | Interaktivität                    |
 | **Plotly.js**  | Interaktive Charts (Sankey, etc.) |
+| **Chart.js**  | Linien- und Balkendiagramme |

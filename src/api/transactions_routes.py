@@ -5,6 +5,7 @@ import json
 import os
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from ..database import Transaktion, Konto
@@ -565,7 +566,10 @@ async def import_transactions(
 
     except Exception as e:
         # Fehler zurückgeben
-        raise HTTPException(status_code=400, detail=str(e))
+        return JSONResponse(
+            status_code=400,
+            content={"status": "error", "message": str(e)}
+        )
     finally:
         # Temporäre Datei immer bereinigen
         if tmp_path and os.path.exists(tmp_path):
