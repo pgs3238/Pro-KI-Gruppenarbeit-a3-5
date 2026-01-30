@@ -119,9 +119,9 @@ Das Categories-Modul ermöglicht die automatische Zuordnung von Transaktionen zu
 
 ### Konten
 
-_Noch füllen_
+Das Konten-Modul verwaltet mehrere Bankkonten mit automatischer Kontostandsberechnung basierend auf Transaktionen. Unterstützt verschiedene Kontotypen, Währungen und bietet CRUD-Operationen für Konten.
 
-**Umgesetzt von:** _Noch füllen_
+**Umgesetzt von:** _Emil Horstmann_
 
 ---
 
@@ -391,6 +391,34 @@ erDiagram
         datetime updated_at
     }
 ```
+
+---
+
+#### Konten-Modul (`src/database/konto_manager.py`)
+
+Verwaltung von Bankkonten mit automatischer Kontostandsberechnung. Das Modul bietet umfassende CRUD-Operationen und berechnet Kontostände dynamisch basierend auf zugehörigen Transaktionen.
+
+**Hauptklasse `KontoManager`:**
+
+| Methode | Funktion |
+| ------- | -------- |
+| `create_konto()` | Erstellt neues Bankkonto mit Validierung |
+| `get_all_konten()` | Ruft alle Konten mit berechneten Kontoständen ab |
+| `get_konto_by_id()` | Gibt spezifisches Konto mit Details zurück |
+| `update_konto()` | Aktualisiert Kontoinformationen |
+| `delete_konto()` | Löscht Konto (mit Prüfung auf Transaktionen) |
+| `calculate_kontostand()` | Berechnet aktuellen Kontostand basierend auf Transaktionen |
+
+**Features:**
+- Automatische Kontostandsberechnung durch Summierung aller Transaktionen
+- Unterstützung mehrerer Währungen (EUR, USD, etc.)
+- Verschiedene Kontotypen (Girokonto, Sparkonto, Kreditkarte)
+- Farbzuordnung für UI-Visualisierung
+- IBAN/BIC-Verwaltung
+- Sicherheitsprüfung: Konten mit Transaktionen können nicht gelöscht werden
+
+**Umgesetzt von:** _Emil Horstmann_
+
 ---
 
 #### Categories-Modul (`src/categories/`)
