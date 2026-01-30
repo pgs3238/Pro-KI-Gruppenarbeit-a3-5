@@ -490,7 +490,7 @@ src/chatbot/
 | `transactions.js` | *Noch füllen* |
 | `kategorien.js` | *Noch füllen* |
 | `konten.js` | *Noch füllen* |
-| `zinsrechner.js` | *Noch füllen* |
+| `zinsrechner.js` | hart-Initialisierung, Verkabelung Input Felder, Zinsberechnung, Vorschau Option, Operationen: Berechnen, Aktualisieren, Löschen, Zurücksetzen |
 | `chatbot.js` | *Noch füllen* |
 | `search.js` | *Noch füllen* |
 | `calendar.js` | *Noch füllen* |
