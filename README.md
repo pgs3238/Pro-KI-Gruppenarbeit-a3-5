@@ -113,44 +113,15 @@ _Noch füllen_
 
 **Funktionsumfang**
 
-**Investitionsprognosen:**
-
 - Darstellung der Kapitalentwicklung über einen frei wählbaren Zeitraum
 - Berücksichtigung von Startkapital, Zinssatz, regelmäßigen Einzahlungen und Zinseszins
 - Visualisierung als Liniendiagramm
-  **Reale oder fiktive Daten:**
-- Fiktiver Modus: Startkapital wird manuell festgelegt
-- Realer Modus: Zugriff auf vorhandene Konten aus der FINLY-App, automatisches Laden des aktuellen Kontostands
 
-**Vergleich mehrerer Szenarien:**
-Bis zu drei Zinsprognosen parallel möglich
-Jede Prognose wird als eigene Kurve dargestellt
-Szenarien können ein- und ausgeblendet, ausgewählt, bearbeitet oder gelöscht werden
-
-**Bedienkonzept**
-
-**Parametereinstellungen:**
-Wahlschalter (Radio-Buttons) für Startkapital-Quelle (fiktiv / reales Konto) und Einzahlungsintervall
-Slider für Startkapital, Zinssatz, regelmäßige Einzahlung und Laufzeit
-Änderungen werden live visualisiert
-
-**Berechnungs-Workflow:**
-Neue Berechnung: Klick auf „Berechnen (Neu)“ erstellt eine neue Zinsprognose, fügt eine neue Kurve hinzu und speichert automatisch
-Bearbeiten: Auswahl einer bestehenden Prognose oberhalb der Grafikdarstellung, Parameter anpassen, Klick auf „Aktualisieren“ überschreibt die Prognose
-Zurücksetzen: Klick auf „Zurücksetzen“ setzt alle Parameter zurück, leert Diagramm und löscht Vergleichsdatenbanken
-
-**Datenpersistenz und Datenbanken**
-
-**Kontendatenbank (expenses.db)(nicht von mir erstellt):**
-Enthält alle Konten der FINLY-App
-Zugriff über Backend (FastAPI) mittels SQLAlchemy ORM, nur lesend
-
-**Vergleichsdatenbanken (vergleich_1.db, vergleich_2.db, vergleich_3.db):**
-Eine Datenbank pro Prognose
-Enthält Parameter, Berechnungsverlauf, kumulierte Einzahlungen und Zinsen
-Persistente Speicherung der Prognosen, Wiederherstellung beim Neuladen
-
-**Technische Verbindung der Komponenten**
+**Komponenten:**
+- `zinsrechner.html` - Buttons, Schieberegler, Texteingabe
+- `zinsrechner.js` - Funktionalitäten(Chart-Initialisierung, Verkabelung Input Felder, Zinsberechnung, Vorschau Option, Operationen: Berechnen, Aktualisieren, Löschen, Zurücksetzen)
+- `vergleich_X.db` - Datenbank wird für die Berechneten Werte erstellt. Jeweils eine pro Berechnung (max. 3)
+- `zinsrechner_routes.py` - Backend API - Berechnungen speichern und laden aus Vergleichsdatenbanken oder Kontendatenbank
 
 Frontend → Backend:
 Kommunikation über REST-API (FastAPI)
@@ -159,12 +130,6 @@ Aktionen: Berechnung speichern, Prognosen laden, Prognosen löschen, Kontodaten 
 Backend → Datenbanken:
 expenses.db: Zugriff auf Kontodaten der gesamten App
 vergleich_X.db: Verwaltung der Zinsprognosen
-
-**Code Erstellung und KI Tools:**
-
-Visual Studio Code mit Agent Claude Sonnet 4.5 - Übersetzung von erstellten Python Funktionen in JavaScript zur Kompatibilität mit dem Hauptprogramm, Datenbankmanagement
-Chat GPT mit GPT 5.1 - Unterstützung bei der Dokumenterstellung, FastAPI Verbindung Problemanalyse
-Gemini 3 Flash - für die Einarbeitung in GIT Hub und Visual Studio Funktionen
 
 **Umgesetzt von:** Sinan Felix Atay
 
@@ -509,28 +474,36 @@ src/categories/
 
 _Noch zu dokumentieren_
 
-| Datei             | Funktion      |
-| ----------------- | ------------- |
-| `app.js`          | _Noch füllen_ |
-| `dashboard.js`    | _Noch füllen_ |
-| `transactions.js` | _Noch füllen_ |
-| `kategorien.js`   | _Noch füllen_ |
-| `konten.js`       | _Noch füllen_ |
-| `zinsrechner.js`  | _Noch füllen_ |
-| `chatbot.js`      | _Noch füllen_ |
-| `search.js`       | _Noch füllen_ |
-| `calendar.js`     | _Noch füllen_ |
-| `modals.js`       | _Noch füllen_ |
-| `components.js`   | _Noch füllen_ |
-| `utils.js`        | _Noch füllen_ |
-| `constants.js`    | _Noch füllen_ |
-| `settings.js`     | _Noch füllen_ |
+| Datei | Funktion |
+|-------|----------|
+| `app.js` | *Noch füllen* |
+| `dashboard.js` | *Noch füllen* |
+| `transactions.js` | *Noch füllen* |
+| `kategorien.js` | *Noch füllen* |
+| `konten.js` | *Noch füllen* |
+| `zinsrechner.js` | Chart-Initialisierung, Verkabelung Input Felder, Zinsberechnung, Vorschau Option, Operationen: Berechnen, Aktualisieren, Löschen, Zurücksetzen |
+| `chatbot.js` | *Noch füllen* |
+| `search.js` | *Noch füllen* |
+| `calendar.js` | *Noch füllen* |
+| `modals.js` | *Noch füllen* |
+| `components.js` | *Noch füllen* |
+| `utils.js` | *Noch füllen* |
+| `constants.js` | *Noch füllen* |
+| `settings.js` | *Noch füllen* |
 
 ---
 
 #### Zinsrechner-Modul (`src/api/zinsrechner_routes.py`)
 
-_Noch zu dokumentieren_
+- 'zinsrechner_routes.py' - Backend API - Berechnungen speichern und laden aus Vergleichsdatenbanken oder Kontendatenbank
+
+Frontend → Backend:
+Kommunikation über REST-API (FastAPI)
+Aktionen: Berechnung speichern, Prognosen laden, Prognosen löschen, Kontodaten abrufen
+
+Backend → Datenbanken:
+expenses.db: Zugriff auf Kontodaten der gesamten App
+vergleich_X.db: Verwaltung der Zinsprognosen
 
 ---
 
@@ -548,13 +521,13 @@ _Noch zu dokumentieren_
 
 ## Trennung der Verantwortlichkeit
 
-| Name                           | Verantwortungsbereich        | Verwendete KI-Tools                    |
-| ------------------------------ | ---------------------------- | -------------------------------------- |
-| **Arienne Bertram**            | _UI/UX Programmierung_       | Copilot (Claude Sonnet 4.5)            |
-| **Emil Horstmann**             | _JavaScript, API, Datenbank_ | Copilot (Claude Opus 4.5/Gemini 3 Pro) |
-| **Paul-Gerhart Siegel**        | _Noch füllen_                |
-| **Leonardo Ferreira Pfeiffer** | _Kategoriesierung, Chatbot_  | Claude Sonnet 4.5                      |
-| **Sinan Felix Atay**           | _Noch füllen_                |
+| Name | Verantwortungsbereich | Verwendete KI-Tools |
+|------|----------------------|----------------------|
+| **Arienne Bertram** | *UI/UX Programmierung* | Copilot (Claude Sonnet 4.5) | 
+| **Emil Horstmann** | *JavaScript, API, Datenbank* | Copilot (Claude Opus 4.5/Gemini 3 Pro) |
+| **Paul-Gerhart Siegel** | *Noch füllen* |
+| **Leonardo Fabian Ferreira Pfeiffer** | *Noch füllen* |
+| **Sinan Felix Atay** | *Zinsrechner* | Copilot (Claude Sonnet 4.5) |
 
 ---
 
