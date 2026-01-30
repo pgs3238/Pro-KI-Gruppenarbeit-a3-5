@@ -14,7 +14,7 @@ class KontoManager:
     def erstelle_konto(
         session: Session,
         kontoname: str,
-        kontonummer: str,
+        kontonummer: Optional[str] = None,
         kontotyp: str = "Girokonto",
         bankname: Optional[str] = None,
         kontostand: float = 0.0,
@@ -27,7 +27,7 @@ class KontoManager:
         Args:
             session: SQLAlchemy Session
             kontoname: Name des Kontos (z.B. "Hauptkonto", "Sparkonto")
-            kontonummer: IBAN des Kontos
+            kontonummer: IBAN des Kontos (optional)
             kontotyp: Typ des Kontos (z.B. "Girokonto", "Sparkonto", "Kreditkarte")
             bankname: Name der Bank (optional)
             kontostand: Startkontostand (default: 0.0)
@@ -40,7 +40,7 @@ class KontoManager:
         neues_konto = Konto(
             kontoname=kontoname,
             kontonummer=kontonummer,
-            iban=kontonummer,  # IBAN ist gleich Kontonummer
+            iban=kontonummer,  # IBAN ist gleich Kontonummer (kann None sein)
             kontotyp=kontotyp,
             bankname=bankname,
             kontostand=kontostand,

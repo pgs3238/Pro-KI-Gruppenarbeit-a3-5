@@ -448,6 +448,9 @@ async function performSearch() {
         if (searchParams.verwendungszweck) {
             requestBody.verwendungszweck = searchParams.verwendungszweck;
         }
+        if (searchParams.kategorie_name) {
+            requestBody.kategorie_name = searchParams.kategorie_name;
+        }
         if (searchParams.beschreibung) {
             requestBody.beschreibung = searchParams.beschreibung;
         }
@@ -510,7 +513,15 @@ async function performSearch() {
                 : null;
             const kontoName = konto ? konto.kontoname : '-';
             
-            const kategorie = t.beschreibung ? t.beschreibung.charAt(0).toUpperCase() + t.beschreibung.slice(1) : '-';
+            // Kategorie über kategorie_id aus availableKategorien holen
+            let kategorie = '-';
+            if (t.kategorie_id) {
+                const kat = availableKategorien.find(k => k.id === t.kategorie_id);
+                kategorie = kat ? kat.name : '-';
+            } else if (t.beschreibung) {
+                // Fallback: beschreibung verwenden falls keine kategorie_id
+                kategorie = t.beschreibung.charAt(0).toUpperCase() + t.beschreibung.slice(1);
+            }
 
             row.innerHTML = `
                 <td>${formattedDate}</td>
@@ -1119,9 +1130,9 @@ function setupTransactionModal() {
 if (window.location.pathname.includes('transactions')) {
     document.addEventListener('DOMContentLoaded', async () => {
         console.log('📄 Transaktionen-Seite geladen');
-        loadKategorien();  // Lade Kategorien
-        loadTransactions();  // Lade Transaktionen
-        loadKonten();  // Lade Konten
+        await loadKategorien();  // Lade Kategorien zuerst
+        await loadKonten();  // Lade Konten
+        await loadTransactions();  // Lade Transaktionen
         setupFilterInputs();  // Setup Filter
         setupSearch();  // Setup Suche
     });

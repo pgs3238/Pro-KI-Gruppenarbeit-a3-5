@@ -63,7 +63,7 @@
             <button
               class="nav-link"
               id="nav-chatbot"
-              onclick="window.location.href='chatbot.html'"
+              onclick="window.location.href='finanz-buddy.html'"
             >
               <span class="nav-icon">💬</span>
               <span>Finanz-Buddy</span>
@@ -77,16 +77,7 @@
         <!-- ============ HEADER ============ -->
         <header class="header">
           <div class="header-right">
-            <div class="search-wrapper">
-              <span class="search-icon">🔍</span>
-              <input
-                type="text"
-                class="search-box"
-                id="searchBox"
-                placeholder="Suche"
-              />
-            </div>
-            <button class="icon-btn">⚙️</button>
+            <button class="icon-btn" onclick="document.getElementById('apiKeyModal').style.display='flex'">⚙️</button>
           </div>
         </header>
 
@@ -101,7 +92,7 @@
           <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
               <div class="card-title">Letzten Transaktionen</div>
-              <button id="clearFiltersBtn" style="padding: 8px 16px; background: #ff6b6b; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">🔄 Filter löschen</button>
+              <button id="clearFiltersBtn" style="padding: 8px 16px; background: #ff6b6b; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600;">🔄 Filter löschen</button>
             </div>
             <div class="table-wrapper">
               <table>
@@ -163,7 +154,7 @@
                       <input
                         type="text"
                         class="filter-input"
-                        data-filter="beschreibung"
+                        data-filter="kategorie_name"
                         placeholder="Filter..."
                       />
                     </th>
@@ -465,11 +456,31 @@
       </div>
     </div>
 
+    <!-- API Key Modal -->
+    <div id="apiKeyModal" class="api-key-modal">
+      <div class="api-modal-content">
+        <div class="api-modal-header">
+          <h2>API-Einstellungen</h2>
+          <button class="api-modal-close" onclick="document.getElementById('apiKeyModal').style.display='none'">&times;</button>
+        </div>
+        <div class="api-modal-body">
+          <label class="api-label">Gemini API Key für Finanz-Buddy</label>
+          <input type="password" id="apiKeyInput" class="api-input" placeholder="AIza..." />
+          <small class="api-hint">Ihr API-Key wird in der .env-Datei auf dem Server gespeichert.</small>
+        </div>
+        <div class="api-modal-footer">
+          <button class="api-btn api-btn-cancel" onclick="document.getElementById('apiKeyModal').style.display='none'">Abbrechen</button>
+          <button class="api-btn api-btn-save">Speichern</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container"></div>
 
     <!-- ==================== SCRIPTS ==================== -->
     <script src="../static/js/utils.js"></script>
+    <script src="/static/js/settings.js"></script>
     <script src="../static/js/app.js"></script>
     <script>
     document.getElementById("importForm").addEventListener("submit", async function(e) {

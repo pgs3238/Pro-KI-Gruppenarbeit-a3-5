@@ -72,6 +72,7 @@ class TransaktionSearch(BaseModel):
     waehrung: Optional[str] = None
     konto_name: Optional[str] = None
     beschreibung: Optional[str] = None
+    kategorie_name: Optional[str] = None
 
 
 # ==================== KONTO SCHEMAS ====================
@@ -85,7 +86,7 @@ class KontoBase(BaseModel):
         ..., description="Typ des Kontos (Girokonto, Sparkonto, etc.)"
     )
     bankname: Optional[str] = Field(None, max_length=200, description="Name der Bank")
-    kontonummer: str = Field(..., max_length=34, description="IBAN des Kontos")
+    kontonummer: Optional[str] = Field(None, max_length=34, description="IBAN des Kontos (optional)")
     kontostand: float = Field(0.0, description="Aktueller Kontostand")
     waehrung: str = Field("EUR", max_length=3, description="Währungscode")
     bic: Optional[str] = Field(None, max_length=11, description="BIC/SWIFT Code")
@@ -115,14 +116,16 @@ class KontoResponse(KontoBase):
     """Schema für Konto-Responses"""
 
     id: int
-    iban: str
+    iban: Optional[str] = None
     erstellt_am: datetime
     aktualisiert_am: datetime
 
     @computed_field
     @property
-    def iban_kurz(self) -> str:
+    def iban_kurz(self) -> Optional[str]:
         """Gibt die gekürzte IBAN-Darstellung zurück"""
+        if not self.iban:
+            return None
         return f"{self.iban[:4]}...{self.iban[-4:]}" if len(self.iban) > 8 else self.iban
 
     class Config:
