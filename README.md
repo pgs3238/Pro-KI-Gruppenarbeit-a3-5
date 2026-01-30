@@ -31,6 +31,9 @@
       - [Zinsrechner-Modul (`src/api/zinsrechner_routes.py`)](#zinsrechner-modul-srcapizinsrechner_routespy)
       - [CSV-Importer (`src/database/csv_importer.py`)](#csv-importer-srcdatabasecsv_importerpy)
       - [Suche-Modul (`src/database/search.py`)](#suche-modul-srcdatabasesearchpy)
+  - [Tests](#tests)
+    - [Test-Struktur](#test-struktur)
+    - [Tests ausführen](#tests-ausführen)
   - [Trennung der Verantwortlichkeit](#trennung-der-verantwortlichkeit)
   - [Verwendete Technologien](#verwendete-technologien)
     - [Backend](#backend)
@@ -61,6 +64,7 @@ Ziel von FINLY ist es, einen übersichtlichen Einblick in die eigenen Finanzen z
 | **Importer**      | CSV-Import für Transaktionsdaten verschiedener Banken                  |
 | **API**           | RESTful-Schnittstelle für Frontend-Backend-Kommunikation               |
 | **Datenbank**     | SQLite-Datenpersistenz mit SQLAlchemy ORM                              |
+| **Tests**         | Umfassende Unit-Test-Suite mit 69 Tests für Backend-Funktionalitäten  |
 
 ---
 
@@ -100,6 +104,30 @@ Das Categories-Modul ermöglicht die automatische Zuordnung von Transaktionen zu
 - Caching-Mechanismus für Performance-Optimierung
 
 **Umgesetzt von:** _Leonardo Ferreira Pfeiffer_
+
+---
+
+### Tests
+
+FINLY verfügt über eine umfassende Test-Suite mit **69 Unit Tests**, die die Kernfunktionalitäten des Backend-Systems validieren. Die Tests decken Datenbank-Modelle, Kontoverwaltung, Suchfunktionen, Kategorieverwaltung, automatische Kategorisierung und CSV-Import ab.
+
+**Test-Module:**
+
+- `test_models.py` – 13 Tests für Datenbank-Modelle
+- `test_konto_manager.py` – 13 Tests für Kontoverwaltung
+- `test_search.py` – 20 Tests für Suchfunktionen
+- `test_categories.py` – 11 Tests für Kategorieverwaltung
+- `test_categorizer.py` – 4 Tests für automatische Kategorisierung
+- `test_csv_importer.py` – 8 Tests für CSV-Import
+
+**Eigenschaften:**
+
+- In-Memory SQLite für schnelle, isolierte Tests (~0.7s Gesamtlaufzeit)
+- Fixtures für wiederverwendbare Test-Daten
+- Automatisches Setup und Teardown
+- Deutsche Lokalisierung berücksichtigt
+
+**Umgesetzt von:** _Arienne Bertram_
 
 ---
 
@@ -680,6 +708,51 @@ vergleich_X.db: Verwaltung der Zinsprognosen
 **Ziel:**
 
 Bereitstellung einer **robusten, vielseitigen Suche,** die es erlaubt, Transaktionen nach allen relevanten Kriterien schnell und korrekt zu filtern
+
+---
+
+## Tests
+
+FINLY verfügt über eine umfassende Test-Suite mit **69 Unit Tests**, die die Kernfunktionalitäten des Backend-Systems validieren.
+
+### Test-Struktur
+
+Die Tests sind im Verzeichnis `tests/` organisiert und decken folgende Module ab:
+
+| Test-Datei                | Tests | Beschreibung                                                                 |
+|---------------------------|-------|------------------------------------------------------------------------------|
+| `test_models.py`          | 13    | Datenbank-Modelle (Konto, Transaktion, Category, CategoryRules)             |
+| `test_konto_manager.py`   | 13    | Kontoverwaltung (CRUD, Kontostand-Berechnung, Löschen)                      |
+| `test_search.py`          | 20    | Suchfunktionen mit allen Filteroptionen (Datum, Betrag, Text, Kategorie)    |
+| `test_categories.py`      | 11    | Kategorieverwaltung (Hinzufügen, Entfernen, Zuweisen)                       |
+| `test_categorizer.py`     | 4     | Regelbasierte automatische Kategorisierung                                  |
+| `test_csv_importer.py`    | 8     | CSV-Import (Parsing, Delimiter-Erkennung, Datenvalidierung)                 |
+
+**Gesamtbilanz:** 69 Tests, 100% bestanden ✅
+
+### Tests ausführen
+
+```bash
+# Alle Tests ausführen
+pytest tests/ -v
+
+# Spezifisches Modul testen
+pytest tests/test_search.py -v
+
+# Mit Coverage-Report
+pytest tests/ --cov=src --cov-report=html
+
+# Kurze Zusammenfassung
+pytest tests/ --tb=no
+```
+
+**Test-Features:**
+
+- ✅ In-Memory SQLite für schnelle, isolierte Tests
+- ✅ Fixtures für wiederverwendbare Test-Daten (sample_konto, sample_category, etc.)
+- ✅ Automatisches Setup und Teardown
+- ✅ Lokalisierung berücksichtigt (Enum-Werte: "Ausgabe"/"Einnahme")
+- ✅ Arrange-Act-Assert Pattern für klare Teststruktur
 
 ---
 

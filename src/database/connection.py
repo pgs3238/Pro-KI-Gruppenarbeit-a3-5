@@ -1,11 +1,8 @@
 # In connection.py werden die Datenbankverbindung und die Session-Verwaltung definiert.
 
-from sqlalchemy import (
-    create_engine,
-)  # SQLAlchemy nutzen wir um ORM mit SQLite zu verbinden
+from sqlalchemy import (create_engine,)  # SQLAlchemy nutzen wir um ORM mit SQLite zu verbinden
 from sqlalchemy.orm import sessionmaker, Session
 from pathlib import Path
-
 
 # Datenbankpfad relativ zum Projekt-Root
 DB_DIR = (
