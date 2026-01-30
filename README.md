@@ -536,7 +536,7 @@ vergleich_X.db: Verwaltung der Zinsprognosen
 | **Emil Horstmann** | *JavaScript, API, Datenbank* | Copilot (Claude Opus 4.5/Gemini 3 Pro) |
 | **Paul-Gerhart Siegel** | *Noch füllen* |
 | **Leonardo Fabian Ferreira Pfeiffer** | *Noch füllen* |
-| **Sinan Felix Atay** | *Noch füllen* |
+| **Sinan Felix Atay** | *Zinsrechner* | Copilot (Claude Sonnet 4.5) |
 
 ---
 
