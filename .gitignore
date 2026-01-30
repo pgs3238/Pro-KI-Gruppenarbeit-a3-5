@@ -170,3 +170,4 @@ data/transaktionen_export.csv
 data/expenses.db.backup
 .env
 data/vergleiche/*
+examples/transaktionen*
