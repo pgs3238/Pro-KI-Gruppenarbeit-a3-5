@@ -2,26 +2,41 @@
 
 ## Inhaltsverzeichnis
 
-- [Projektübersicht](#projektübersicht)
-- [Features (Überblick)](#features-überblick)
-- [Funktionalitäten im Detail](#funktionalitäten-im-detail)
-  - [Dashboard](#dashboard)
-  - [Transaktionen](#transaktionen)
-  - [Kategorien](#kategorien)
-  - [Konten](#konten)
-  - [Zinsprognose](#zinsprognose)
-  - [Finanzbuddy](#finanzbuddy)
-  - [Suche](#suche)
-  - [Importer](#importer)
-  - [API](#api)
-  - [Datenbank](#datenbank)
-- [Hinweise zur Ausführung](#hinweise-zur-ausführung)
-- [Detaillierter Aufbau des Projektes](#detailierter-aufbau-des-projektes)
-  - [Projektstruktur](#projektstruktur)
-  - [Datenbank-Schema](#datenbank-schema)
-  - [Module im Detail](#module-im-detail)
-- [Trennung der Verantwortlichkeit](#trennung-der-verantwortlichkeit)
-- [Verwendete Technologien](#verwendete-technologien)
+- [FINLY – Persönlicher Ausgabenmanager 📊](#finly--persönlicher-ausgabenmanager-)
+  - [Inhaltsverzeichnis](#inhaltsverzeichnis)
+  - [Projektübersicht](#projektübersicht)
+  - [Features (Überblick)](#features-überblick)
+  - [Funktionalitäten im Detail](#funktionalitäten-im-detail)
+    - [Dashboard](#dashboard)
+    - [Transaktionen](#transaktionen)
+    - [Kategorien](#kategorien)
+    - [Konten](#konten)
+    - [Zinsprognose](#zinsprognose)
+    - [Finanzbuddy](#finanzbuddy)
+    - [Suche](#suche)
+    - [Importer](#importer)
+    - [API](#api)
+    - [Datenbank](#datenbank)
+  - [Hinweise zur Ausführung](#hinweise-zur-ausführung)
+    - [🚀 Schnellstart (Windows)](#-schnellstart-windows)
+    - [🍎 Schnellstart (Mac/Linux)](#-schnellstart-maclinux)
+    - [🛠️ Manuelle Installation](#️-manuelle-installation)
+  - [Detailierter Aufbau des Projektes](#detailierter-aufbau-des-projektes)
+    - [Projektstruktur](#projektstruktur)
+    - [Datenbank-Schema](#datenbank-schema)
+    - [Module im Detail](#module-im-detail)
+      - [API-Modul (`src/api/`)](#api-modul-srcapi)
+      - [Datenbank-Modul (`src/database/`)](#datenbank-modul-srcdatabase)
+      - [Categories-Modul (`src/categories/`)](#categories-modul-srccategories)
+      - [Chatbot-Modul (`src/chatbot/`)](#chatbot-modul-srcchatbot)
+      - [Frontend-Modul (`static/js/`)](#frontend-modul-staticjs)
+      - [Zinsrechner-Modul (`src/api/zinsrechner_routes.py`)](#zinsrechner-modul-srcapizinsrechner_routespy)
+      - [CSV-Importer (`src/database/csv_importer.py`)](#csv-importer-srcdatabasecsv_importerpy)
+      - [Suche-Modul (`src/database/search.py`)](#suche-modul-srcdatabasesearchpy)
+  - [Trennung der Verantwortlichkeit](#trennung-der-verantwortlichkeit)
+  - [Verwendete Technologien](#verwendete-technologien)
+    - [Backend](#backend)
+    - [Frontend](#frontend)
 
 ---
 
@@ -36,14 +51,14 @@ Ziel von FINLY ist es, einen übersichtlichen Einblick in die eigenen Finanzen z
 
 ## Features (Überblick)
 
-| Feature | Beschreibung |
-|---------|--------------|
-| **Übersicht** | Dashboard mit den wichtigsten Informationen übersichtlich dargestellt |
+| Feature           | Beschreibung                                                           |
+| ----------------- | ---------------------------------------------------------------------- |
+| **Übersicht**     | Dashboard mit den wichtigsten Informationen übersichtlich dargestellt  |
 | **Transaktionen** | Verwaltung aller Einnahmen und Ausgaben mit Such- und Filterfunktionen |
-| **Kategorien** | Automatische und manuelle Kategorisierung von Transaktionen |
-| **Konten** | Verwaltung mehrerer Bankkonten mit Kontostandsberechnung |
-| **Zinsprognose** | Berechnung von Sparplänen und Zinseszins-Prognosen |
-| **Finanzbuddy** | KI-basierter Chatbot für Finanzfragen (powered by Google Gemini) |
+| **Kategorien**    | Automatische und manuelle Kategorisierung von Transaktionen            |
+| **Konten**        | Verwaltung mehrerer Bankkonten mit Kontostandsberechnung               |
+| **Zinsprognose**  | Berechnung von Sparplänen und Zinseszins-Prognosen                     |
+| **Finanzbuddy**   | KI-basierter Chatbot für Finanzfragen (powered by Google Gemini)       |
 
 ---
 
@@ -51,17 +66,17 @@ Ziel von FINLY ist es, einen übersichtlichen Einblick in die eigenen Finanzen z
 
 ### Dashboard
 
-*Noch füllen*
+_Noch füllen_
 
-**Umgesetzt von:** *Arienne Bertram*
+**Umgesetzt von:** _Arienne Bertram_
 
 ---
 
 ### Transaktionen
 
-*Noch füllen*
+_Noch füllen_
 
-**Umgesetzt von:** *Emil Horstmann*
+**Umgesetzt von:** _Emil Horstmann_
 
 ---
 
@@ -70,25 +85,27 @@ Ziel von FINLY ist es, einen übersichtlichen Einblick in die eigenen Finanzen z
 Das Categories-Modul ermöglicht die automatische Zuordnung von Transaktionen zu Kategorien mittels regelbasierter Kategorisierung. Das System ist selbstlernend und verbessert sich durch Analyse bereits kategorisierter Transaktionen kontinuierlich.
 
 **Komponenten:**
+
 - `categories.py` – Kategorieverwaltung (CRUD-Operationen, Standard-Kategorien)
 - `categorizer_rules.py` – Regelbasierte Kategorisierungs-Engine mit Keyword-Matching
 - `auto_categorizer_service.py` – Iterativer Lernzyklus für automatische Kategorisierung
-- `rules.py` – Default-Kategorisierungsregeln
+- `rules.py` – Standard-Kategorisierungsregeln
 
 **Features:**
+
 - Selbstlernender Algorithmus mit Stopword-Filter und Eindeutigkeitsprüfung
 - Automatische Trigger bei Backend-Start, CSV-Import und Transaktions-Schwellwert
 - Caching-Mechanismus für Performance-Optimierung
 
-**Umgesetzt von:** *Noch füllen*
+**Umgesetzt von:** _Leonardo Ferreira Pfeiffer_
 
 ---
 
 ### Konten
 
-*Noch füllen*
+_Noch füllen_
 
-**Umgesetzt von:** *Noch füllen*
+**Umgesetzt von:** _Noch füllen_
 
 ---
 
@@ -97,10 +114,11 @@ Das Categories-Modul ermöglicht die automatische Zuordnung von Transaktionen zu
 **Funktionsumfang**
 
 **Investitionsprognosen:**
+
 - Darstellung der Kapitalentwicklung über einen frei wählbaren Zeitraum
 - Berücksichtigung von Startkapital, Zinssatz, regelmäßigen Einzahlungen und Zinseszins
 - Visualisierung als Liniendiagramm
-**Reale oder fiktive Daten:**
+  **Reale oder fiktive Daten:**
 - Fiktiver Modus: Startkapital wird manuell festgelegt
 - Realer Modus: Zugriff auf vorhandene Konten aus der FINLY-App, automatisches Laden des aktuellen Kontostands
 
@@ -108,7 +126,6 @@ Das Categories-Modul ermöglicht die automatische Zuordnung von Transaktionen zu
 Bis zu drei Zinsprognosen parallel möglich
 Jede Prognose wird als eigene Kurve dargestellt
 Szenarien können ein- und ausgeblendet, ausgewählt, bearbeitet oder gelöscht werden
-
 
 **Bedienkonzept**
 
@@ -133,7 +150,6 @@ Eine Datenbank pro Prognose
 Enthält Parameter, Berechnungsverlauf, kumulierte Einzahlungen und Zinsen
 Persistente Speicherung der Prognosen, Wiederherstellung beim Neuladen
 
-
 **Technische Verbindung der Komponenten**
 
 Frontend → Backend:
@@ -143,7 +159,6 @@ Aktionen: Berechnung speichern, Prognosen laden, Prognosen löschen, Kontodaten 
 Backend → Datenbanken:
 expenses.db: Zugriff auf Kontodaten der gesamten App
 vergleich_X.db: Verwaltung der Zinsprognosen
-
 
 **Code Erstellung und KI Tools:**
 
@@ -160,8 +175,9 @@ Gemini 3 Flash - für die Einarbeitung in GIT Hub und Visual Studio Funktionen
 Das Chatbot-Modul implementiert einen KI-gestützten Finanzassistenten, der natürlichsprachige Anfragen zu Finanzdaten beantwortet. Es nutzt die **Google Gemini API** mit automatischem Function Calling.
 
 **Komponenten:**
+
 - `gemini_client.py` – Gemini API Client (Modell: gemini-2.5-flash)
-- `tools.py` – 8 Database-Tools für Function Calling
+- `tools.py` – Database-Tools für Function Calling
 
 **Verfügbare Tools:**
 | Tool | Funktion |
@@ -175,23 +191,23 @@ Das Chatbot-Modul implementiert einen KI-gestützten Finanzassistenten, der nat�
 | `get_database_statistics()` | Datenbank-Statistiken |
 | `get_transaction_stats()` | Summen, Durchschnitte, Min/Max |
 
-**Umgesetzt von:** *Noch füllen*
+**Umgesetzt von:** _Leonardo Ferreira Pfeiffer_
 
 ---
 
 ### Suche
 
-*Noch füllen*
+_Noch füllen_
 
-**Umgesetzt von:** *Noch füllen*
+**Umgesetzt von:** _Noch füllen_
 
 ---
 
 ### Importer
 
-*Noch füllen*
+_Noch füllen_
 
-**Umgesetzt von:** *Noch füllen*
+**Umgesetzt von:** _Noch füllen_
 
 ---
 
@@ -200,6 +216,7 @@ Das Chatbot-Modul implementiert einen KI-gestützten Finanzassistenten, der nat�
 Das API-Modul stellt die RESTful-Schnittstelle der Anwendung bereit. Es basiert auf FastAPI und bietet automatische Dokumentation, Datenvalidierung mit Pydantic und asynchrone Request-Verarbeitung.
 
 **Hauptendpunkte:**
+
 - `/transactions` – CRUD für Transaktionen
 - `/konten` – CRUD für Konten
 - `/categories` – Kategorieverwaltung
@@ -207,7 +224,7 @@ Das API-Modul stellt die RESTful-Schnittstelle der Anwendung bereit. Es basiert 
 - `/api/zinsrechner` – Zinsberechnungen
 - `/import/transactions` – CSV-Import
 
-**Umgesetzt von:** *Emil Horstmann*
+**Umgesetzt von:** _Emil Horstmann_
 
 ---
 
@@ -216,15 +233,17 @@ Das API-Modul stellt die RESTful-Schnittstelle der Anwendung bereit. Es basiert 
 Das Datenbank-Modul verwaltet die Datenpersistenz mit SQLAlchemy ORM und SQLite. Es definiert alle Datenmodelle und bietet spezialisierte Services für Kontoverwaltung, CSV-Import und Transaktionssuche.
 
 **Modelle:**
+
 - `Konto` – Bankkonten mit Kontostand
 - `Transaktion` – Einnahmen/Ausgaben
 - `Category` – Kategorien mit Icons und Farben
 - `CategoryRules` – Automatische Kategorisierungsregeln
 - `CategorizationState` – Status der Auto-Kategorisierung
 
-**Umgesetzt von:** *Emil Horstmann*
+**Umgesetzt von:** _Emil Horstmann_
 
 ---
+
 ## Hinweise zur Ausführung
 
 ### 🚀 Schnellstart (Windows)
@@ -260,6 +279,7 @@ python -m uvicorn src.api.main:app --reload
 Browser öffnen: http://127.0.0.1:8000
 
 ---
+
 ## Detailierter Aufbau des Projektes
 
 ### Projektstruktur
@@ -348,28 +368,28 @@ erDiagram
 
 FastAPI-basierte REST-Schnittstelle mit Pydantic-Validierung.
 
-| Datei | Funktion |
-|-------|----------|
-| `main.py` | App-Bootstrap, Router-Registrierung, Lifespan-Management |
-| `schemas.py` | Pydantic-Schemas für Request/Response |
-| `transactions_routes.py` | Transaktions- und Konto-Endpunkte |
-| `category_routes.py` | Kategorie-Endpunkte |
-| `chatbot_routes.py` | Chatbot-Endpunkte |
-| `zinsrechner_routes.py` | Zinsrechner-Endpunkte |
+| Datei                    | Funktion                                                 |
+| ------------------------ | -------------------------------------------------------- |
+| `main.py`                | App-Bootstrap, Router-Registrierung, Lifespan-Management |
+| `schemas.py`             | Pydantic-Schemas für Request/Response                    |
+| `transactions_routes.py` | Transaktions- und Konto-Endpunkte                        |
+| `category_routes.py`     | Kategorie-Endpunkte                                      |
+| `chatbot_routes.py`      | Chatbot-Endpunkte                                        |
+| `zinsrechner_routes.py`  | Zinsrechner-Endpunkte                                    |
 
 #### Datenbank-Modul (`src/database/`)
 
 SQLAlchemy ORM mit SQLite.
 
-| Datei | Funktion |
-|-------|----------|
-| `models.py` | ORM-Modelle (Konto, Transaktion, Category, etc.) |
-| `connection.py` | Datenbankverbindung und Session-Factory |
-| `konto_manager.py` | CRUD-Operationen für Konten |
-| `csv_importer.py` | CSV-Import mit Auto-Delimiter-Erkennung |
-| `search.py` | Erweiterte Transaktionssuche mit Filtern |
+| Datei              | Funktion                                         |
+| ------------------ | ------------------------------------------------ |
+| `models.py`        | ORM-Modelle (Konto, Transaktion, Category, etc.) |
+| `connection.py`    | Datenbankverbindung und Session-Factory          |
+| `konto_manager.py` | CRUD-Operationen für Konten                      |
+| `csv_importer.py`  | CSV-Import mit Auto-Delimiter-Erkennung          |
+| `search.py`        | Erweiterte Transaktionssuche mit Filtern         |
 
-#### Categories-Modul (`src/categories/`) – Ausführliche Dokumentation
+#### Categories-Modul (`src/categories/`)
 
 **Dateistruktur:**
 
@@ -382,7 +402,7 @@ src/categories/
 └── rules.py                       # Standard-Kategorisierungsregeln
 ```
 
-**1. `categories.py`** - Kategorieverwaltung
+**`categories.py`** - Kategorieverwaltung
 
 - **Standard-Kategorien**: Automatisches Laden von vordefinierten Kategorien (Lebensmittel, Miete, Gehalt, etc.) bei erster Nutzung
 - **CRUD-Operationen**:
@@ -394,6 +414,7 @@ src/categories/
 **`categorizer_rules.py`** - Kategorisierungs-Engine
 
 - **Hauptklasse `Categorizer`**: Regelbasierte Kategorisierung
+
 - **Kernfunktionen**:
   - `suggest_category()`: Schlägt Kategorie basierend auf Keywords vor
   - `categorize_all()`: Kategorisiert alle oder nur unkategorisierte Transaktionen
@@ -414,22 +435,18 @@ src/categories/
   3. Lernt neue Keywords aus kategorisierten Transaktionen
   4. Prüft ob neue Keywords hinzugefügt wurden
   5. Wiederholt Prozess bis keine neuen Keywords mehr gefunden werden
+
 - **Automatische Trigger**:
-  - **Backend-Start**: Prüft beim Starten der Anwendung automatisch auf neue Transaktionen
-  - **CSV-Import**: Startet nach jedem erfolgreichen CSV-Import automatisch einen Lernzyklus
+  - **Backend-Start**: Prüft beim Starten der Anwendung automatisch auf neue Transaktionen und führt bei Bedarf einen Lernzyklus aus
+  - **CSV-Import**: Startet nach jedem erfolgreichen CSV-Import automatisch einen vollständigen Lernzyklus
   - **Transaktions-Schwellwert**: Löst automatisch einen Lernzyklus aus, sobald 5 neue Transaktionen hinzugefügt wurden
-- **State-Management**:
-  - `increment_transaction_counter()`: Zählt neue Transaktionen
-  - `should_trigger_categorization()`: Prüft ob Auto-Kategorisierung ausgelöst werden soll
-  - `get_categorization_state()`: Gibt aktuellen Status zurück
-- **Singleton-Pattern**: Globale Service-Instanz über `get_auto_categorizer_service()`
 
 **`rules.py`** - Regelkonfiguration
 
 - Enthält `DEFAULT_CATEGORIZATION_RULES` mit vordefinierten Keywords für Standardkategorien
 - Wird beim ersten Start automatisch in die Datenbank geladen
 
-**Algorithmus-Logik:**
+**Kategorisierungslogik:**
 
 1. **Keyword-Extraktion**: Transaktionsfelder werden zu einem Suchtext kombiniert und in Kleinbuchstaben konvertiert
 2. **Pattern-Matching**: Jede Regel wird gegen den Suchtext geprüft
@@ -438,7 +455,7 @@ src/categories/
 
 ---
 
-#### Chatbot-Modul (`src/chatbot/`) – Ausführliche Dokumentation
+#### Chatbot-Modul (`src/chatbot/`)
 
 **`gemini_client.py`** - Gemini API Integration
 
@@ -458,18 +475,18 @@ src/categories/
 - **Session-Management**:
   - `set_db_session()`: Setzt globale Datenbank-Session
   - `get_db_session()`: Gibt aktuelle Session zurück
-- **Implementierte Tools** (8 Funktionen):
+- **Implementierte Tools**:
 
-| Tool | Beschreibung |
-|------|--------------|
-| `get_transactions()` | Transaktionsabfrage mit Filter: Datumsbereich, Kategorie, Typ. Limit-Parameter (default: 100), Sortierung nach Buchungstag |
-| `get_spending_by_category()` | Aggregiert Ausgaben pro Kategorie mit optionalem Datumsfilter, sortiert nach Gesamtausgaben |
-| `get_monthly_summary()` | Einnahmen und Ausgaben pro Monat, berechnet Bilanz (Einnahmen - Ausgaben) |
-| `get_account_overview()` | Listet alle Konten mit Kontostände, Kontotypen und Banknamen |
-| `get_income_vs_expenses()` | Vergleich für definierten Zeitraum, berechnet Gesamtbilanz |
-| `get_categories()` | Gibt alle verfügbaren Kategorien mit Typ (Einnahme/Ausgabe) zurück |
-| `get_database_statistics()` | Anzahl Transaktionen, Konten, Kategorien und Zeitraum der Daten |
-| `get_transaction_stats()` | Berechnet Summe, Anzahl, Durchschnitt, Min, Max mit allen Filteroptionen |
+| Tool                         | Beschreibung                                                                                                               |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `get_transactions()`         | Transaktionsabfrage mit Filter: Datumsbereich, Kategorie, Typ. Limit-Parameter (default: 100), Sortierung nach Buchungstag |
+| `get_spending_by_category()` | Aggregiert Ausgaben pro Kategorie mit optionalem Datumsfilter, sortiert nach Gesamtausgaben                                |
+| `get_monthly_summary()`      | Einnahmen und Ausgaben pro Monat, berechnet Bilanz (Einnahmen - Ausgaben)                                                  |
+| `get_account_overview()`     | Listet alle Konten mit Kontostände, Kontotypen und Banknamen                                                               |
+| `get_income_vs_expenses()`   | Vergleich für definierten Zeitraum, berechnet Gesamtbilanz                                                                 |
+| `get_categories()`           | Gibt alle verfügbaren Kategorien mit Typ (Einnahme/Ausgabe) zurück                                                         |
+| `get_database_statistics()`  | Anzahl Transaktionen, Konten, Kategorien und Zeitraum der Daten                                                            |
+| `get_transaction_stats()`    | Berechnet Summe, Anzahl, Durchschnitt, Min, Max mit allen Filteroptionen                                                   |
 
 **Function Calling Workflow:**
 
@@ -486,83 +503,78 @@ src/categories/
 - Mehrere Function Calls pro Anfrage möglich
 - Ergebnisse werden automatisch in Kontext integriert
 
-**Fehlerbehandlung:**
-
-- Try-Catch für API-Fehler
-- Benutzerfreundliche Fehlermeldungen
-- Robuste None-Checks bei Datenbankabfragen
-
 ---
 
 #### Frontend-Modul (`static/js/`)
 
-*Noch zu dokumentieren*
+_Noch zu dokumentieren_
 
-| Datei | Funktion |
-|-------|----------|
-| `app.js` | *Noch füllen* |
-| `dashboard.js` | *Noch füllen* |
-| `transactions.js` | *Noch füllen* |
-| `kategorien.js` | *Noch füllen* |
-| `konten.js` | *Noch füllen* |
-| `zinsrechner.js` | *Noch füllen* |
-| `chatbot.js` | *Noch füllen* |
-| `search.js` | *Noch füllen* |
-| `calendar.js` | *Noch füllen* |
-| `modals.js` | *Noch füllen* |
-| `components.js` | *Noch füllen* |
-| `utils.js` | *Noch füllen* |
-| `constants.js` | *Noch füllen* |
-| `settings.js` | *Noch füllen* |
+| Datei             | Funktion      |
+| ----------------- | ------------- |
+| `app.js`          | _Noch füllen_ |
+| `dashboard.js`    | _Noch füllen_ |
+| `transactions.js` | _Noch füllen_ |
+| `kategorien.js`   | _Noch füllen_ |
+| `konten.js`       | _Noch füllen_ |
+| `zinsrechner.js`  | _Noch füllen_ |
+| `chatbot.js`      | _Noch füllen_ |
+| `search.js`       | _Noch füllen_ |
+| `calendar.js`     | _Noch füllen_ |
+| `modals.js`       | _Noch füllen_ |
+| `components.js`   | _Noch füllen_ |
+| `utils.js`        | _Noch füllen_ |
+| `constants.js`    | _Noch füllen_ |
+| `settings.js`     | _Noch füllen_ |
 
 ---
 
 #### Zinsrechner-Modul (`src/api/zinsrechner_routes.py`)
 
-*Noch zu dokumentieren*
+_Noch zu dokumentieren_
 
 ---
 
 #### CSV-Importer (`src/database/csv_importer.py`)
 
-*Noch zu dokumentieren*
+_Noch zu dokumentieren_
 
 ---
 
 #### Suche-Modul (`src/database/search.py`)
 
-*Noch zu dokumentieren*
+_Noch zu dokumentieren_
 
 ---
 
 ## Trennung der Verantwortlichkeit
 
-| Name | Verantwortungsbereich | Verwendete KI-Tools |
-|------|----------------------|----------------------|
-| **Arienne Bertram** | *UI/UX Programmierung* | Copilot (Claude Sonnet 4.5) | 
-| **Emil Horstmann** | *JavaScript, API, Datenbank* | Copilot (Claude Opus 4.5/Gemini 3 Pro) |
-| **Paul-Gerhart Siegel** | *Noch füllen* |
-| **Leonardo Fabian Ferreira Pfeiffer** | *Noch füllen* |
-| **Sinan Felix Atay** | *Noch füllen* |
+| Name                           | Verantwortungsbereich        | Verwendete KI-Tools                    |
+| ------------------------------ | ---------------------------- | -------------------------------------- |
+| **Arienne Bertram**            | _UI/UX Programmierung_       | Copilot (Claude Sonnet 4.5)            |
+| **Emil Horstmann**             | _JavaScript, API, Datenbank_ | Copilot (Claude Opus 4.5/Gemini 3 Pro) |
+| **Paul-Gerhart Siegel**        | _Noch füllen_                |
+| **Leonardo Ferreira Pfeiffer** | _Kategoriesierung, Chatbot_  | Claude Sonnet 4.5                      |
+| **Sinan Felix Atay**           | _Noch füllen_                |
 
 ---
 
 ## Verwendete Technologien
 
 ### Backend
-| Technologie | Verwendung |
-|-------------|------------|
-| **Python 3.x** | Programmiersprache |
-| **FastAPI** | REST-API Framework |
+
+| Technologie    | Verwendung               |
+| -------------- | ------------------------ |
+| **Python 3.x** | Programmiersprache       |
+| **FastAPI**    | REST-API Framework       |
 | **SQLAlchemy** | ORM für Datenbankzugriff |
-| **SQLite** | Datenbank |
-| **Pydantic** | Datenvalidierung |
-| **Uvicorn** | ASGI-Server |
+| **SQLite**     | Datenbank                |
+| **Pydantic**   | Datenvalidierung         |
+| **Uvicorn**    | ASGI-Server              |
 
 ### Frontend
-| Technologie | Verwendung |
-|-------------|------------|
-| **HTML5/CSS3** | Struktur und Styling |
-| **JavaScript** | Interaktivität |
-| **Plotly.js** | Interaktive Charts (Sankey, etc.) |
 
+| Technologie    | Verwendung                        |
+| -------------- | --------------------------------- |
+| **HTML5/CSS3** | Struktur und Styling              |
+| **JavaScript** | Interaktivität                    |
+| **Plotly.js**  | Interaktive Charts (Sankey, etc.) |
