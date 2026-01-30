@@ -33,11 +33,3 @@ INCOME_COLOR = "#2ecc71"   # Grün für Einnahmen
 
 DEFAULT_CURRENCY = "EUR"
 
-
-# ==================== KATEGORISIERUNG ====================
-
-# Schwellenwert für Auto-Kategorisierung (Anzahl neue Transaktionen)
-AUTO_CATEGORIZATION_THRESHOLD = 5
-
-# Mindestanzahl Vorkommen für gelernte Keywords
-MIN_KEYWORD_OCCURRENCES = 3
