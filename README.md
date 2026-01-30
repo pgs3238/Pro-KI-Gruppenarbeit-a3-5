@@ -103,8 +103,8 @@ Das Categories-Modul ermöglicht die automatische Zuordnung von Transaktionen zu
 **Komponenten:**
 - `zinsrechner.html` - Buttons, Schieberegler, Texteingabe
 - `zinsrechner.js` - Funktionalitäten(Chart-Initialisierung, Verkabelung Input Felder, Zinsberechnung, Vorschau Option, Operationen: Berechnen, Aktualisieren, Löschen, Zurücksetzen)
-- 'vergleich_X.db' - Datenbank wird für die Berechneten Werte erstellt. Jeweils eine pro Berechnung (max. 3)
-- 'zinsrechner_routes.py' - Backend API - Berechnungen speichern und laden aus Vergleichsdatenbanken oder Kontendatenbank
+- `vergleich_X.db` - Datenbank wird für die Berechneten Werte erstellt. Jeweils eine pro Berechnung (max. 3)
+- `zinsrechner_routes.py` - Backend API - Berechnungen speichern und laden aus Vergleichsdatenbanken oder Kontendatenbank
 
 Frontend → Backend:
 Kommunikation über REST-API (FastAPI)
