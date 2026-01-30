@@ -1,6 +1,9 @@
 // ============ SHARED COMPONENTS ============
 // Zentrale Komponenten die auf allen Seiten verwendet werden
 
+
+
+
 /**
  * Erstellt die Sidebar-Navigation
  * @param {string} activePage - ID der aktiven Seite (overview, transactions, categories, accounts, forecast, chatbot)
@@ -113,6 +116,25 @@ function renderApiKeyModal() {
                     <label class="api-label">Gemini API Key für Finanz-Buddy</label>
                     <input type="password" id="apiKeyInput" class="api-input" placeholder="AIza..." />
                     <small class="api-hint">Ihr API-Key wird in der .env-Datei auf dem Server gespeichert.</small>
+                    
+                    <div class="api-docs-section" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #333;">
+                        <label class="api-label">API-Dokumentation</label>
+                        <button class="api-btn api-btn-docs" onclick="window.open('/docs', '_blank')" style="width: 100%; margin-top: 8px;">
+                            📚 API Docs öffnen
+                        </button>
+                    </div>
+                    
+                    <div class="api-docs-section" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #333;">
+                        <label class="api-label">Über FINLY</label>
+                        <div class="credits-info" style="margin-top: 8px; padding: 12px; background: #1a1a2e; border-radius: 8px; font-size: 13px;">
+                            <div style="margin-bottom: 8px;"><strong>📊 FINLY - Finanzübersicht</strong></div>
+                            <div style="color: #888; line-height: 1.6;">
+                                Entwickelt im Rahmen der Pro-KI Gruppenarbeit<br>
+                                © 2026 - Alle Rechte vorbehalten<br><br>
+                                <strong>Technologien:</strong> FastAPI, SQLAlchemy, Chart.js, Plotly
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="api-modal-footer">
                     <button class="api-btn api-btn-cancel" onclick="document.getElementById('apiKeyModal').style.display='none'">Abbrechen</button>
