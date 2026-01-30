@@ -8,9 +8,8 @@ from sqlalchemy import func
 
 
 class KontoManager:
-    """Manager-Klasse für Konto-Operationen"""
-
     @staticmethod
+    # erstelle_konto - Legt ein neues Konto an und speichert es in der Datenbank.
     def erstelle_konto(
         session: Session,
         kontoname: str,
@@ -21,22 +20,7 @@ class KontoManager:
         waehrung: str = "EUR",
         bic: Optional[str] = None,
     ) -> Konto:
-        """
-        Erstellt ein neues Konto in der Datenbank
 
-        Args:
-            session: SQLAlchemy Session
-            kontoname: Name des Kontos (z.B. "Hauptkonto", "Sparkonto")
-            kontonummer: IBAN des Kontos (optional)
-            kontotyp: Typ des Kontos (z.B. "Girokonto", "Sparkonto", "Kreditkarte")
-            bankname: Name der Bank (optional)
-            kontostand: Startkontostand (default: 0.0)
-            waehrung: Währung (default: "EUR")
-            bic: BIC/SWIFT Code (optional)
-
-        Returns:
-            Konto: Das erstellte Konto-Objekt
-        """
         neues_konto = Konto(
             kontoname=kontoname,
             kontonummer=kontonummer,
@@ -53,61 +37,23 @@ class KontoManager:
         return neues_konto
 
     @staticmethod
+    # hole_konto - Lädt ein Konto anhand der ID aus der Datenbank.
     def hole_konto(session: Session, konto_id: int) -> Optional[Konto]:
-        """
-        Holt ein Konto nach ID
-
-        Args:
-            session: SQLAlchemy Session
-            konto_id: ID des Kontos
-
-        Returns:
-            Konto oder None
-        """
         return session.query(Konto).filter(Konto.id == konto_id).first()
 
     @staticmethod
+    # hole_konto_by_iban - Sucht ein Konto anhand der IBAN.
     def hole_konto_by_iban(session: Session, iban: str) -> Optional[Konto]:
-        """
-        Holt ein Konto nach IBAN
-
-        Args:
-            session: SQLAlchemy Session
-            iban: IBAN des Kontos
-
-        Returns:
-            Konto oder None
-        """
         return session.query(Konto).filter(Konto.iban == iban).first()
 
     @staticmethod
+    # hole_alle_konten - Gibt eine Liste aller Konten zurück.
     def hole_alle_konten(session: Session) -> List[Konto]:
-        """
-        Holt alle Konten
-
-        Args:
-            session: SQLAlchemy Session
-
-        Returns:
-            Liste aller Konten
-        """
         return session.query(Konto).all()
 
     @staticmethod
-    def aktualisiere_kontostand(
-        session: Session, konto_id: int, neuer_kontostand: float
-    ) -> Konto:
-        """
-        Aktualisiert den Kontostand eines Kontos
-
-        Args:
-            session: SQLAlchemy Session
-            konto_id: ID des Kontos
-            neuer_kontostand: Neuer Kontostand
-
-        Returns:
-            Das aktualisierte Konto-Objekt
-        """
+    # aktualisiere_kontostand - Setzt den Kontostand eines Kontos auf einen festen Wert.
+    def aktualisiere_kontostand(session: Session, konto_id: int, neuer_kontostand: float) -> Konto:
         konto = KontoManager.hole_konto(session, konto_id)
         if konto:
             konto.kontostand = neuer_kontostand
@@ -117,20 +63,8 @@ class KontoManager:
         return konto
 
     @staticmethod
-    def aktualisiere_kontostand_by_iban(
-        session: Session, iban: str, neuer_kontostand: float
-    ) -> Optional[Konto]:
-        """
-        Aktualisiert den Kontostand eines Kontos nach IBAN
-
-        Args:
-            session: SQLAlchemy Session
-            iban: IBAN des Kontos
-            neuer_kontostand: Neuer Kontostand
-
-        Returns:
-            Das aktualisierte Konto-Objekt oder None
-        """
+    # aktualisiere_kontostand_by_iban - Setzt den Kontostand anhand der IBAN.
+    def aktualisiere_kontostand_by_iban(session: Session, iban: str, neuer_kontostand: float) -> Optional[Konto]:
         konto = KontoManager.hole_konto_by_iban(session, iban)
         if konto:
             konto.kontostand = neuer_kontostand
@@ -140,20 +74,8 @@ class KontoManager:
         return konto
 
     @staticmethod
-    def erhöhe_kontostand(
-        session: Session, konto_id: int, betrag: float
-    ) -> Optional[Konto]:
-        """
-        Erhöht den Kontostand um einen Betrag
-
-        Args:
-            session: SQLAlchemy Session
-            konto_id: ID des Kontos
-            betrag: Betrag (positiv oder negativ)
-
-        Returns:
-            Das aktualisierte Konto-Objekt
-        """
+    # erhöhe_kontostand - Addiert einen Betrag zum aktuellen Kontostand (für Transaktionen).
+    def erhöhe_kontostand(session: Session, konto_id: int, betrag: float) -> Optional[Konto]:
         konto = KontoManager.hole_konto(session, konto_id)
         if konto:
             konto.kontostand += betrag
@@ -163,20 +85,8 @@ class KontoManager:
         return konto
 
     @staticmethod
-    def erhöhe_kontostand_by_iban(
-        session: Session, iban: str, betrag: float
-    ) -> Optional[Konto]:
-        """
-        Erhöht den Kontostand eines Kontos um einen Betrag nach IBAN
-
-        Args:
-            session: SQLAlchemy Session
-            iban: IBAN des Kontos
-            betrag: Betrag (positiv oder negativ)
-
-        Returns:
-            Das aktualisierte Konto-Objekt
-        """
+    # erhöhe_kontostand_by_iban - Erhöht den Kontostand anhand der IBAN (für Transaktionen).
+    def erhöhe_kontostand_by_iban(session: Session, iban: str, betrag: float) -> Optional[Konto]:
         konto = KontoManager.hole_konto_by_iban(session, iban)
         if konto:
             konto.kontostand += betrag
@@ -186,17 +96,8 @@ class KontoManager:
         return konto
 
     @staticmethod
+    # lösche_konto - Entfernt Konto und alle zugehörigen Transaktionen.
     def lösche_konto(session: Session, konto_id: int) -> bool:
-        """
-        Löscht ein Konto (mit allen zugehörigen Transaktionen)
-
-        Args:
-            session: SQLAlchemy Session
-            konto_id: ID des Kontos
-
-        Returns:
-            True wenn erfolgreich, False wenn nicht gefunden
-        """
         konto = KontoManager.hole_konto(session, konto_id)
         if konto:
             # Lösche zuerst alle Transaktionen dieses Kontos
@@ -209,21 +110,8 @@ class KontoManager:
         return False
 
     @staticmethod
-    def aktualisiere_kontoinformationen(
-        session: Session, konto_id: int, **kwargs
-    ) -> Optional[Konto]:
-        """
-        Aktualisiert Informationen eines Kontos
-
-        Args:
-            session: SQLAlchemy Session
-            konto_id: ID des Kontos
-            **kwargs: Felder die aktualisiert werden sollen
-                     (kontoname, bankname, kontotyp, bic, etc.)
-
-        Returns:
-            Das aktualisierte Konto-Objekt
-        """
+    # aktualisiere_kontoinformationen - Ändert Stammdaten eines Kontos (Name, Typ, etc.).
+    def aktualisiere_kontoinformationen(session: Session, konto_id: int, **kwargs) -> Optional[Konto]:
         konto = KontoManager.hole_konto(session, konto_id)
         if konto:
             # Erlaubte Felder für Updates
@@ -245,20 +133,8 @@ class KontoManager:
         return konto
 
     @staticmethod
-    def berechne_kontostand_aus_transaktionen(
-        session: Session, konto_id: int, initialstand: float = 0.0
-    ) -> float:
-        """
-        Berechnet den Kontostand aus allen zugehörigen Transaktionen
-
-        Args:
-            session: SQLAlchemy Session
-            konto_id: ID des Kontos
-            initialstand: Startkontostand (default: 0.0)
-
-        Returns:
-            float: Berechneter Kontostand (Initialstand + Summe aller Transaktionen)
-        """
+    # berechne_kontostand_aus_transaktionen - Summiert alle Transaktionen eines Kontos für Neuberechnung bei Fehlern.
+    def berechne_kontostand_aus_transaktionen(session: Session, konto_id: int, initialstand: float = 0.0) -> float:
         # Summiere alle Beträge der Transaktionen für dieses Konto
         summe = (
             session.query(func.sum(Transaktion.betrag))
@@ -274,20 +150,8 @@ class KontoManager:
         return kontostand
 
     @staticmethod
-    def aktualisiere_kontostand_aus_transaktionen(
-        session: Session, konto_id: int, initialstand: float = 0.0
-    ) -> Optional[Konto]:
-        """
-        Aktualisiert den Kontostand eines Kontos basierend auf allen zugehörigen Transaktionen
-
-        Args:
-            session: SQLAlchemy Session
-            konto_id: ID des Kontos
-            initialstand: Initialstand des Kontos vor Transaktionen (default: 0.0)
-
-        Returns:
-            Das aktualisierte Konto-Objekt oder None wenn nicht gefunden
-        """
+    # aktualisiere_kontostand_aus_transaktionen - Berechnet und setzt Kontostand basierend auf Transaktionshistorie.
+    def aktualisiere_kontostand_aus_transaktionen(session: Session, konto_id: int, initialstand: float = 0.0) -> Optional[Konto]:
         konto = KontoManager.hole_konto(session, konto_id)
         if not konto:
             return None

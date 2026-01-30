@@ -1,0 +1,394 @@
+from datetime import date, datetime, timedelta
+from typing import List, Optional
+import tempfile
+import json
+import os
+
+from fastapi import APIRouter, Depends, UploadFile, File, Form
+from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
+
+from ..database import Transaktion, Konto
+from ..database.search import search_transaktionen
+from ..database.csv_importer import CSVTransaktionImporter
+from ..categories.auto_categorizer_service import get_auto_categorizer_service
+from ..constants import CHART_COLOR_PALETTE
+from .schemas import (
+    TransaktionCreate,
+    TransaktionUpdate,
+    TransaktionResponse,
+    TransaktionSearch,
+)
+from .dependencies import get_db
+from .helpers import get_or_404
+
+router = APIRouter(prefix="/transactions", tags=["Transactions"])
+
+# Globale Service-Instanz (Singleton kommt aus get_auto_categorizer_service)
+auto_categorizer = get_auto_categorizer_service()
+
+
+# ==================== HILFSFUNKTIONEN ====================
+
+
+# Hilfsfunktion: Lädt eine Transaktion aus der DB oder wirft 404-Fehler.
+def get_transaction_or_404(transaction_id: int, db: Session):
+    return get_or_404(db, Transaktion, transaction_id, detail="Transaktion nicht gefunden")
+
+
+# Hilfsfunktion: Lädt ein Konto aus der DB oder wirft 404-Fehler.
+def get_konto_or_404(konto_id: int, db: Session):
+    return get_or_404(db, Konto, konto_id, detail="Konto nicht gefunden")
+
+
+# ==================== ENDPUNKTE: BASIC ====================
+
+
+@router.get("")
+# GET /transactions - Gibt Liste von Transaktionen zurück (id, buchungstag, beguenstigter, betrag, kategorie, etc.).
+def get_transactions(
+    skip: int = 0,
+    limit: int = 1000,
+    days: int = 30,
+    db: Session = Depends(get_db),
+):
+    # Wenn days > 0, filtere nach den letzten N Tagen
+    if days > 0:
+        cutoff_date = datetime.now().date() - timedelta(days=days)
+        return (
+            db.query(Transaktion)
+            .filter(Transaktion.buchungstag >= cutoff_date)
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+
+    return db.query(Transaktion).offset(skip).limit(limit).all()
+
+
+@router.get("/formatted/list")
+# GET /transactions/formatted/list - Gibt formatierte Transaktionen für Frontend zurück (datum, betrag mit +/-, iban formatiert).
+def get_transactions_formatted(
+    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+):
+    transactions = (
+        db.query(Transaktion)
+        .order_by(Transaktion.buchungstag.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+    konten = db.query(Konto).all()
+    konto_map = {k.id: k.kontoname for k in konten}
+
+    formatted = []
+    for t in transactions:
+        # Formatiere Datum als dd.mm.yyyy
+        datum = t.buchungstag.strftime("%d.%m.%Y")
+
+        # Formatiere Betrag mit + und €
+        betrag_class = "positiv" if t.betrag >= 0 else "negativ"
+        betrag_text = ("+" if t.betrag >= 0 else "") + f"{t.betrag:.2f}".replace(
+            ".", ","
+        ) + "€"
+
+        # IBAN formatieren (mit Leerzeichen alle 4 Zeichen)
+        iban = t.iban_kontonummer or "-"
+        if len(iban) > 4:
+            iban = " ".join([iban[i : i + 4] for i in range(0, len(iban), 4)])
+
+        # Kategorie: Nutze kategorie_id und lade den Namen via Relationship
+        kategorie = "-"
+        if t.kategorie_id and t.kategorie:
+            kategorie = t.kategorie.name
+
+        # Kontoname auflösen
+        kontoname = konto_map.get(t.konto_id, "-") if t.konto_id else "-"
+
+        formatted.append(
+            {
+                "id": t.id,
+                "datum": datum,
+                "beguenstigter": t.beguenstigter,
+                "iban": iban,
+                "konto": kontoname,
+                "verwendungszweck": t.verwendungszweck or "-",
+                "kategorie": kategorie,
+                "betrag": betrag_text,
+                "betrag_class": betrag_class,
+            }
+        )
+
+    return formatted
+
+
+# ==================== ENDPUNKTE: SANKEY DIAGRAMM ====================
+# WICHTIG: Muss vor /{transaction_id} stehen, sonst wird "sankey-data" als ID interpretiert
+
+
+@router.get("/sankey-data")
+# GET /transactions/sankey-data - Gibt Daten für Sankey-Diagramm zurück (nodes, links, total_expenses, category_count).
+def get_sankey_data(
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+    db: Session = Depends(get_db),
+):
+    from calendar import monthrange
+    from ..database.models import Category
+
+    # Standardwerte: aktueller Monat
+    now = datetime.now()
+    if year is None:
+        year = now.year
+    if month is None:
+        month = now.month
+
+    # Berechne Start- und Enddatum des Monats
+    first_day = datetime(year, month, 1).date()
+    last_day_num = monthrange(year, month)[1]
+    last_day = datetime(year, month, last_day_num).date()
+
+    # Lade Transaktionen des Monats (nur Ausgaben)
+    transactions = (
+        db.query(Transaktion)
+        .filter(
+            Transaktion.buchungstag >= first_day,
+            Transaktion.buchungstag <= last_day,
+            Transaktion.betrag < 0,  # Nur Ausgaben
+        )
+        .all()
+    )
+
+    if not transactions:
+        return {
+            "nodes": [],
+            "links": [],
+            "total_expenses": 0,
+            "category_count": 0,
+        }
+
+    # Lade alle Kategorien für Lookup
+    categories = {c.id: c for c in db.query(Category).all()}
+
+    # Sammle Ausgaben pro Kategorie
+    category_expenses = {}  # {kategorie_name: betrag}
+
+    for t in transactions:
+        # Kategorie-Name ermitteln
+        category_name = "Sonstiges"
+        if t.kategorie_id and t.kategorie_id in categories:
+            category_name = categories[t.kategorie_id].name
+
+        if category_name not in category_expenses:
+            category_expenses[category_name] = 0
+
+        category_expenses[category_name] += abs(t.betrag)
+
+    # Sortiere nach Betrag (größte zuerst)
+    sorted_categories = sorted(
+        category_expenses.items(), key=lambda x: x[1], reverse=True
+    )
+
+    # Berechne Gesamtausgaben
+    total_expenses = sum(amount for _, amount in sorted_categories)
+
+    # Erstelle Nodes
+    # Node 0: Ausgaben (links)
+    nodes = [{"label": "💸 Ausgaben", "color": "#e74c3c"}]
+
+    # Nodes 1 bis N: Kategorien (rechts)
+    for idx, (name, amount) in enumerate(sorted_categories):
+        color = CHART_COLOR_PALETTE[idx % len(CHART_COLOR_PALETTE)]
+        nodes.append(
+            {
+                "label": name,
+                "color": color,
+                "value": round(amount, 2),
+            }
+        )
+
+    # Erstelle Links: Ausgaben → Kategorien
+    links = []
+    for idx, (name, amount) in enumerate(sorted_categories):
+        color = CHART_COLOR_PALETTE[idx % len(CHART_COLOR_PALETTE)]
+        # Füge Transparenz hinzu (66 = 40% opacity in hex)
+        link_color = color + "66"
+
+        links.append(
+            {
+                "source": 0,  # Von "Ausgaben"
+                "target": idx + 1,  # Zur Kategorie
+                "value": round(amount, 2),
+                "color": link_color,
+            }
+        )
+
+    return {
+        "nodes": nodes,
+        "links": links,
+        "total_expenses": round(total_expenses, 2),
+        "category_count": len(sorted_categories),
+        "year": year,
+        "month": month,
+    }
+
+
+@router.get("/{transaction_id}", response_model=TransaktionResponse)
+# GET /transactions/{id} - Gibt eine einzelne Transaktion zurück.
+def get_transaction(transaction_id: int, db: Session = Depends(get_db)):
+    return get_transaction_or_404(transaction_id, db)
+
+
+@router.post("", response_model=TransaktionResponse, status_code=201)
+# POST /transactions - Erstellt neue Transaktion und gibt das erstellte Objekt zurück.
+def create_transaction(transaction: TransaktionCreate, db: Session = Depends(get_db)):
+    db_transaction = Transaktion(**transaction.model_dump())
+    db.add(db_transaction)
+    db.commit()
+    db.refresh(db_transaction)
+
+    # Auto-Kategorisierung: Counter erhöhen und prüfen
+    auto_categorizer.increment_transaction_counter()
+
+    # Prüfe ob Schwelle erreicht (5 Transaktionen)
+    if auto_categorizer.should_trigger_categorization(threshold=5):
+        auto_categorizer.run_full_categorization_cycle()
+
+    return db_transaction
+
+
+@router.put("/{transaction_id}", response_model=TransaktionResponse)
+# PUT /transactions/{id} - Aktualisiert Transaktion und gibt das aktualisierte Objekt zurück.
+def update_transaction(
+    transaction_id: int,
+    transaction_update: TransaktionUpdate,
+    db: Session = Depends(get_db),
+):
+    db_transaction = get_transaction_or_404(transaction_id, db)
+
+    update_data = transaction_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_transaction, key, value)
+
+    db.commit()
+    db.refresh(db_transaction)
+    return db_transaction
+
+
+@router.delete("/{transaction_id}", status_code=204)
+# DELETE /transactions/{id} - Löscht Transaktion, gibt keinen Inhalt zurück (204 No Content).
+def delete_transaction(transaction_id: int, db: Session = Depends(get_db)):
+    db_transaction = get_transaction_or_404(transaction_id, db)
+    db.delete(db_transaction)
+    db.commit()
+
+
+# ==================== ENDPUNKTE: FILTER & STATISTIKEN ====================
+
+
+@router.get("/filter/date-range", response_model=List[TransaktionResponse])
+# GET /transactions/filter/date-range - Filtert Transaktionen nach Datumsbereich, gibt Liste zurück.
+def get_transactions_by_date_range(
+    start_date: date, end_date: date, db: Session = Depends(get_db)
+):
+    return (
+        db.query(Transaktion)
+        .filter(
+            Transaktion.buchungstag >= start_date,
+            Transaktion.buchungstag <= end_date,
+        )
+        .all()
+    )
+
+
+@router.get("/stats/summary")
+# GET /transactions/stats/summary - Gibt Dict mit total_income, total_expenses, balance, transaction_count zurück.
+def get_transaction_summary(db: Session = Depends(get_db)):
+    transactions = db.query(Transaktion).all()
+
+    total_income = sum(t.betrag for t in transactions if t.betrag > 0)
+    total_expenses = sum(abs(t.betrag) for t in transactions if t.betrag < 0)
+
+    return {
+        "total_income": round(total_income, 2),
+        "total_expenses": round(total_expenses, 2),
+        "balance": round(total_income - total_expenses, 2),
+        "transaction_count": len(transactions),
+    }
+
+
+# ==================== ENDPUNKTE: SEARCH ====================
+
+
+@router.post("/search", response_model=List[TransaktionResponse])
+# POST /transactions/search - Sucht Transaktionen mit erweiterten Filtern, gibt Liste zurück.
+def search_transactions(
+    search_params: TransaktionSearch, db: Session = Depends(get_db)
+):
+    return search_transaktionen(
+        session=db,
+        buchungstag=search_params.buchungstag,
+        beguenstigter=search_params.beguenstigter,
+        verwendungszweck=search_params.verwendungszweck,
+        iban_kontonummer=search_params.iban_kontonummer,
+        betrag_min=search_params.betrag_min,
+        betrag_max=search_params.betrag_max,
+        typ=search_params.typ,
+        betrag_min_abs=search_params.betrag_min_abs,
+        betrag_max_abs=search_params.betrag_max_abs,
+        waehrung=search_params.waehrung,
+        konto_name=search_params.konto_name,
+        beschreibung=search_params.beschreibung,
+        kategorie_name=search_params.kategorie_name,
+    )
+
+
+# ==================== ENDPUNKTE: IMPORT ====================
+
+@router.post("/import")
+# POST /transactions/import - Importiert CSV-Datei und gibt {message: string} bei Erfolg zurück.
+async def import_transactions(
+    file: UploadFile = File(...),
+    header_row: int = Form(...),
+    skip_footer: int = Form(...),
+    mapping: str = Form(...),
+    konto_id: int = Form(...),
+    db: Session = Depends(get_db),
+):
+    tmp_path = None
+    try:
+        # Mapping JSON parsen
+        mapping_dict = json.loads(mapping)
+
+        # Temporäre Datei speichern (UploadFile ist ein SpooledFile)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as tmp:
+            contents = await file.read()
+            tmp.write(contents)
+            tmp_path = tmp.name
+
+        # Import starten
+        importer = CSVTransaktionImporter(
+            session=db,
+            mapping=mapping_dict,
+            header_row=header_row,
+            skip_footer=skip_footer,
+            konto_id=konto_id,
+        )
+        importer.import_csv(tmp_path)
+
+        auto_categorizer.run_full_categorization_cycle()
+
+        return {"message": f"Import erfolgreich für Konto {konto_id}"}
+
+    except Exception as e:
+        # Fehler zurückgeben
+        return JSONResponse(
+            status_code=400,
+            content={"status": "error", "message": str(e)}
+        )
+    finally:
+        # Temporäre Datei immer bereinigen
+        if tmp_path and os.path.exists(tmp_path):
+            os.unlink(tmp_path)
+
+

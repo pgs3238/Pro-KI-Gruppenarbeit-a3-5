@@ -3,7 +3,7 @@ FastAPI Router für Einstellungen (z.B. API-Keys)
 """
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from .schemas import ApiKeyUpdate, ApiKeyResponse
 import os
 from pathlib import Path
 from dotenv import load_dotenv, set_key
@@ -12,19 +12,8 @@ from dotenv import load_dotenv, set_key
 router = APIRouter(prefix="/settings", tags=["Settings"])
 
 
-class ApiKeyUpdate(BaseModel):
-    """Schema für API-Key Update"""
-    api_key: str
-
-
-class ApiKeyResponse(BaseModel):
-    """Schema für API-Key Response"""
-    success: bool
-    message: str
-
-
+# Hilfsfunktion: Ermittelt den Pfad zur .env-Datei im Root-Verzeichnis, erstellt sie falls nicht vorhanden.
 def get_env_path() -> Path:
-    """Gibt den Pfad zur .env-Datei zurück"""
     # Gehe von src/api nach root
     current_dir = Path(__file__).parent
     root_dir = current_dir.parent.parent
@@ -38,14 +27,8 @@ def get_env_path() -> Path:
 
 
 @router.post("/api-key", response_model=ApiKeyResponse)
+# POST /settings/api-key - Speichert den Gemini API-Key in der .env-Datei und gibt {success, message} zurück.
 def update_api_key(data: ApiKeyUpdate):
-    """
-    Speichert den Gemini API-Key in der .env-Datei.
-    
-    - **api_key**: Der neue Gemini API-Key
-    
-    Der Key wird in der .env-Datei als GEMINI_API_KEY gespeichert.
-    """
     try:
         # Validierung
         if not data.api_key or len(data.api_key.strip()) == 0:
@@ -78,10 +61,8 @@ def update_api_key(data: ApiKeyUpdate):
 
 
 @router.get("/api-key/status")
+# GET /settings/api-key/status - Gibt {configured: bool, masked_key: string} zurück ohne den Key preiszugeben.
 def get_api_key_status():
-    """
-    Prüft ob ein API-Key konfiguriert ist (ohne den Key preiszugeben).
-    """
     # Environment neu laden
     load_dotenv(override=True)
     
@@ -100,3 +81,29 @@ def get_api_key_status():
         "configured": is_configured,
         "masked_key": masked_key
     }
+
+
+@router.get("/db-status")
+# GET /settings/db-status - Gibt {connected: bool, status: string, message: string} zurück.
+def get_db_status():
+    from sqlalchemy import text
+    from ..database import SessionLocal
+    
+    try:
+        # Versuche eine Verbindung herzustellen und eine einfache Query auszuführen
+        db = SessionLocal()
+        db.execute(text("SELECT 1"))
+        db.close()
+        
+        return {
+            "connected": True,
+            "status": "online",
+            "message": "Datenbankverbindung aktiv"
+        }
+    except Exception as e:
+        return {
+            "connected": False,
+            "status": "offline",
+            "message": f"Datenbankfehler: {str(e)}"
+        }
+

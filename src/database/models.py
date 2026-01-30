@@ -1,37 +1,18 @@
 # Definition der Datenbankmodelle für die Anwendung
 
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Float,
-    Date,
-    DateTime,
-    Enum,
-    ForeignKey,
-)  # Importiere notwendige SQLAlchemy Datentypen
-from sqlalchemy.orm import (
-    declarative_base,  # Basisklasse für ORM-Modelle
-    relationship,  # Beziehung zwischen Tabellen
-)
+from sqlalchemy import (Column, Integer, String, Float, Date, DateTime, Enum, ForeignKey,)  # Importiere notwendige SQLAlchemy Datentypen
+from sqlalchemy.orm import (declarative_base, relationship)  # Basisklasse für ORM-Modelle und Beziehung zwischen Tabellen
 from datetime import datetime
 
-Base = (
-    declarative_base()
-)  # Basisklasse für alle ORM-Modelle um Tabellen in der Datenbank zu repräsentieren
+Base = (declarative_base())  # Basisklasse für alle ORM-Modelle um Tabellen in der Datenbank zu repräsentieren
 
-
-class Konto(
-    Base
-):  # Erbt von Base und repräsentiert die "konten" Tabelle in der Datenbank
-    """Bankkonto mit Kontostand und Kontoinformationen"""
+# Konto Model: Repräsentiert ein Bankkonto mit allen Stammdaten.
+class Konto(Base):  # Erbt von Base und repräsentiert die "konten" Tabelle in der Datenbank
 
     __tablename__ = "konten"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    kontoname = Column(
-        String(100), nullable=False, unique=True
-    )  # z.B. "Girokonto", "Sparkonto"
+    kontoname = Column(String(100), nullable=False, unique=True)  # z.B. "Girokonto", "Sparkonto"
     kontonummer = Column(String(34), nullable=True)  # IBAN (optional)
     bankname = Column(String(200), nullable=True)  # z.B. "Sparkasse München"
     kontostand = Column(Float, nullable=False, default=0.0)  # Aktueller Kontostand
@@ -54,10 +35,8 @@ class Konto(
         return f"<Konto(id={self.id}, kontoname='{self.kontoname}', kontostand={self.kontostand}€, iban='{self.iban}')>"
 
 
-class Transaktion(
-    Base
-):  # Erbt von Base und repräsentiert die "transaktionen" Tabelle in der Datenbank
-    """Transaktion für Einnahmen und Ausgaben"""
+# Transaktion Model: Einzelne Buchung (Einnahme/Ausgabe) mit Verknüpfung zu Konto und Kategorie.
+class Transaktion(Base):  # Erbt von Base und repräsentiert die "transaktionen" Tabelle in der Datenbank
 
     __tablename__ = "transaktionen"
 
@@ -86,11 +65,8 @@ class Transaktion(
         return f"<Transaktion(id={self.id}, buchungstag={self.buchungstag}, beguenstigter='{self.beguenstigter}', betrag={self.betrag})>"
 
 
+# Category Model: Stammdaten für Kategorien (Name, Typ, Icon, Farbe).
 class Category(Base):  # Erbt von Base und repräsentiert die "categories" Tabelle
-    """
-    Kategorie-Modell für die Klassifizierung von Transaktionen.
-    Jede Transaktion kann einer Kategorie zugeordnet werden (z.B. Lebensmittel, Miete, Gehalt).
-    """
 
     __tablename__ = "categories"
 
@@ -112,11 +88,8 @@ class Category(Base):  # Erbt von Base und repräsentiert die "categories" Tabel
         return f"<Category(name='{self.name}', category_type='{self.category_type}')>"
 
 
+# CategoryRules Model: Speichert Keywords für die automatische Kategorisierung.
 class CategoryRules(Base):
-    """
-    Kategorisierungsregeln für automatische Zuordnung von Transaktionen zu Kategorien basierend auf Schlüsselwörtern.
-    Erweitert oder überschreibt Standard-Regeld aus dem Code.
-    """
 
     __tablename__ = "category_rules"
 
@@ -129,14 +102,11 @@ class CategoryRules(Base):
     category = relationship("Category", backref="rules")
 
     def __repr__(self):
-        return f"<CategoryRules(category='{self.category.name}', keyword='{self.keyword}', source='{self.source}')>"
+        return f"<CategoryRules(category_name='{self.category_name}', keywords='{self.keywords}')>"
 
 
+# CategorizationState Model: Singleton-Tabelle für Status der Auto-Kategorisierung (Performance-Optimierung).
 class CategorizationState(Base):
-    """
-    Categorization-Status für Auto-Kategorisierung.
-    Singleton-Tabelle mit nur einem Eintrag (id=1).
-    """
 
     __tablename__ = "categorization_state"
 

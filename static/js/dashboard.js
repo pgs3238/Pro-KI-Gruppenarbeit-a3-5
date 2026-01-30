@@ -1,24 +1,3 @@
-// API Base URL
-const API_BASE_URL = "http://localhost:8000";
-
-// Toast Notification Funktion
-function showToast(message, type = "success") {
-  const toastContainer = document.getElementById("toastContainer");
-  const toast = document.createElement("div");
-  toast.className = `toast toast-${type}`;
-  toast.textContent = message;
-  toastContainer.appendChild(toast);
-
-  setTimeout(() => {
-    toast.classList.add("show");
-  }, 100);
-
-  setTimeout(() => {
-    toast.classList.remove("show");
-    setTimeout(() => toast.remove(), 300);
-  }, 10000);
-}
-
 // Daten beim Laden der Seite abrufen
 document.addEventListener("DOMContentLoaded", async () => {
   setupSankeyControls();  // Event-Listener für Monatspfeile
@@ -26,6 +5,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 // Dashboard Daten laden
+// Lädt alle Dashboard-Daten (parallel)
 async function loadDashboardData() {
   try {
     await Promise.all([
@@ -43,17 +23,19 @@ async function loadDashboardData() {
 }
 
 // KPIs laden
+// Lädt KPIs (Einnahmen, Ausgaben, Bilanz) für den aktuellen Monat.
+// Berechnet auch Trends im Vergleich zum Vormonat.
 async function loadKPIs() {
   try {
     // 1. Transaktionen laden (unformatiert für Berechnungen)
     const transResponse = await fetch(`${API_BASE_URL}/transactions?days=365&limit=10000`);
     if (!transResponse.ok) throw new Error("Fehler beim Laden der Transaktionen");
     const allTransactions = await transResponse.json();
-    
+
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth();
     const currentYear = currentDate.getFullYear();
-    
+
     // Berechne vorherigen Monat
     let previousMonth = currentMonth - 1;
     let previousYear = currentYear;
@@ -61,7 +43,7 @@ async function loadKPIs() {
       previousMonth = 11;
       previousYear = currentYear - 1;
     }
-    
+
     // Filtriere Transaktionen des aktuellen Monats
     const monthlyTransactions = allTransactions.filter((t) => {
       const date = new Date(t.buchungstag);
@@ -78,7 +60,7 @@ async function loadKPIs() {
     const monthlyIncome = monthlyTransactions
       .filter((t) => t.betrag > 0)
       .reduce((sum, t) => sum + t.betrag, 0);
-    
+
     const monthlyExpenses = Math.abs(
       monthlyTransactions
         .filter((t) => t.betrag < 0)
@@ -89,7 +71,7 @@ async function loadKPIs() {
     const previousMonthIncome = previousMonthTransactions
       .filter((t) => t.betrag > 0)
       .reduce((sum, t) => sum + t.betrag, 0);
-    
+
     const previousMonthExpenses = Math.abs(
       previousMonthTransactions
         .filter((t) => t.betrag < 0)
@@ -97,14 +79,14 @@ async function loadKPIs() {
     );
 
     const monthlyBalance = monthlyIncome - monthlyExpenses;
-    
+
     // 2. Setze die KPI-Werte
     document.getElementById("monthlyIncome").textContent = formatCurrency(monthlyIncome);
     document.getElementById("monthlyExpenses").textContent = formatCurrency(monthlyExpenses);
     document.getElementById("monthlyBalance").textContent = formatCurrency(monthlyBalance);
 
     // 3. Berechne prozentuale Veränderungen zum vorherigen Monat
-    // Income Change
+    // Einkommensveränderung
     const incomeChangeElem = document.getElementById("incomeChange");
     if (previousMonthIncome > 0) {
       const incomeChangePercent = (((monthlyIncome - previousMonthIncome) / previousMonthIncome) * 100).toFixed(1);
@@ -115,7 +97,7 @@ async function loadKPIs() {
       incomeChangeElem.className = "kpi-change";
     }
 
-    // Expense Change
+    // Ausgabenveränderung
     const expensesChangeElem = document.getElementById("expensesChange");
     if (previousMonthExpenses > 0) {
       const expensesChangePercent = (((monthlyExpenses - previousMonthExpenses) / previousMonthExpenses) * 100).toFixed(1);
@@ -126,7 +108,7 @@ async function loadKPIs() {
       expensesChangeElem.className = "kpi-change";
     }
 
-    // 4. Bilanz-Indicator
+    // 4. Bilanz-Indikator
     const balanceChangePercent = document.getElementById("balanceChangePercent");
     if (monthlyBalance >= 0) {
       balanceChangePercent.textContent = "✓ Positiv";
@@ -143,15 +125,17 @@ async function loadKPIs() {
 }
 
 // Konten Preview laden (für KPI-Karte)
+/**
+ * Lädt eine kleine Vorschau der Konten für die KPI-Karte (als Icons).
+ */
 async function loadAccountsPreview() {
   try {
-    const response = await fetch(`${API_BASE_URL}/konten`);
-    const accounts = await response.json();
-    
+    const accounts = await fetchKonten();
+
     const iconsContainer = document.getElementById("accountsKpiIcons");
-    
+
     if (!iconsContainer) return;
-    
+
     iconsContainer.innerHTML = "";
 
     if (accounts.length === 0) {
@@ -173,29 +157,28 @@ async function loadAccountsPreview() {
   }
 }
 
-// Transaktionen Preview laden
+// Lädt letzte Transaktionen für Dashboard-Vorschau.
 async function loadTransactionsPreview() {
   try {
-    const [transactionsRes, kontosRes] = await Promise.all([
+    const [transactionsRes, kontos] = await Promise.all([
       fetch(`${API_BASE_URL}/transactions?days=30`),
-      fetch(`${API_BASE_URL}/konten`)
+      fetchKonten(),
     ]);
-    
+
     let transactions = await transactionsRes.json();
-    let kontos = await kontosRes.json();
-    
+
     // Map für Kontonamen erstellen
     const konto_map = {};
     kontos.forEach(k => {
       konto_map[k.id] = k.kontoname;
     });
-    
+
     // Nach Datum sortieren (neueste zuerst)
     transactions.sort((a, b) => new Date(b.buchungstag) - new Date(a.buchungstag));
-    
+
     // Nur die ersten 5 Transaktionen
     const previewTransactions = transactions.slice(0, 5);
-    
+
     const container = document.getElementById("transactionsPreview");
     container.innerHTML = "";
 
@@ -207,15 +190,15 @@ async function loadTransactionsPreview() {
     previewTransactions.forEach((transaction) => {
       const item = document.createElement("div");
       item.className = "transaction-preview-item";
-      
+
       const isPositive = transaction.betrag > 0;
       const icon = isPositive ? "💰" : "💸";
       const amountClass = isPositive ? "positive" : "negative";
       const amountText = isPositive ? `+${formatCurrency(transaction.betrag)}` : formatCurrency(transaction.betrag);
-      
-      const date = new Date(transaction.buchungstag).toLocaleDateString("de-DE");
+
+      const date = formatDateDE(transaction.buchungstag, { pad: false });
       const kontoName = konto_map[transaction.konto_id] || "Konto";
-      
+
       item.innerHTML = `
         <div class="transaction-preview-info">
           <div class="transaction-preview-icon">${icon}</div>
@@ -226,7 +209,7 @@ async function loadTransactionsPreview() {
         </div>
         <div class="transaction-preview-amount ${amountClass}">${amountText}</div>
       `;
-      
+
       container.appendChild(item);
     });
 
@@ -235,21 +218,20 @@ async function loadTransactionsPreview() {
   }
 }
 
-// Kategorien Preview laden
+// Lädt Top Kategorien (Ausgaben) der letzten 30 Tage.
 async function loadCategoriesPreview() {
   try {
-    const [transactionsRes, kategoriesRes] = await Promise.all([
+    const [transactionsRes, kategorien] = await Promise.all([
       fetch(`${API_BASE_URL}/transactions?days=30`),
-      fetch(`${API_BASE_URL}/api/categories`),
+      fetchCategories(),
     ]);
-    
+
     const transactions = await transactionsRes.json();
-    const kategorien = await kategoriesRes.json();
-    
+
     // Berechne das Datum vor 30 Tagen
     const today = new Date();
     const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
-    
+
     // Summen pro Kategorie berechnen (nur letzte 30 Tage, nur Ausgaben)
     const categorySums = {};
     transactions
@@ -260,14 +242,14 @@ async function loadCategoriesPreview() {
       .forEach((t) => {
         // Nur kategorisierte Transaktionen zählen
         let catName = null;
-        
+
         if (t.kategorie_id && kategorien.length > 0) {
           const kat = kategorien.find(k => k.id === t.kategorie_id);
           if (kat) {
             catName = kat.name;
           }
         }
-        
+
         // Nur hinzufügen, wenn eine echte Kategorie vorhanden ist
         if (catName) {
           if (!categorySums[catName]) {
@@ -276,12 +258,12 @@ async function loadCategoriesPreview() {
           categorySums[catName] += Math.abs(t.betrag);
         }
       });
-    
+
     // Top 5 Kategorien
     const topCategories = Object.entries(categorySums)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5);
-    
+
     const container = document.getElementById("categoriesPreview");
     container.innerHTML = "";
 
@@ -294,10 +276,10 @@ async function loadCategoriesPreview() {
 
     topCategories.forEach(([name, amount]) => {
       const percentage = (amount / maxAmount) * 100;
-      
+
       const item = document.createElement("div");
       item.className = "category-preview-item";
-      
+
       item.innerHTML = `
         <div class="category-preview-header">
           <span class="category-preview-name">${name}</span>
@@ -307,7 +289,7 @@ async function loadCategoriesPreview() {
           <div class="category-preview-fill" style="width: ${percentage}%"></div>
         </div>
       `;
-      
+
       container.appendChild(item);
     });
 
@@ -316,25 +298,27 @@ async function loadCategoriesPreview() {
   }
 }
 
-// Ausgaben Trend Chart laden
+// Lädt Diagrammdaten für den Einnahmen/Ausgaben-Verlauf der letzten 6 Monate.
 async function loadExpensesTrend() {
   try {
     const response = await fetch(`${API_BASE_URL}/transactions?days=180&limit=10000`);
     const transactions = await response.json();
-    
+
     // Letzte 6 Monate
     const months = [];
     const expenses = [];
-    
+    const income = [];
+
     for (let i = 5; i >= 0; i--) {
       const date = new Date();
       date.setMonth(date.getMonth() - i);
       const month = date.getMonth();
       const year = date.getFullYear();
-      
+
       const monthName = date.toLocaleDateString("de-DE", { month: "short" });
       months.push(monthName);
-      
+
+      // Ausgaben berechnen
       const monthExpenses = transactions
         .filter((t) => {
           const tDate = new Date(t.buchungstag);
@@ -345,8 +329,22 @@ async function loadExpensesTrend() {
           );
         })
         .reduce((sum, t) => sum + Math.abs(t.betrag), 0);
-      
+
       expenses.push(monthExpenses);
+
+      // Einnahmen berechnen
+      const monthIncome = transactions
+        .filter((t) => {
+          const tDate = new Date(t.buchungstag);
+          return (
+            tDate.getMonth() === month &&
+            tDate.getFullYear() === year &&
+            t.betrag > 0
+          );
+        })
+        .reduce((sum, t) => sum + t.betrag, 0);
+
+      income.push(monthIncome);
     }
 
     const ctx = document.getElementById("expensesTrendChart").getContext("2d");
@@ -355,6 +353,19 @@ async function loadExpensesTrend() {
       data: {
         labels: months,
         datasets: [
+          {
+            label: "Einnahmen",
+            data: income,
+            borderColor: "#06d6a6",
+            backgroundColor: "rgba(6, 214, 166, 0.1)",
+            tension: 0.4,
+            fill: true,
+            pointBackgroundColor: "#06d6a6",
+            pointBorderColor: "#fff",
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+          },
           {
             label: "Ausgaben",
             data: expenses,
@@ -375,7 +386,13 @@ async function loadExpensesTrend() {
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            display: false,
+            display: true,
+            position: "top",
+            labels: {
+              color: "#888",
+              usePointStyle: true,
+              padding: 20,
+            },
           },
           tooltip: {
             backgroundColor: "#2a2a2a",
@@ -384,10 +401,10 @@ async function loadExpensesTrend() {
             borderColor: "#444",
             borderWidth: 1,
             padding: 12,
-            displayColors: false,
+            displayColors: true,
             callbacks: {
               label: function (context) {
-                return formatCurrency(context.parsed.y);
+                return `${context.dataset.label}: ${formatCurrency(context.parsed.y)}`;
               },
             },
           },
@@ -429,28 +446,24 @@ async function loadExpensesTrend() {
 let sankeyCurrentYear = new Date().getFullYear();
 let sankeyCurrentMonth = new Date().getMonth() + 1; // 1-12
 
-// Deutsche Monatsnamen
-const monthNames = [
-  'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-  'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'
-];
-
 // Monatslabel aktualisieren
+// Aktualisiert das Text-Label für den aktuellen Sankey-Monat (z.B. "Januar 2026").
 function updateSankeyMonthLabel() {
   const label = document.getElementById('sankeyMonthLabel');
   if (label) {
-    label.textContent = `${monthNames[sankeyCurrentMonth - 1]} ${sankeyCurrentYear}`;
+    label.textContent = `${MONTH_NAMES_DE[sankeyCurrentMonth - 1]} ${sankeyCurrentYear}`;
   }
 }
 
 // Sankey-Diagramm laden
+// Lädt Sankey-Diagramm für gewählten Monat und Jahr.
 async function loadSankeyChart() {
   const sankeyElement = document.getElementById('sankeyChart');
   if (!sankeyElement) return;
 
   // Monatslabel aktualisieren
   updateSankeyMonthLabel();
-  
+
   // Container leeren (wichtig für Monatswechsel)
   sankeyElement.innerHTML = '<div style="text-align: center; color: #888; padding: 40px;">⏳ Laden...</div>';
 
@@ -461,14 +474,14 @@ async function loadSankeyChart() {
 
     // Prüfe ob Daten vorhanden
     if (!data.nodes || data.nodes.length === 0) {
-      sankeyElement.innerHTML = `<div style="text-align: center; color: #888; padding: 40px;">Keine Ausgaben im ${monthNames[sankeyCurrentMonth - 1]} ${sankeyCurrentYear}</div>`;
+      sankeyElement.innerHTML = `<div style="text-align: center; color: #888; padding: 40px;">Keine Ausgaben im ${MONTH_NAMES_DE[sankeyCurrentMonth - 1]} ${sankeyCurrentYear}</div>`;
       return;
     }
 
     // Extrahiere Arrays für Plotly aus den Backend-Daten
     const nodeLabels = data.nodes.map(n => n.label);
     const nodeColors = data.nodes.map(n => n.color);
-    
+
     const sources = data.links.map(l => l.source);
     const targets = data.links.map(l => l.target);
     const values = data.links.map(l => l.value);
@@ -510,7 +523,7 @@ async function loadSankeyChart() {
     // Container leeren vor dem Rendern
     sankeyElement.innerHTML = '';
     Plotly.newPlot(sankeyElement, [trace], layout, config);
-    console.log(`✓ Sankey-Diagramm geladen (${monthNames[sankeyCurrentMonth - 1]} ${sankeyCurrentYear}, ${data.category_count} Kategorien, ${formatCurrency(data.total_expenses)})`);
+    console.log(`✓ Sankey-Diagramm geladen (${MONTH_NAMES_DE[sankeyCurrentMonth - 1]} ${sankeyCurrentYear}, ${data.category_count} Kategorien, ${formatCurrency(data.total_expenses)})`);
 
   } catch (error) {
     console.error('✗ Fehler beim Laden des Sankey-Diagramms:', error);
@@ -518,10 +531,10 @@ async function loadSankeyChart() {
   }
 }
 
-// Monat wechseln
+// Ändert Monat für Sankey-Diagramm
 function changeSankeyMonth(delta) {
   sankeyCurrentMonth += delta;
-  
+
   // Jahr wechseln wenn nötig
   if (sankeyCurrentMonth > 12) {
     sankeyCurrentMonth = 1;
@@ -530,39 +543,20 @@ function changeSankeyMonth(delta) {
     sankeyCurrentMonth = 12;
     sankeyCurrentYear--;
   }
-  
+
   // Diagramm neu laden
   loadSankeyChart();
 }
 
-// Event-Listener für Monatspfeile
+// Richtet Event-Listener für die Monats-Navigation beim Sankey-Diagramm ein.
 function setupSankeyControls() {
   const prevBtn = document.getElementById('sankeyPrevMonth');
   const nextBtn = document.getElementById('sankeyNextMonth');
-  
+
   if (prevBtn) {
     prevBtn.addEventListener('click', () => changeSankeyMonth(-1));
   }
   if (nextBtn) {
     nextBtn.addEventListener('click', () => changeSankeyMonth(1));
   }
-}
-
-// Helper Funktionen
-function formatCurrency(amount) {
-  return new Intl.NumberFormat("de-DE", {
-    style: "currency",
-    currency: "EUR",
-  }).format(amount);
-}
-
-function getAccountIcon(typ) {
-  const icons = {
-    girokonto: "🏦",
-    sparkonto: "💰",
-    kreditkarte: "💳",
-    depot: "📈",
-    bargeld: "💵",
-  };
-  return icons[typ] || "🏦";
 }

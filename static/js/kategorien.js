@@ -1,19 +1,10 @@
-// ============ API KONFIGURATION ============
-// Verwende die API auf localhost:8000, unabhängig davon, wo die HTML serviert wird
-const API_BASE_URL = 'http://localhost:8000/api/categories';
-
 // ============ KATEGORIEN VON BACKEND LADEN ============
 let categoriesData = [];
 
-// Kategorien laden und anzeigen
+// Lädt die Kategorien vom Backend und triggert das Rendering
 async function loadCategories() {
     try {
-        // Kategorien vom Backend laden
-        const response = await fetch(API_BASE_URL);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const categories = await response.json();
+        const categories = await fetchCategories();
         categoriesData = categories;
         renderCategories(categories);
     } catch (error) {
@@ -22,10 +13,10 @@ async function loadCategories() {
     }
 }
 
-// Kategorien rendern
+// Rendert die geladenen Kategorien in die Listen (Einnahmen/Ausgaben) und aktualisiert Zähler
 function renderCategories(categories) {
     console.log('Alle Kategorien erhalten vom Backend:', categories);
-    
+
     // Nach Typ gruppieren (Ausgabe vs. Einnahme)
     const ausgaben = categories.filter(c => c.category_type === 'Ausgabe');
     const einnahmen = categories.filter(c => c.category_type === 'Einnahme');
@@ -43,7 +34,7 @@ function renderCategories(categories) {
     // Ausgaben-Liste
     const ausgabenList = document.getElementById('ausgabenList');
     ausgabenList.innerHTML = '';
-    
+
     if (ausgaben.length === 0) {
         ausgabenList.innerHTML = '<div class="empty-state">Keine Ausgaben-Kategorien vorhanden</div>';
     } else {
@@ -55,7 +46,7 @@ function renderCategories(categories) {
     // Einnahmen-Liste
     const einnahmenList = document.getElementById('einnahmenList');
     einnahmenList.innerHTML = '';
-    
+
     if (einnahmen.length === 0) {
         einnahmenList.innerHTML = '<div class="empty-state">Keine Einnahmen-Kategorien vorhanden</div>';
     } else {
@@ -65,40 +56,16 @@ function renderCategories(categories) {
     }
 }
 
-// Kategorie-Item erstellen
+// Erstellt das HTML-Element für eine einzelne Kategorie-Karte
 function createCategoryItem(category) {
     const item = document.createElement('div');
     item.className = 'category-item';
-    
-    // Verwende standardmäßige Icons basierend auf dem Namen
-    const iconMap = {
-        'Lebensmittel': '🍔',
-        'Wohnen': '🏠',
-        'Miete': '🏠',
-        'Verkehr': '🚗',
-        'Transport': '🚗',
-        'Unterhaltung': '🎮',
-        'Freizeit': '🎮',
-        'Gehalt': '💼',
-        'Shopping': '🛒',
-        'Versicherung': '🛡️',
-        'Strom & Gas': '⚡',
-        'Internet & Telefon': '📱',
-        'Abos & Mitgliedschaften': '📺',
-        'Rücklagen': '🏦'
-    };
 
-    // Farben basierend auf Kategorie-Typ
-    const colorMap = {
-        'Ausgabe': '#ef4444',
-        'Einnahme': '#06d6a6'
-    };
+    // Verwende das gespeicherte Icon, falls vorhanden, ansonsten Fallback auf CATEGORY_ICON_MAP oder default
+    const icon = category.icon || CATEGORY_ICON_MAP[category.name] || '🏷️';
+    // Verwende die gespeicherte Farbe, falls vorhanden, ansonsten Fallback auf CATEGORY_COLOR_MAP oder default
+    const color = category.farbe || CATEGORY_COLOR_MAP[category.category_type] || '#06d6a6';
 
-    // Verwende das gespeicherte Icon, falls vorhanden, ansonsten Fallback auf iconMap oder default
-    const icon = category.icon || iconMap[category.name] || '🏷️';
-    // Verwende die gespeicherte Farbe, falls vorhanden, ansonsten Fallback auf colorMap oder default
-    const color = category.farbe || colorMap[category.category_type] || '#06d6a6';
-    
     item.innerHTML = `
         <div class="category-item-left">
             <div class="category-item-icon" style="background: ${color};">
@@ -123,18 +90,18 @@ function createCategoryItem(category) {
             </div>
         </div>
     `;
-    
+
     return item;
 }
 
-// Kategorie bearbeiten
+// Öffnet das Modal zum Bearbeiten einer Kategorie und füllt das Formular
 function editCategory(id) {
     const category = categoriesData.find(c => c.id === id);
     if (!category) return;
 
     document.querySelector('input[name="name"]').value = category.name;
     document.querySelector('select[name="typ"]').value = category.category_type;
-    
+
     // Setze das gespeicherte Icon, falls vorhanden, ansonsten das erste Icon als Default
     const iconToCheck = document.querySelector(`input[name="icon"][value="${category.icon}"]`);
     if (iconToCheck) {
@@ -142,7 +109,7 @@ function editCategory(id) {
     } else {
         document.querySelector('input[name="icon"][value="🍔"]').checked = true;
     }
-    
+
     // Setze die gespeicherte Farbe, falls vorhanden, ansonsten die Default-Farbe
     const colorToCheck = document.querySelector(`input[name="farbe"][value="${category.farbe}"]`);
     if (colorToCheck) {
@@ -150,7 +117,7 @@ function editCategory(id) {
     } else {
         document.querySelector('input[name="farbe"][value="#06d6a6"]').checked = true;
     }
-    
+
     document.querySelector('textarea[name="beschreibung"]').value = '';
 
     document.querySelector('.modal-title').textContent = 'Kategorie bearbeiten';
@@ -159,14 +126,14 @@ function editCategory(id) {
     openCategoryModal();
 }
 
-// Kategorie löschen
+// Löscht eine Kategorie nach Bestätigung
 async function deleteCategory(id) {
     const category = categoriesData.find(c => c.id === id);
     if (!category) return;
 
     if (confirm(`Möchten Sie die Kategorie "${category.name}" wirklich löschen?`)) {
         try {
-            const response = await fetch(`http://localhost:8000/api/categories/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
                 method: 'DELETE'
             });
 
@@ -189,41 +156,43 @@ async function deleteCategory(id) {
 const modal = document.getElementById('categoryModal');
 const selects = document.querySelectorAll('select.form-control');
 
+// Öffnet das Modal zum Erstellen oder Bearbeiten einer Kategorie (setzt Defaults)
 function openCategoryModal() {
     // Stelle sicher, dass ein Typ ausgewählt ist (Standard: Ausgabe)
     const typSelect = document.querySelector('select[name="typ"]');
     if (typSelect && !typSelect.value) {
         typSelect.value = 'Ausgabe';
     }
-    
+
     // Stelle sicher, dass ein Icon ausgewählt ist (Standard: erstes Icon)
     const iconInputs = document.querySelectorAll('input[name="icon"]');
     if (iconInputs.length > 0 && !document.querySelector('input[name="icon"]:checked')) {
         iconInputs[0].checked = true;
     }
-    
+
     // Stelle sicher, dass eine Farbe ausgewählt ist (Standard: erste Farbe)
     const farbeInputs = document.querySelectorAll('input[name="farbe"]');
     if (farbeInputs.length > 0 && !document.querySelector('input[name="farbe"]:checked')) {
         farbeInputs[0].checked = true;
     }
-    
+
     modal.classList.add('active');
 }
 
+// Schließt das Kategorie-Modal und setzt das Formular zurück
 function closeCategoryModal() {
     modal.classList.remove('active');
     document.getElementById('categoryForm').reset();
     document.querySelector('.modal-title').textContent = 'Kategorie hinzufügen';
     delete document.getElementById('categoryForm').dataset.editId;
-    updateSelectColors();
+    updateSelectEmptyClasses(selects);
 }
 
 modal.addEventListener('click', (e) => {
     if (e.target === modal) closeCategoryModal();
 });
 
-// Form Submit
+// Formular absenden
 document.getElementById('categoryForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.target;
@@ -231,7 +200,7 @@ document.getElementById('categoryForm').addEventListener('submit', async (e) => 
 
     const iconElement = document.querySelector('input[name="icon"]:checked');
     const farbeElement = document.querySelector('input[name="farbe"]:checked');
-    
+
     console.log('Ausgewähltes Icon:', iconElement ? iconElement.value : 'KEINE AUSWAHL');
     console.log('Ausgewählte Farbe:', farbeElement ? farbeElement.value : 'KEINE AUSWAHL');
 
@@ -248,7 +217,7 @@ document.getElementById('categoryForm').addEventListener('submit', async (e) => 
         let response;
         if (editId) {
             // Update existierende Kategorie
-            response = await fetch(`http://localhost:8000/api/categories/${editId}`, {
+            response = await fetch(`${API_BASE_URL}/categories/${editId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -257,7 +226,7 @@ document.getElementById('categoryForm').addEventListener('submit', async (e) => 
             });
         } else {
             // Erstelle neue Kategorie
-            response = await fetch('http://localhost:8000/api/categories', {
+            response = await fetch(`${API_BASE_URL}/categories`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -287,26 +256,11 @@ document.getElementById('categoryForm').addEventListener('submit', async (e) => 
     }
 });
 
-// Select Placeholder Styling
-function updateSelectColor(select) {
-    if (select.value === "") {
-        select.classList.add('empty');
-    } else {
-        select.classList.remove('empty');
-    }
-}
-
-function updateSelectColors() {
-    selects.forEach(select => updateSelectColor(select));
-}
-
-selects.forEach(select => {
-    updateSelectColor(select);
-    select.addEventListener('change', () => updateSelectColor(select));
-});
+// Select-Placeholder-Styling
+wireSelectEmptyClasses(selects);
 
 document.getElementById('categoryForm').addEventListener('reset', () => {
-    setTimeout(() => updateSelectColors(), 0);
+    setTimeout(() => updateSelectEmptyClasses(selects), 0);
 });
 
 // Suchfunktion
@@ -317,7 +271,7 @@ if (searchBox && searchIcon) {
     searchBox.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
         searchIcon.style.display = searchTerm ? 'none' : 'block';
-        
+
         const cards = document.querySelectorAll('.category-card:not(.summary-card)');
         cards.forEach(card => {
             const text = card.textContent.toLowerCase();
@@ -334,40 +288,25 @@ loadCategories();
 let currentRulesCategory = null;
 let currentRulesCategoryId = null;
 
+// Öffnet das Regeln-Modal für Keywords einer Kategorie und lädt bestehende Keywords
 function openRulesModal(categoryId, categoryName) {
     currentRulesCategory = categoryName;
     currentRulesCategoryId = categoryId;
     const category = categoriesData.find(c => c.id === categoryId);
-    
+
     if (category) {
-        // Icon basierend auf Kategorienamen
-        const iconMap = {
-            'Lebensmittel': '🍔',
-            'Wohnen': '🏠',
-            'Miete': '🏠',
-            'Verkehr': '🚗',
-            'Transport': '🚗',
-            'Unterhaltung': '🎮',
-            'Freizeit': '🎮',
-            'Gehalt': '💼',
-            'Shopping': '🛒',
-            'Versicherung': '🛡️',
-            'Strom & Gas': '⚡',
-            'Internet & Telefon': '📱',
-            'Abos & Mitgliedschaften': '📺',
-            'Rücklagen': '🏦'
-        };
-        
-        const icon = iconMap[category.name] || '🏷️';
+        // Nutze globale Icon-Map
+        const icon = CATEGORY_ICON_MAP[category.name] || '🏷️';
         document.getElementById('rulesCategoryIcon').textContent = icon;
         document.getElementById('rulesCategoryName').textContent = category.name;
-        
+
         loadKeywords(categoryId);
-        
+
         document.getElementById('rulesModal').classList.add('active');
     }
 }
 
+// Schließt das Regeln-Modal
 function closeRulesModal() {
     document.getElementById('rulesModal').classList.remove('active');
     document.getElementById('newKeywordInput').value = '';
@@ -375,19 +314,20 @@ function closeRulesModal() {
     currentRulesCategoryId = null;
 }
 
+// Lädt die Keywords (Regeln) für eine Kategorie vom Backend
 async function loadKeywords(categoryId) {
     try {
-        const response = await fetch(`http://localhost:8000/api/categories/${categoryId}/rules`);
+        const response = await fetch(`${API_BASE_URL}/categories/${categoryId}/rules`);
         if (!response.ok) {
             throw new Error('Fehler beim Laden der Regeln');
         }
 
         const rulesData = await response.json();
         const keywords = rulesData.keywords || [];
-        
+
         const keywordsList = document.getElementById('keywordsList');
         keywordsList.innerHTML = '';
-        
+
         if (keywords.length === 0) {
             keywordsList.innerHTML = '<div class="empty-state">Keine Schlüsselwörter definiert</div>';
         } else {
@@ -401,7 +341,7 @@ async function loadKeywords(categoryId) {
                 keywordsList.appendChild(tag);
             });
         }
-        
+
         document.getElementById('keywordsCount').textContent = keywords.length;
     } catch (error) {
         console.error('Fehler beim Laden der Schlüsselwörter:', error);
@@ -409,17 +349,18 @@ async function loadKeywords(categoryId) {
     }
 }
 
+// Fügt ein neues Keyword zur aktuellen Kategorie hinzu
 async function addKeyword() {
     const input = document.getElementById('newKeywordInput');
     const keyword = input.value.trim().toLowerCase();
-    
+
     if (!keyword) {
         showToast('Bitte geben Sie ein Schlüsselwort ein!', 'warning');
         return;
     }
 
     try {
-        const response = await fetch(`http://localhost:8000/api/categories/${currentRulesCategoryId}/rules/keywords`, {
+        const response = await fetch(`${API_BASE_URL}/categories/${currentRulesCategoryId}/rules/keywords`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -442,11 +383,12 @@ async function addKeyword() {
     }
 }
 
+// Entfernt ein Keyword aus der aktuellen Kategorie
 async function removeKeyword(keyword) {
     if (confirm(`Schlüsselwort "${keyword}" wirklich entfernen?`)) {
         try {
             const encodedKeyword = encodeURIComponent(keyword);
-            const response = await fetch(`http://localhost:8000/api/categories/${currentRulesCategoryId}/rules/keywords/${encodedKeyword}`, {
+            const response = await fetch(`${API_BASE_URL}/categories/${currentRulesCategoryId}/rules/keywords/${encodedKeyword}`, {
                 method: 'DELETE'
             });
 
@@ -468,7 +410,7 @@ function testRules() {
     showToast('Regeln werden automatisch beim Kategorisieren verwendet.', 'info', 5000);
 }
 
-// Modal Click Outside
+// Modal-Klick außerhalb
 document.getElementById('rulesModal')?.addEventListener('click', (e) => {
     if (e.target.id === 'rulesModal') closeRulesModal();
 });

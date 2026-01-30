@@ -1,28 +1,15 @@
-// ============ API KONFIGURATION ============
-const API_BASE = 'http://localhost:8000';
+// ============ KONTEN JAVASCRIPT ============
 
 // ============ BEISPIELDATEN (FALLBACK) ============
 let accountsData = [];
 
-// Account Icons basierend auf Typ
-const accountIcons = {
-    'girokonto': '💳',
-    'sparkonto': '💰',
-    'kreditkarte': '💸',
-    'depot': '📈',
-    'bargeld': '💵',
-    'sonstiges': '🏦'
-};
-
 // ============ API FUNKTIONEN ============
 
+// Lädt Konten von der API, konvertiert Format und lädt aktuelle Salden
 async function loadAccountsFromAPI() {
     try {
-        const response = await fetch(`${API_BASE}/konten`);
-        if (!response.ok) throw new Error(`API Error: ${response.status}`);
-        
-        const konten = await response.json();
-        
+        const konten = await fetchKonten();
+
         // Konvertiere API-Daten ins Frontend-Format
         accountsData = konten.map(konto => ({
             id: konto.id,
@@ -35,20 +22,17 @@ async function loadAccountsFromAPI() {
             waehrung: konto.waehrung,
             farbe: konto.farbe || '#06d6a6'
         }));
-        
+
         // Lade den aktuellen Saldo (initialstand + transaktionen) für jedes Konto
         for (let account of accountsData) {
             try {
-                const saldoResponse = await fetch(`${API_BASE}/konten/${account.id}/saldo`);
-                if (saldoResponse.ok) {
-                    const saldoData = await saldoResponse.json();
-                    account.saldo = saldoData.aktueller_saldo;  // Überschreibe mit aktuellem Wert
-                }
+                const saldoData = await fetchKontoSaldo(account.id);
+                account.saldo = saldoData.aktueller_saldo;  // Überschreibe mit aktuellem Wert
             } catch (error) {
                 console.warn(`Fehler beim Laden des Saldos für Konto ${account.id}:`, error);
             }
         }
-        
+
         loadAccounts();
     } catch (error) {
         console.error('Fehler beim Laden der Konten:', error);
@@ -58,6 +42,7 @@ async function loadAccountsFromAPI() {
     }
 }
 
+// Erstellt ein neues Konto über die API
 async function createAccountAPI(accountData) {
     try {
         // Konvertiere Frontend-Daten ins API-Format
@@ -71,18 +56,18 @@ async function createAccountAPI(accountData) {
             bic: null,
             farbe: accountData.farbe
         };
-        
-        const response = await fetch(`${API_BASE}/konten`, {
+
+        const response = await fetch(`${API_BASE_URL}/konten`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(apiData)
         });
-        
+
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.detail || 'Fehler beim Erstellen des Kontos');
         }
-        
+
         return await response.json();
     } catch (error) {
         console.error('Fehler beim Erstellen des Kontos:', error);
@@ -90,6 +75,7 @@ async function createAccountAPI(accountData) {
     }
 }
 
+// Aktualisiert ein bestehendes Konto über die API
 async function updateAccountAPI(konto_id, accountData) {
     try {
         const apiData = {
@@ -101,18 +87,18 @@ async function updateAccountAPI(konto_id, accountData) {
             waehrung: accountData.waehrung,
             farbe: accountData.farbe
         };
-        
-        const response = await fetch(`${API_BASE}/konten/${konto_id}`, {
+
+        const response = await fetch(`${API_BASE_URL}/konten/${konto_id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(apiData)
         });
-        
+
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.detail || 'Fehler beim Aktualisieren des Kontos');
         }
-        
+
         return await response.json();
     } catch (error) {
         console.error('Fehler beim Aktualisieren des Kontos:', error);
@@ -120,12 +106,13 @@ async function updateAccountAPI(konto_id, accountData) {
     }
 }
 
+// Löscht ein Konto über die API
 async function deleteAccountAPI(konto_id) {
     try {
-        const response = await fetch(`${API_BASE}/konten/${konto_id}`, {
+        const response = await fetch(`${API_BASE_URL}/konten/${konto_id}`, {
             method: 'DELETE'
         });
-        
+
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.detail || 'Fehler beim Löschen des Kontos');
@@ -136,7 +123,7 @@ async function deleteAccountAPI(konto_id) {
     }
 }
 
-// ============ KONTEN LADEN UND ANZEIGEN ============
+// Rendert die Konten-Karten (Cards) und die Übersichtskarte in das Grid
 function loadAccounts() {
     const grid = document.getElementById('accountsGrid');
     grid.innerHTML = '';
@@ -167,7 +154,7 @@ function loadAccounts() {
         card.className = 'account-card';
         card.innerHTML = `
             <div class="account-card-header" style="background: ${account.farbe};">
-                <span class="account-icon">${accountIcons[account.typ] || '🏦'}</span>
+                <span class="account-icon">${getAccountIcon(account.typ)}</span>
                 <div class="account-actions">
                     <button class="account-action-btn" onclick="editAccount(${account.id})" title="Bearbeiten">✏️</button>
                     <button class="account-action-btn" onclick="deleteAccount(${account.id})" title="Löschen">🗑️</button>
@@ -190,7 +177,7 @@ function loadAccounts() {
     });
 }
 
-// Hilfsfunktionen
+// Formatiert den internen Kontotyp (slug) in eine lesbare Darstellung
 function formatAccountType(typ) {
     const types = {
         'girokonto': 'Girokonto',
@@ -203,7 +190,7 @@ function formatAccountType(typ) {
     return types[typ] || typ;
 }
 
-// Konto bearbeiten
+// Öffnet das Modal zum Bearbeiten eines Kontos
 function editAccount(id) {
     const account = accountsData.find(a => a.id === id);
     if (!account) return;
@@ -222,7 +209,7 @@ function editAccount(id) {
     openAccountModal();
 }
 
-// Konto löschen
+// Löscht ein Konto nach Bestätigung
 function deleteAccount(id) {
     if (confirm('Möchten Sie dieses Konto wirklich löschen?')) {
         deleteAccountAPI(id)
@@ -240,23 +227,25 @@ function deleteAccount(id) {
 const modal = document.getElementById('accountModal');
 const selects = document.querySelectorAll('select.form-control');
 
+// Öffnet das Modal zum Erstellen oder Bearbeiten
 function openAccountModal() {
     modal.classList.add('active');
 }
 
+// Schließt das Modal und setzt das Formular zurück
 function closeAccountModal() {
     modal.classList.remove('active');
     document.getElementById('accountForm').reset();
     document.querySelector('.modal-title').textContent = 'Konto hinzufügen';
     delete document.getElementById('accountForm').dataset.editId;
-    updateSelectColors();
+    updateSelectEmptyClasses(selects);
 }
 
 modal.addEventListener('click', (e) => {
     if (e.target === modal) closeAccountModal();
 });
 
-// Form Submit
+// Formular absenden
 document.getElementById('accountForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const form = e.target;
@@ -297,26 +286,11 @@ document.getElementById('accountForm').addEventListener('submit', (e) => {
     }
 });
 
-// Select Placeholder Styling
-function updateSelectColor(select) {
-    if (select.value === "") {
-        select.classList.add('empty');
-    } else {
-        select.classList.remove('empty');
-    }
-}
-
-function updateSelectColors() {
-    selects.forEach(select => updateSelectColor(select));
-}
-
-selects.forEach(select => {
-    updateSelectColor(select);
-    select.addEventListener('change', () => updateSelectColor(select));
-});
+// Select-Placeholder-Styling
+wireSelectEmptyClasses(selects);
 
 document.getElementById('accountForm').addEventListener('reset', () => {
-    setTimeout(() => updateSelectColors(), 0);
+    setTimeout(() => updateSelectEmptyClasses(selects), 0);
 });
 
 // IBAN Formatierung
@@ -326,9 +300,9 @@ ibanInput.addEventListener('input', (e) => {
     const cursorPos = e.target.selectionStart;
     const oldValue = e.target.value;
     const oldLength = oldValue.length;
-    
+
     e.target.value = formatIBANInput(e.target.value);
-    
+
     const newLength = e.target.value.length;
     const newCursorPos = cursorPos + (newLength - oldLength);
     e.target.setSelectionRange(newCursorPos, newCursorPos);
@@ -342,7 +316,7 @@ if (searchBox && searchIcon) {
     searchBox.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
         searchIcon.style.display = searchTerm ? 'none' : 'block';
-        
+
         const cards = document.querySelectorAll('.account-card:not(.summary-card)');
         cards.forEach(card => {
             const text = card.textContent.toLowerCase();
@@ -351,37 +325,5 @@ if (searchBox && searchIcon) {
     });
 }
 
-// Initial laden
-loadAccountsFromAPI();
-
-// ============ TOAST NOTIFICATIONS ============
-
-function showToast(message, type = 'success', duration = 4000) {
-    const container = document.getElementById('toastContainer');
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    
-    const icons = {
-        success: '✅',
-        error: '❌',
-        warning: '⚠️',
-        info: 'ℹ️'
-    };
-    
-    toast.innerHTML = `
-        <div class="toast-icon">${icons[type] || icons.info}</div>
-        <div class="toast-content">
-            <div class="toast-message">${message}</div>
-        </div>
-        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
-    `;
-    
-    container.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.classList.add('removing');
-        setTimeout(() => toast.remove(), 300);
-    }, duration);
-}
 // Initial laden
 loadAccountsFromAPI();

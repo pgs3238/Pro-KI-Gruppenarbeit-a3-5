@@ -1,225 +1,140 @@
 <!DOCTYPE html>
 <html lang="de">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Responsives Design für Laptop/Handy -->
-    <title>FINLY - Finanzübersicht</title>
-    <!-- Browser Tab Titel -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Bibliothek laden um Diagramme anzuzeigen -->
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <!-- Plotly.js für Sankey -->
-    <link rel="stylesheet" href="/static/css/style.css" />
-    <!-- Laden des CSS Stylings -->
-  </head>
 
-  <body>
-    <div class="container">
-      <!-- ============ SIDEBAR ============ -->
-      <aside class="sidebar">
-        <div class="logo">
-          <span>📊</span>
-          <span>FINLY</span>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FINLY - Finanzübersicht</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+
+<body>
+  <div class="container">
+    <!-- Sidebar wird per JavaScript eingefügt -->
+    <div id="sidebar-placeholder"></div>
+
+    <!-- ============ HAUPTBEREICH ============ -->
+    <div class="main">
+      <!-- Header wird per JavaScript eingefügt -->
+      <div id="header-placeholder"></div>
+
+      <!-- ============ CONTENT ============ -->
+      <div class="content">
+        <div class="page-header">
+          <h1>Dashboard</h1>
+          <p>Ihr Finanzüberblick auf einen Blick</p>
         </div>
 
-        <ul class="nav-items">
-          <li class="nav-item">
-            <button class="nav-link active" id="nav-overview">
-              <span class="nav-icon">📈</span>
-              <span>Übersicht</span>
-            </button>
-          </li>
-          <li class="nav-item">
-            <button
-              class="nav-link"
-              id="nav-transaction"
-              onclick="window.location.href='transactions.html'"
-            >
-              <span class="nav-icon">💳</span>
-              <span>Transaktionen</span>
-            </button>
-          </li>
-          <li class="nav-item">
-            <button
-              class="nav-link"
-              id="nav-categories"
-              onclick="window.location.href='kategorien.html'"
-            >
-              <span class="nav-icon">🏷️</span>
-              <span>Kategorien</span>
-            </button>
-          </li>
-          <li class="nav-item">
-            <button
-              class="nav-link"
-              id="nav-accounts"
-              onclick="window.location.href='konten.html'"
-            >
-              <span class="nav-icon">🏦</span>
-              <span>Konten</span>
-            </button>
-          </li>
-          <li class="nav-item">
-            <!-- Listenelement für Navigations Item Zinsprognose -->
-            <button class="nav-link" id="nav-forecast" onclick="window.location.href='zinsrechner.html'">
-              <!-- Interaktiven Button mit eindeutiger ID -->
-              <span class="nav-icon">📉</span>
-              <!-- Zinsprognose Icon -->
-              <span>Zinsprognose</span>
-              <!-- Name des Menupunktes "Zinsprognose" -->
-            </button>
-          </li>
-          <li class="nav-item">
-            <button
-              class="nav-link"
-              id="nav-chatbot"
-              onclick="window.location.href='finanz-buddy.html'"
-            >
-              <span class="nav-icon">💬</span>
-              <span>Finanz-Buddy</span>
-            </button>
-          </li>
-        </ul>
-      </aside>
-
-      <!-- ============ HAUPTBEREICH ============ -->
-      <div class="main">
-        <!-- ============ HEADER ============ -->
-        <header class="header">
-          <div class="header-right">
-            <button class="icon-btn" onclick="document.getElementById('apiKeyModal').style.display='flex'">⚙️</button>
-          </div>
-        </header>
-
-        <!-- ============ CONTENT ============ -->
-        <div class="content">
-          <div class="page-header">
-            <h1>Dashboard</h1>
-            <p>Ihr Finanzüberblick auf einen Blick</p>
-          </div>
-
-          <!-- KPI Cards inkl. Konten -->
-          <div class="dashboard-kpis">
-            <div class="kpi-card">
-              <div class="kpi-icon">📊</div>
-              <div class="kpi-content">
-                <div class="kpi-label">Einnahmen (Monat)</div>
-                <div class="kpi-value" id="monthlyIncome">0,00 €</div>
-                <div class="kpi-change" id="incomeChange">--</div>
-              </div>
-            </div>
-
-            <div class="kpi-card">
-              <div class="kpi-icon">💸</div>
-              <div class="kpi-content">
-                <div class="kpi-label">Ausgaben (Monat)</div>
-                <div class="kpi-value" id="monthlyExpenses">0,00 €</div>
-                <div class="kpi-change" id="expensesChange">--</div>
-              </div>
-            </div>
-
-            <div class="kpi-card">
-              <div class="kpi-icon">📈</div>
-              <div class="kpi-content">
-                <div class="kpi-label">Bilanz (Monat)</div>
-                <div class="kpi-value" id="monthlyBalance">0,00 €</div>
-                <div class="kpi-change" id="balanceChangePercent">--</div>
-              </div>
-            </div>
-
-            <div class="kpi-card kpi-card-accounts" onclick="window.location.href='konten.html'" style="cursor: pointer;">
-              <div class="kpi-icon">🏦</div>
-              <div class="kpi-content">
-                <div class="kpi-label">Meine Konten</div>
-                <div class="kpi-accounts-icons" id="accountsKpiIcons">
-                  <!-- Wird mit JavaScript gefüllt -->
-                </div>
-              </div>
+        <!-- KPI Cards inkl. Konten -->
+        <div class="dashboard-kpis">
+          <div class="kpi-card">
+            <div class="kpi-icon">📊</div>
+            <div class="kpi-content">
+              <div class="kpi-label">Einnahmen (Monat)</div>
+              <div class="kpi-value" id="monthlyIncome">0,00 €</div>
+              <div class="kpi-change" id="incomeChange">--</div>
             </div>
           </div>
 
-          <!-- Sankey Diagramm -->
-          <div class="card" style="margin-bottom: 20px;">
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-              <h2 style="margin: 0;">🔀 Geldfluss nach Kategorien</h2>
-              <div style="display: flex; align-items: center; gap: 15px;">
-                <button id="sankeyPrevMonth" style="background: #333; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 5px 12px; border-radius: 5px;" title="Vorheriger Monat">◀</button>
-                <span id="sankeyMonthLabel" style="font-size: 16px; font-weight: 500; min-width: 140px; text-align: center;">Januar 2026</span>
-                <button id="sankeyNextMonth" style="background: #333; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 5px 12px; border-radius: 5px;" title="Nächster Monat">▶</button>
-              </div>
+          <div class="kpi-card">
+            <div class="kpi-icon">💸</div>
+            <div class="kpi-content">
+              <div class="kpi-label">Ausgaben (Monat)</div>
+              <div class="kpi-value" id="monthlyExpenses">0,00 €</div>
+              <div class="kpi-change" id="expensesChange">--</div>
             </div>
-            <div id="sankeyChart" style="width: 100%; height: 500px;"></div>
           </div>
 
-          <!-- Top Ausgaben und Trend nebeneinander -->
-          <div class="dashboard-grid dashboard-grid-2col">
-            <!-- Top Kategorien -->
-            <div class="dashboard-card">
-              <div class="dashboard-card-header">
-                <h2>🏷️ Top Ausgaben-Kategorien</h2>
-                <button class="card-link-btn" onclick="window.location.href='kategorien.html'">
-                  Mehr →
-                </button>
-              </div>
-              <div class="categories-preview" id="categoriesPreview">
+          <div class="kpi-card">
+            <div class="kpi-icon">📈</div>
+            <div class="kpi-content">
+              <div class="kpi-label">Bilanz (Monat)</div>
+              <div class="kpi-value" id="monthlyBalance">0,00 €</div>
+              <div class="kpi-change" id="balanceChangePercent">--</div>
+            </div>
+          </div>
+
+          <div class="kpi-card kpi-card-accounts" onclick="window.location.href='konten.html'" style="cursor: pointer;">
+            <div class="kpi-icon">🏦</div>
+            <div class="kpi-content">
+              <div class="kpi-label">Meine Konten</div>
+              <div class="kpi-accounts-icons" id="accountsKpiIcons">
                 <!-- Wird mit JavaScript gefüllt -->
               </div>
             </div>
+          </div>
+        </div>
 
-            <!-- Ausgaben Trend -->
-            <div class="dashboard-card">
-              <div class="dashboard-card-header">
-                <h2>📉 Ausgaben-Trend</h2>
-              </div>
-              <div class="chart-container-small">
-                <canvas id="expensesTrendChart"></canvas>
-              </div>
+        <!-- Sankey Diagramm -->
+        <div class="card" style="margin-bottom: 20px;">
+          <div class="card-header"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h2 style="margin: 0;">🔀 Geldfluss nach Kategorien</h2>
+            <div style="display: flex; align-items: center; gap: 15px;">
+              <button id="sankeyPrevMonth"
+                style="background: #333; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 5px 12px; border-radius: 5px;"
+                title="Vorheriger Monat">◀</button>
+              <span id="sankeyMonthLabel"
+                style="font-size: 16px; font-weight: 500; min-width: 140px; text-align: center;">Januar 2026</span>
+              <button id="sankeyNextMonth"
+                style="background: #333; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 5px 12px; border-radius: 5px;"
+                title="Nächster Monat">▶</button>
             </div>
           </div>
+          <div id="sankeyChart" style="width: 100%; height: 500px;"></div>
+        </div>
 
-          <!-- Letzte Transaktionen in voller Breite -->
-          <div class="dashboard-card" style="margin-top: 20px;">
+        <!-- Top Ausgaben und Trend nebeneinander -->
+        <div class="dashboard-grid dashboard-grid-2col">
+          <!-- Top Kategorien -->
+          <div class="dashboard-card">
             <div class="dashboard-card-header">
-              <h2>💳 Letzte Transaktionen</h2>
-              <button class="card-link-btn" onclick="window.location.href='transactions.html'">
+              <h2>🏷️ Top Ausgaben-Kategorien</h2>
+              <button class="card-link-btn" onclick="window.location.href='kategorien.html'">
                 Mehr →
               </button>
             </div>
-            <div class="transactions-preview" id="transactionsPreview">
+            <div class="categories-preview" id="categoriesPreview">
               <!-- Wird mit JavaScript gefüllt -->
             </div>
+          </div>
+
+          <!-- Ausgaben Trend -->
+          <div class="dashboard-card">
+            <div class="dashboard-card-header">
+              <h2>📉 Ausgaben-Trend</h2>
+            </div>
+            <div class="chart-container-small">
+              <canvas id="expensesTrendChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Letzte Transaktionen in voller Breite -->
+        <div class="dashboard-card" style="margin-top: 20px;">
+          <div class="dashboard-card-header">
+            <h2>💳 Letzte Transaktionen</h2>
+            <button class="card-link-btn" onclick="window.location.href='transactions.html'">
+              Mehr →
+            </button>
+          </div>
+          <div class="transactions-preview" id="transactionsPreview">
+            <!-- Wird mit JavaScript gefüllt -->
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- API Key Modal -->
-    <div id="apiKeyModal" class="api-key-modal">
-      <div class="api-modal-content">
-        <div class="api-modal-header">
-          <h2>API-Einstellungen</h2>
-          <button class="api-modal-close" onclick="document.getElementById('apiKeyModal').style.display='none'">&times;</button>
-        </div>
-        <div class="api-modal-body">
-          <label class="api-label">Gemini API Key für Finanz-Buddy</label>
-          <input type="password" id="apiKeyInput" class="api-input" placeholder="AIza..." />
-          <small class="api-hint">Ihr API-Key wird in der .env-Datei auf dem Server gespeichert.</small>
-        </div>
-        <div class="api-modal-footer">
-          <button class="api-btn api-btn-cancel" onclick="document.getElementById('apiKeyModal').style.display='none'">Abbrechen</button>
-          <button class="api-btn api-btn-save">Speichern</button>
-        </div>
-      </div>
-    </div>
+  <!-- ==================== SCRIPTS ==================== -->
+  <script src="/static/js/constants.js"></script>
+  <script src="/static/js/utils.js?v=2"></script>
+  <script src="/static/js/components.js"></script>
+  <script>document.addEventListener('DOMContentLoaded', () => initComponents('overview'));</script>
+  <script src="/static/js/settings.js"></script>
+  <script src="/static/js/dashboard.js"></script>
+</body>
 
-    <!-- Toast Container -->
-    <div id="toastContainer" class="toast-container"></div>
-
-    <!-- ==================== SCRIPTS ==================== -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-    <script src="/static/js/settings.js"></script>
-    <script src="/static/js/dashboard.js"></script>
-  </body>
 </html>

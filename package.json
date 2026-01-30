@@ -1,0 +1,64 @@
+{
+    "name": "finly",
+    "version": "1.0.0",
+    "description": "FINLY - Persönlicher Ausgabenmanager",
+    "main": "electron/main.js",
+    "scripts": {
+        "start": "electron .",
+        "build": "electron-builder"
+    },
+    "author": "Gruppe a3-5",
+    "license": "MIT",
+    "devDependencies": {
+        "electron": "^28.0.0",
+        "electron-builder": "^24.9.1"
+    },
+    "build": {
+        "appId": "de.fh-swf.finly",
+        "productName": "FINLY",
+        "asar": false,
+        "directories": {
+            "output": "dist"
+        },
+        "files": [
+            "electron/**/*"
+        ],
+        "extraResources": [
+            {
+                "from": "src",
+                "to": "app/src"
+            },
+            {
+                "from": "static",
+                "to": "app/static"
+            },
+            {
+                "from": "templates",
+                "to": "app/templates"
+            },
+            {
+                "from": "data",
+                "to": "app/data"
+            },
+            {
+                "from": "requirements.txt",
+                "to": "app/requirements.txt"
+            }
+        ],
+        "win": {
+            "target": "portable",
+            "icon": "static/img/icon.ico"
+        },
+        "portable": {
+            "artifactName": "FINLY-Portable.exe"
+        },
+        "mac": {
+            "target": "dmg",
+            "icon": "static/img/icon.png",
+            "category": "public.app-category.finance"
+        },
+        "dmg": {
+            "artifactName": "FINLY-${version}.dmg"
+        }
+    }
+}

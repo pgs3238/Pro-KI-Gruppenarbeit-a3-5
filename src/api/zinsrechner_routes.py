@@ -1,48 +1,17 @@
 # Zinsrechner API Routes für FastAPI
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import List, Dict, Optional
 import sqlite3
 from pathlib import Path
 import traceback
+from .schemas import VergleichSpeichern
 
-router = APIRouter()
+router = APIRouter(prefix="/zinsrechner", tags=["Zinsrechner"])
 
 # Pfade
 DATA_DIR = Path(__file__).parent.parent.parent / "data"
 VERGLEICHE_DIR = DATA_DIR / "vergleiche"
 VERGLEICHE_DIR.mkdir(parents=True, exist_ok=True)
-EXPENSES_DB = DATA_DIR / "expenses.db"
-
-# ==================== SCHEMAS ====================
-
-class VergleichParameter(BaseModel):
-    startkapital: float
-    zinssatz: float
-    intervall: str
-    einzahlung: float
-    laufzeit: int
-    kontostandTyp: str
-
-class VergleichPunkt(BaseModel):
-    jahr: int
-    periode: int
-    kapital: float
-    einzahlungGesamt: float
-    zinsenGesamt: float
-
-class VergleichSpeichern(BaseModel):
-    db_nummer: int
-    verlauf: List[VergleichPunkt]
-    parameter: VergleichParameter
-
-class KontoInfo(BaseModel):
-    iban: str
-    iban_kurz: str
-    kontostand: float
-    anzahl_transaktionen: int
-    waehrung: str
 
 # ==================== HILFSFUNKTIONEN ====================
 

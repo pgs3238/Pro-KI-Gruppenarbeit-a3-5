@@ -1,6 +1,7 @@
-// ============ ZINSRECHNER JAVASCRIPT MIT CUSTOM LEGEND ============
-
-const API_BASE = 'http://localhost:8000/api';
+// ============ ZINSRECHNER-JAVASCRIPT MIT BENUTZERDEFINIERTER LEGENDE ============
+// Nutzt API_BASE_URL aus utils.js
+// Verwendet den globalen API-Pfad
+const ZINS_API = `${API_BASE_URL}/zinsrechner`;  // Zinsrechner nutzt eigenen Pfad
 let chart = null;
 let berechnungen = [];
 let ausgewaehlteId = null;
@@ -8,17 +9,18 @@ let vorschauAktiv = false;
 let vorschauTimeout = null;
 let kontenListe = [];
 
-// ============ CUSTOM LEGEND PLUGIN ============
+// ============ BENUTZERDEFINIERTES LEGENDEN-PLUGIN ============
+// Erstellt den Legenden-Container oder gibt ihn zurück
 const getOrCreateLegendList = (chart, id) => {
     const legendContainer = document.getElementById(id);
     let listContainer = legendContainer.querySelector('ul');
-    
+
     if (!listContainer) {
         listContainer = document.createElement('ul');
         listContainer.style.cssText = 'margin: 0; padding: 0; list-style: none; display: flex; flex-direction: row; flex-wrap: wrap; gap: 6px;';
         legendContainer.appendChild(listContainer);
     }
-    
+
     return listContainer;
 };
 
@@ -26,24 +28,24 @@ const htmlLegendPlugin = {
     id: 'htmlLegend',
     afterUpdate(chart, args, options) {
         const ul = getOrCreateLegendList(chart, options.containerID);
-        
+
         // Alte Items entfernen
         while (ul.firstChild) {
             ul.firstChild.remove();
         }
-        
+
         // Neue Items erstellen (nur echte Berechnungen, keine Vorschau)
         chart.data.datasets.forEach((dataset, i) => {
             // Vorschau überspringen
             if (dataset.label && dataset.label === 'Vorschau') return;
-            
+
             const li = document.createElement('li');
             li.style.cssText = 'display: flex; align-items: center; gap: 6px; padding: 4px 8px; background: #2a2a2a; border-radius: 6px;';
-            
+
             // Farbpunkt
             const colorBox = document.createElement('span');
             colorBox.style.cssText = `background: ${dataset.borderColor}; width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;`;
-            
+
             // Label mit Click-Handler zum Auswählen
             const textContainer = document.createElement('span');
             textContainer.style.cssText = 'color: #ccc; font-size: 11px; flex: 1; cursor: pointer; white-space: nowrap;';
@@ -55,7 +57,7 @@ const htmlLegendPlugin = {
                     waehleBerechnung(berechnungen[berIndex].id);
                 }
             };
-            
+
             // Sichtbarkeits-Button (Auge)
             const visibilityBtn = document.createElement('button');
             const istSichtbar = chart.isDatasetVisible(i);
@@ -68,7 +70,7 @@ const htmlLegendPlugin = {
                 chart.setDatasetVisibility(i, !chart.isDatasetVisible(i));
                 chart.update('none');
             };
-            
+
             // Löschen-Button (X)
             const deleteBtn = document.createElement('button');
             deleteBtn.innerHTML = '✕';
@@ -88,7 +90,7 @@ const htmlLegendPlugin = {
                     loescheBerechnungById(berechnungen[berIndex].id);
                 }
             };
-            
+
             li.appendChild(colorBox);
             li.appendChild(textContainer);
             li.appendChild(visibilityBtn);
@@ -101,11 +103,11 @@ const htmlLegendPlugin = {
 // ============ INITIALISIERUNG ============
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Zinsrechner wird initialisiert...');
-    
+
     // Logo initial anzeigen
     document.getElementById('placeholderLogo').style.display = 'flex';
     document.getElementById('chartBereich').style.display = 'none';
-    
+
     initChart();
     setupEventListeners();
     updateSliderLabels();
@@ -114,7 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Zinsrechner erfolgreich geladen!');
 });
 
-// ============ CHART INITIALISIERUNG ============
+// ============ DIAGRAMM-INITIALISIERUNG ============
+// Initialisiert das Zinseszins-Chart mit Chart.js
 function initChart() {
     const ctx = document.getElementById('zinsChart').getContext('2d');
     chart = new Chart(ctx, {
@@ -133,7 +136,7 @@ function initChart() {
             },
             plugins: {
                 legend: {
-                    display: false  // Native Legend ausblenden
+                    display: false  // Standard-Legende ausblenden
                 },
                 htmlLegend: {
                     containerID: 'legendContainer'
@@ -147,7 +150,7 @@ function initChart() {
                     borderColor: '#06d6a6',
                     borderWidth: 1,
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             let label = context.dataset.label || '';
                             if (label) label += ': ';
                             label += formatCurrency(context.parsed.y);
@@ -161,7 +164,7 @@ function initChart() {
                     beginAtZero: true,
                     ticks: {
                         color: '#888',
-                        callback: function(value) {
+                        callback: function (value) {
                             return Math.round(value).toLocaleString('de-DE') + ' €';
                         }
                     },
@@ -180,7 +183,7 @@ function initChart() {
                     const ctx = chart.ctx;
                     const width = chart.width;
                     const height = chart.height;
-                    
+
                     ctx.save();
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
@@ -194,7 +197,8 @@ function initChart() {
     });
 }
 
-// ============ EVENT LISTENERS ============
+// ============ EVENT-LISTENER ============
+// Verbindet Slider und Buttons mit Event-Handlern
 function setupEventListeners() {
     document.getElementById('kontostand').addEventListener('input', () => {
         updateSliderLabels();
@@ -212,7 +216,7 @@ function setupEventListeners() {
         updateSliderLabels();
         triggereVorschau();
     });
-    
+
     document.getElementById('intervall').addEventListener('change', () => {
         const intervall = document.getElementById('intervall').value;
         const label = document.querySelector('label[for="einzahlung"]');
@@ -221,48 +225,49 @@ function setupEventListeners() {
         else label.textContent = 'Jährliche Einzahlung';
         triggereVorschau();
     });
-    
+
     document.querySelectorAll('input[name="kontostandTyp"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
             const istFiktiv = e.target.value === 'fiktiv';
             document.getElementById('kontostandEingabe').style.display = istFiktiv ? 'block' : 'none';
             document.getElementById('kontenauswahlGruppe').style.display = istFiktiv ? 'none' : 'block';
-            
+
             const label = document.querySelector('label[for="kontostand"]');
             label.textContent = istFiktiv ? 'Startkapital (Fiktiv)' : 'Startkapital (Aktuell)';
-            
+
             triggereVorschau();
         });
     });
-    
+
     document.getElementById('kontoauswahl').addEventListener('change', (e) => {
-        const selectedIban = e.target.value;
-        if (selectedIban) {
-            const konto = kontenListe.find(k => k.iban === selectedIban);
+        const selectedId = e.target.value;
+        if (selectedId) {
+            const konto = kontenListe.find(k => k.id == selectedId);
             if (konto) {
                 document.getElementById('kontostand').value = Math.max(0, Math.round(konto.kontostand));
                 updateSliderLabels();
-                
-                document.getElementById('kontoInfo').textContent = 
-                    `Aktueller Kontostand: ${formatCurrency(konto.kontostand)} (${konto.anzahl_transaktionen} Transaktionen)`;
-                
+
+                document.getElementById('kontoInfo').textContent =
+                    `Aktueller Kontostand: ${formatCurrency(konto.kontostand)}`;
+
                 triggereVorschau();
             }
         }
     });
-    
+
     document.getElementById('berechnenBtn').addEventListener('click', berechnen);
     document.getElementById('aktualisierenBtn').addEventListener('click', aktualisieren);
     document.getElementById('resetBtn').addEventListener('click', zuruecksetzen);
 }
 
-// ============ SLIDER LABELS AKTUALISIEREN ============
+// ============ SLIDER-BESCHRIFTUNGEN AKTUALISIEREN ============
+// Aktualisiert die Text-Anzeige neben den Slidern
 function updateSliderLabels() {
     const zinssatz = document.getElementById('zinssatz').value;
     const kontostand = document.getElementById('kontostand').value;
     const einzahlung = document.getElementById('einzahlung').value;
     const laufzeit = document.getElementById('laufzeit').value;
-    
+
     document.getElementById('zinssatzWert').textContent = zinssatz + '%';
     document.getElementById('kontostandWert').textContent = formatCurrency(kontostand);
     document.getElementById('einzahlungWert').textContent = formatCurrency(einzahlung);
@@ -270,24 +275,26 @@ function updateSliderLabels() {
 }
 
 // ============ VORSCHAU-FUNKTION ============
+// Startet Timer für Live-Vorschau (Debouncing)
 function triggereVorschau() {
     if (!ausgewaehlteId) return;
-    
+
     vorschauAktiv = true;
-    
+
     if (vorschauTimeout) clearTimeout(vorschauTimeout);
     vorschauTimeout = setTimeout(() => {
         aktualisiereChartMitVorschau();
     }, 300);
 }
 
+// Berechnet Vorschau und aktualisiert das Diagramm vorübergehend
 async function aktualisiereChartMitVorschau() {
     const kontostandTyp = document.querySelector('input[name="kontostandTyp"]:checked').value;
     let startkapital;
-    
+
     if (kontostandTyp === 'aktuell') {
         try {
-            const response = await fetch(`${API_BASE}/kontostand`);
+            const response = await fetch(`${ZINS_API}/kontostand`);
             const data = await response.json();
             if (data.success) {
                 startkapital = data.kontostand;
@@ -300,24 +307,25 @@ async function aktualisiereChartMitVorschau() {
     } else {
         startkapital = parseFloat(document.getElementById('kontostand').value);
     }
-    
+
     const zinssatz = parseFloat(document.getElementById('zinssatz').value);
     const intervall = document.getElementById('intervall').value;
     const einzahlung = parseFloat(document.getElementById('einzahlung').value);
     const laufzeit = parseFloat(document.getElementById('laufzeit').value);
-    
+
     const ergebnis = berechneZinseszins(startkapital, zinssatz, intervall, einzahlung, laufzeit);
     aktualisiereChart(ergebnis.verlauf);
 }
 
 // ============ HAUPTFUNKTION: BERECHNEN ============
+// Führt vollständige Berechnung durch, speichert Vergleich und aktualisiert das Diagramm
 async function berechnen() {
     const kontostandTyp = document.querySelector('input[name="kontostandTyp"]:checked').value;
     let startkapital;
-    
+
     if (kontostandTyp === 'aktuell') {
         try {
-            const response = await fetch(`${API_BASE}/kontostand`);
+            const response = await fetch(`${ZINS_API}/kontostand`);
             const data = await response.json();
             if (data.success) {
                 startkapital = data.kontostand;
@@ -332,14 +340,14 @@ async function berechnen() {
     } else {
         startkapital = parseFloat(document.getElementById('kontostand').value);
     }
-    
+
     const zinssatz = parseFloat(document.getElementById('zinssatz').value);
     const intervall = document.getElementById('intervall').value;
     const einzahlung = parseFloat(document.getElementById('einzahlung').value);
     const laufzeit = parseFloat(document.getElementById('laufzeit').value);
-    
+
     const ergebnis = berechneZinseszins(startkapital, zinssatz, intervall, einzahlung, laufzeit);
-    
+
     const neueBerechnung = {
         id: Date.now(),
         verlauf: ergebnis.verlauf,
@@ -352,45 +360,46 @@ async function berechnen() {
             kontostandTyp: kontostandTyp
         }
     };
-    
+
     if (berechnungen.length >= 3) {
         alert('Maximale Anzahl von 3 Berechnungen erreicht. Bitte löschen Sie zuerst eine Berechnung.');
         return;
     }
-    
+
     const dbNummer = berechnungen.length + 1;
     const saveResult = await speichereVergleich(dbNummer, neueBerechnung.verlauf, neueBerechnung.parameter);
-    
+
     if (!saveResult.success) {
         alert('Fehler beim Speichern der Berechnung!');
         return;
     }
-    
+
     berechnungen.push(neueBerechnung);
     ausgewaehlteId = neueBerechnung.id;
-    
+
     zeigeErgebnis(neueBerechnung);
     aktualisiereListe();
     vorschauAktiv = false;
     aktualisiereChart();
-    
+
     document.getElementById('aktualisierenBtn').style.display = 'block';
     document.getElementById('berechnenBtn').textContent = 'Berechnen (Neu)';
 }
 
 // ============ HAUPTFUNKTION: AKTUALISIEREN ============
+// Aktualisiert den ausgewählten Vergleich mit neuen Werten
 async function aktualisieren() {
     if (!ausgewaehlteId) {
         alert('Bitte wählen Sie zuerst eine Berechnung aus!');
         return;
     }
-    
+
     const kontostandTyp = document.querySelector('input[name="kontostandTyp"]:checked').value;
     let startkapital;
-    
+
     if (kontostandTyp === 'aktuell') {
         try {
-            const response = await fetch(`${API_BASE}/kontostand`);
+            const response = await fetch(`${ZINS_API}/kontostand`);
             const data = await response.json();
             if (data.success) {
                 startkapital = data.kontostand;
@@ -405,14 +414,14 @@ async function aktualisieren() {
     } else {
         startkapital = parseFloat(document.getElementById('kontostand').value);
     }
-    
+
     const zinssatz = parseFloat(document.getElementById('zinssatz').value);
     const intervall = document.getElementById('intervall').value;
     const einzahlung = parseFloat(document.getElementById('einzahlung').value);
     const laufzeit = parseFloat(document.getElementById('laufzeit').value);
-    
+
     const ergebnis = berechneZinseszins(startkapital, zinssatz, intervall, einzahlung, laufzeit);
-    
+
     const index = berechnungen.findIndex(b => b.id === ausgewaehlteId);
     if (index !== -1) {
         berechnungen[index].verlauf = ergebnis.verlauf;
@@ -424,10 +433,10 @@ async function aktualisieren() {
             laufzeit: laufzeit,
             kontostandTyp: kontostandTyp
         };
-        
+
         const dbNummer = index + 1;
         await speichereVergleich(dbNummer, berechnungen[index].verlauf, berechnungen[index].parameter);
-        
+
         zeigeErgebnis(berechnungen[index]);
         aktualisiereListe();
         vorschauAktiv = false;
@@ -436,20 +445,21 @@ async function aktualisieren() {
 }
 
 // ============ ZINSESZINS-BERECHNUNG ============
+// Kernlogik: Berechnet Zinseszins-Entwicklung Jahr für Jahr
 function berechneZinseszins(startkapital, zinssatz, intervall, einzahlung, laufzeitJahre) {
     const zins = zinssatz / 100;
     let periodenProJahr;
-    
+
     if (intervall === 'Monatlich') periodenProJahr = 12;
     else if (intervall === 'Vierteljährlich') periodenProJahr = 4;
     else periodenProJahr = 1;
-    
+
     const gesamtPerioden = laufzeitJahre * periodenProJahr;
     const periodZins = zins / periodenProJahr;
-    
+
     let verlauf = [];
     let kapital = startkapital;
-    
+
     verlauf.push({
         jahr: new Date().getFullYear(),
         periode: 0,
@@ -457,16 +467,16 @@ function berechneZinseszins(startkapital, zinssatz, intervall, einzahlung, laufz
         einzahlungGesamt: 0,
         zinsenGesamt: 0
     });
-    
+
     let gesamtEinzahlung = 0;
     let gesamtZinsen = 0;
-    
+
     for (let periode = 1; periode <= gesamtPerioden; periode++) {
         const zinsen = kapital * periodZins;
         kapital += zinsen + einzahlung;
         gesamtEinzahlung += einzahlung;
         gesamtZinsen += zinsen;
-        
+
         if (periode % periodenProJahr === 0) {
             verlauf.push({
                 jahr: new Date().getFullYear() + Math.floor(periode / periodenProJahr),
@@ -477,7 +487,7 @@ function berechneZinseszins(startkapital, zinssatz, intervall, einzahlung, laufz
             });
         }
     }
-    
+
     return {
         verlauf: verlauf,
         endkapital: kapital,
@@ -487,10 +497,11 @@ function berechneZinseszins(startkapital, zinssatz, intervall, einzahlung, laufz
 }
 
 // ============ UI UPDATES ============
+// Zeigt Ergebnisse in der Ergebnis-Box an
 function zeigeErgebnis(berechnung) {
     const letzter = berechnung.verlauf[berechnung.verlauf.length - 1];
     const jahre = berechnung.parameter.laufzeit;
-    
+
     document.getElementById('ergebnisJahre').textContent = jahre;
     document.getElementById('endergebnis').textContent = formatCurrency(letzter.kapital);
     document.getElementById('einzahlungGesamt').textContent = formatCurrency(letzter.einzahlungGesamt);
@@ -498,14 +509,15 @@ function zeigeErgebnis(berechnung) {
     document.getElementById('ergebnisBox').style.display = 'block';
 }
 
+// Aktualisiert UI basierend auf Anzahl der Berechnungen (Logo vs Diagramm)
 function aktualisiereListe() {
     const anzahl = berechnungen.length;
     document.getElementById('berechnungenAnzahl').textContent = anzahl;
-    
-    // Toggle zwischen Logo und Chart
+
+    // Umschalten zwischen Logo und Diagramm
     const placeholderLogo = document.getElementById('placeholderLogo');
     const chartBereich = document.getElementById('chartBereich');
-    
+
     if (anzahl === 0) {
         placeholderLogo.style.display = 'flex';
         chartBereich.style.display = 'none';
@@ -515,6 +527,7 @@ function aktualisiereListe() {
     }
 }
 
+// Wählt eine Berechnung aus und lädt sie in die UI
 function waehleBerechnung(id) {
     ausgewaehlteId = id;
     const berechnung = berechnungen.find(b => b.id === id);
@@ -523,44 +536,46 @@ function waehleBerechnung(id) {
         ladeParameterInsFormular(berechnung);
         aktualisiereListe();
         aktualisiereChart();
-        
+
         document.getElementById('aktualisierenBtn').style.display = 'block';
         document.getElementById('berechnenBtn').textContent = 'Berechnen (Neu)';
     }
 }
 
+// Lädt Parameter zurück in Slider und Formular
 function ladeParameterInsFormular(berechnung) {
     const p = berechnung.parameter;
-    
+
     vorschauAktiv = false;
-    
+
     document.querySelector(`input[name="kontostandTyp"][value="${p.kontostandTyp}"]`).checked = true;
-    
+
     const istFiktiv = p.kontostandTyp === 'fiktiv';
     document.getElementById('kontostandEingabe').style.display = istFiktiv ? 'block' : 'none';
     document.getElementById('kontenauswahlGruppe').style.display = istFiktiv ? 'none' : 'block';
-    
+
     const label = document.querySelector('label[for="kontostand"]');
     label.textContent = istFiktiv ? 'Startkapital (Fiktiv)' : 'Startkapital (Aktuell)';
-    
+
     document.getElementById('zinssatz').value = p.zinssatz;
     document.getElementById('kontostand').value = p.startkapital;
     document.getElementById('einzahlung').value = p.einzahlung;
     document.getElementById('laufzeit').value = p.laufzeit;
     document.getElementById('intervall').value = p.intervall;
-    
+
     const einzahlungLabel = document.querySelector('label[for="einzahlung"]');
     if (p.intervall === 'Monatlich') einzahlungLabel.textContent = 'Monatliche Einzahlung';
     else if (p.intervall === 'Vierteljährlich') einzahlungLabel.textContent = 'Vierteljährliche Einzahlung';
     else einzahlungLabel.textContent = 'Jährliche Einzahlung';
-    
+
     updateSliderLabels();
-    
+
     setTimeout(() => {
         vorschauAktiv = true;
     }, 100);
 }
 
+// Zeichnet das Diagramm neu mit allen aktiven Berechnungen
 function aktualisiereChart(vorschauVerlauf = null) {
     if (berechnungen.length === 0) {
         const startJahr = new Date().getFullYear();
@@ -570,49 +585,49 @@ function aktualisiereChart(vorschauVerlauf = null) {
         }
         chart.data.labels = labels;
         chart.data.datasets = [];
-        
+
         chart.options.scales.x.ticks.display = false;
         chart.options.scales.y.ticks.display = false;
-        
+
         chart.update('none');
         return;
     }
-    
+
     chart.options.scales.x.ticks.display = true;
     chart.options.scales.y.ticks.display = true;
-    
+
     let maxLaufzeitAlle = Math.max(...berechnungen.map(b => b.parameter.laufzeit));
     if (vorschauVerlauf && vorschauVerlauf.length > 0) {
         const vorschauJahre = vorschauVerlauf[vorschauVerlauf.length - 1].jahr - new Date().getFullYear();
         maxLaufzeitAlle = Math.max(maxLaufzeitAlle, vorschauJahre);
     }
-    
+
     const startJahr = new Date().getFullYear();
     const labels = [];
     for (let i = 0; i <= maxLaufzeitAlle; i++) {
         labels.push(startJahr + i);
     }
     chart.data.labels = labels;
-    
+
     const datasets = berechnungen.map((ber, berIndex) => {
         const istAusgewaehlt = ber.id === ausgewaehlteId;
         const p = ber.parameter;
-        const intervallKurz = p.intervall === 'Monatlich' ? 'm' : 
-                             p.intervall === 'Vierteljährlich' ? 'v' : 'j';
-        
+        const intervallKurz = p.intervall === 'Monatlich' ? 'm' :
+            p.intervall === 'Vierteljährlich' ? 'v' : 'j';
+
         const label = `${formatCurrency(p.einzahlung)} (${intervallKurz}), ${p.zinssatz}%`;
-        
+
         const data = [];
         for (let i = 0; i <= maxLaufzeitAlle; i++) {
             const jahr = startJahr + i;
             const punkt = ber.verlauf.find(v => v.jahr === jahr);
             data.push(punkt ? punkt.kapital : null);
         }
-        
+
         const farben = ['#06d6a6', '#4a90e2', '#e94b3c'];
         const farbeIndex = berIndex % farben.length;
         const baseFarbe = farben[farbeIndex];
-        
+
         return {
             label: label,
             data: data,
@@ -623,10 +638,10 @@ function aktualisiereChart(vorschauVerlauf = null) {
             pointHoverRadius: 6,
             tension: 0.3,
             spanGaps: true,
-            berechnungIndex: berIndex  // Index speichern für Legend
+            berechnungIndex: berIndex  // Index speichern für die Legende
         };
     });
-    
+
     if (vorschauVerlauf && vorschauAktiv && ausgewaehlteId) {
         const data = [];
         for (let i = 0; i <= maxLaufzeitAlle; i++) {
@@ -634,7 +649,7 @@ function aktualisiereChart(vorschauVerlauf = null) {
             const punkt = vorschauVerlauf.find(v => v.jahr === jahr);
             data.push(punkt ? punkt.kapital : null);
         }
-        
+
         datasets.push({
             label: 'Vorschau',
             data: data,
@@ -648,24 +663,25 @@ function aktualisiereChart(vorschauVerlauf = null) {
             spanGaps: true
         });
     }
-    
+
     chart.data.datasets = datasets;
     chart.update('none');
 }
 
 // ============ ZURÜCKSETZEN ============
+// Löscht alle Vergleiche und setzt App zurück
 async function zuruecksetzen() {
     const loeschPromises = [];
     for (let i = 1; i <= 3; i++) {
         loeschPromises.push(
-            fetch(`${API_BASE}/vergleich/loeschen/${i}`, { method: 'DELETE' })
+            fetch(`${ZINS_API}/vergleich/loeschen/${i}`, { method: 'DELETE' })
                 .catch(err => console.error(`Fehler beim Löschen von Vergleich ${i}:`, err))
         );
     }
-    
+
     await Promise.all(loeschPromises);
     berechnungen = [];
-    
+
     document.getElementById('zinssatz').value = 3;
     document.getElementById('kontostand').value = 1000;
     document.getElementById('einzahlung').value = 100;
@@ -674,41 +690,41 @@ async function zuruecksetzen() {
     document.querySelector('input[name="kontostandTyp"][value="fiktiv"]').checked = true;
     document.getElementById('kontostandEingabe').style.display = 'block';
     document.getElementById('kontenauswahlGruppe').style.display = 'none';
-    
+
     updateSliderLabels();
-    
+
     document.getElementById('ergebnisBox').style.display = 'none';
-    
+
     ausgewaehlteId = null;
     vorschauAktiv = false;
-    
+
     document.getElementById('aktualisierenBtn').style.display = 'none';
     document.getElementById('berechnenBtn').textContent = 'Berechnen (Neu)';
-    
+
     aktualisiereListe();
     aktualisiereChart();
 }
 
 // ============ KONTEN LADEN ============
+// Lädt verfügbare Konten für Dropdown
 async function ladeKonten() {
     try {
-        const response = await fetch(`http://localhost:8000/konten`);
-        const konten = await response.json();
-        
+        const konten = await fetchKonten();
+
         if (Array.isArray(konten) && konten.length > 0) {
             kontenListe = konten;
-            
+
             const select = document.getElementById('kontoauswahl');
             select.innerHTML = '<option value="">-- Konto auswählen --</option>';
-            
+
             konten.forEach(konto => {
                 const option = document.createElement('option');
-                option.value = konto.iban;
-                const ibanKurz = konto.iban_kurz || `${konto.iban.substring(0, 4)}...${konto.iban.substring(konto.iban.length - 4)}`;
-                option.textContent = `${ibanKurz} - ${formatCurrency(konto.kontostand)}`;
+                option.value = konto.id;  // Nutze ID statt IBAN
+                // Zeige Kontoname und Saldo
+                option.textContent = `${konto.kontoname} - ${formatCurrency(konto.kontostand)}`;
                 select.appendChild(option);
             });
-            
+
             console.log(`${konten.length} Konten geladen`);
         } else {
             const select = document.getElementById('kontoauswahl');
@@ -723,9 +739,10 @@ async function ladeKonten() {
 }
 
 // ============ API FUNKTIONEN ============
+// API: Speichert Vergleich auf Server
 async function speichereVergleich(dbNummer, verlauf, parameter) {
     try {
-        const response = await fetch(`${API_BASE}/vergleich/speichern`, {
+        const response = await fetch(`${ZINS_API}/vergleich/speichern`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -741,11 +758,12 @@ async function speichereVergleich(dbNummer, verlauf, parameter) {
     }
 }
 
+// API: Lädt alle gespeicherten Vergleiche
 async function ladeAlleVergleiche() {
     try {
-        const response = await fetch(`${API_BASE}/vergleich/alle`);
+        const response = await fetch(`${ZINS_API}/vergleich/alle`);
         const data = await response.json();
-        
+
         if (data.success && data.vergleiche) {
             berechnungen = [];
             Object.keys(data.vergleiche).forEach((key, index) => {
@@ -756,7 +774,7 @@ async function ladeAlleVergleiche() {
                     parameter: v.parameter
                 });
             });
-            
+
             if (berechnungen.length > 0) {
                 ausgewaehlteId = berechnungen[berechnungen.length - 1].id;
                 zeigeErgebnis(berechnungen[berechnungen.length - 1]);
@@ -764,7 +782,7 @@ async function ladeAlleVergleiche() {
                 document.getElementById('aktualisierenBtn').style.display = 'block';
                 document.getElementById('berechnenBtn').textContent = 'Berechnen (Neu)';
             }
-            
+
             aktualisiereListe();
             aktualisiereChart();
         }
@@ -773,9 +791,10 @@ async function ladeAlleVergleiche() {
     }
 }
 
+// API: Löscht Vergleich anhand DB-Nummer
 async function loescheVergleich(dbNummer) {
     try {
-        const response = await fetch(`${API_BASE}/vergleich/loeschen/${dbNummer}`, {
+        const response = await fetch(`${ZINS_API}/vergleich/loeschen/${dbNummer}`, {
             method: 'DELETE'
         });
         return await response.json();
@@ -785,21 +804,22 @@ async function loescheVergleich(dbNummer) {
     }
 }
 
+// Wrapper: Löscht Berechnung anhand ID und reorganisiert DB
 async function loescheBerechnungById(id) {
     const index = berechnungen.findIndex(b => b.id === id);
     if (index === -1) return;
-    
+
     const dbNummer = index + 1;
     berechnungen.splice(index, 1);
-    
+
     await loescheVergleich(dbNummer);
-    
+
     if (index < berechnungen.length) {
         for (let i = index; i < berechnungen.length; i++) {
             await speichereVergleich(i + 1, berechnungen[i].verlauf, berechnungen[i].parameter);
         }
     }
-    
+
     if (ausgewaehlteId === id) {
         if (berechnungen.length > 0) {
             ausgewaehlteId = berechnungen[berechnungen.length - 1].id;
@@ -812,15 +832,9 @@ async function loescheBerechnungById(id) {
             document.getElementById('berechnenBtn').textContent = 'Berechnen (Neu)';
         }
     }
-    
+
     aktualisiereListe();
     aktualisiereChart();
 }
 
-// ============ HILFSFUNKTIONEN ============
-function formatCurrency(value) {
-    return parseFloat(value).toLocaleString('de-DE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    }) + ' €';
-}
+// (formatCurrency wird zentral aus utils.js verwendet)

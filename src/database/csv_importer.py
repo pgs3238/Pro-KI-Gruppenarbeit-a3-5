@@ -97,16 +97,13 @@ class CSVTransaktionImporter:
 
         if delimiter_scores:
             # Pick delimiter with highest count (most columns)
-            print(f"DEBUG: Delimiter scores detected: {delimiter_scores}")
             detected = max(delimiter_scores, key=lambda k: delimiter_scores[k])
-            print(f"DEBUG: Chosen delimiter: '{detected}'")
         else:
             # fallback
-            print(f"DEBUG: No suitable delimiter found, falling back to default")
             detected = ";"
 
         return detected
-    
+
     def import_csv(self, file_path):
         """
         Docstring for import_csv
@@ -142,13 +139,9 @@ class CSVTransaktionImporter:
                 "CSV-Header nicht gefunden oder falschgeschrieben.\n"
                 f"Fehlende Spalten: {', '.join(missing_headers)}"
             )
-        
+
         buchungstag_idx = headers.index(self.mapping["buchungstag"])
-        
-        # Note: Due to time constraints, the error messages do not behave as intended.
-        # The separate error message for the footer does not display because the
-        # main header error message takes precedence. Similarly, error messages
-        # for misspelled header fields may not appear correctly.
+
         for row_number, row in enumerate(data_rows, start=self.header_row + 2):
             value = row[buchungstag_idx].strip()
 
