@@ -134,7 +134,7 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'http://localhost:8000';
+        const API_BASE_URL = 'http://localhost:8000/api';
 
         function showOutput(data) {
             document.getElementById('output').textContent = JSON.stringify(data, null, 2);
@@ -142,7 +142,7 @@
 
         async function testConnection() {
             try {
-                const response = await fetch(`${API_BASE_URL}/`);
+                const response = await fetch(`${API_BASE_URL}/transactions?limit=1`);
                 const data = await response.json();
                 showOutput({ status: 'success', data });
                 alert('✓ Verbindung zur API erfolgreich!');

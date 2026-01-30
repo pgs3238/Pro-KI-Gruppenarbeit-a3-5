@@ -1,7 +1,7 @@
 // ============ ZINSRECHNER JAVASCRIPT MIT CUSTOM LEGEND ============
 // Nutzt API_BASE_URL aus utils.js
-
-const ZINS_API = `${API_BASE_URL}/api`;  // Zinsrechner-spezifischer API-Pfad
+// Verwendet den globalen API-Pfad
+const ZINS_API = `${API_BASE_URL}/zinsrechner`;  // Zinsrechner nutzt eigenen Pfad
 let chart = null;
 let berechnungen = [];
 let ausgewaehlteId = null;

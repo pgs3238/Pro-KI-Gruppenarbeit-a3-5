@@ -136,7 +136,7 @@ async function deleteCategory(id) {
 
     if (confirm(`Möchten Sie die Kategorie "${category.name}" wirklich löschen?`)) {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/categories/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
                 method: 'DELETE'
             });
 
@@ -218,7 +218,7 @@ document.getElementById('categoryForm').addEventListener('submit', async (e) => 
         let response;
         if (editId) {
             // Update existierende Kategorie
-            response = await fetch(`${API_BASE_URL}/api/categories/${editId}`, {
+            response = await fetch(`${API_BASE_URL}/categories/${editId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -227,7 +227,7 @@ document.getElementById('categoryForm').addEventListener('submit', async (e) => 
             });
         } else {
             // Erstelle neue Kategorie
-            response = await fetch(`${API_BASE_URL}/api/categories`, {
+            response = await fetch(`${API_BASE_URL}/categories`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -315,7 +315,7 @@ function closeRulesModal() {
 
 async function loadKeywords(categoryId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/categories/${categoryId}/rules`);
+        const response = await fetch(`${API_BASE_URL}/categories/${categoryId}/rules`);
         if (!response.ok) {
             throw new Error('Fehler beim Laden der Regeln');
         }
@@ -357,7 +357,7 @@ async function addKeyword() {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/categories/${currentRulesCategoryId}/rules/keywords`, {
+        const response = await fetch(`${API_BASE_URL}/categories/${currentRulesCategoryId}/rules/keywords`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -384,7 +384,7 @@ async function removeKeyword(keyword) {
     if (confirm(`Schlüsselwort "${keyword}" wirklich entfernen?`)) {
         try {
             const encodedKeyword = encodeURIComponent(keyword);
-            const response = await fetch(`${API_BASE_URL}/api/categories/${currentRulesCategoryId}/rules/keywords/${encodedKeyword}`, {
+            const response = await fetch(`${API_BASE_URL}/categories/${currentRulesCategoryId}/rules/keywords/${encodedKeyword}`, {
                 method: 'DELETE'
             });
 

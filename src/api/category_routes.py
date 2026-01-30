@@ -12,7 +12,7 @@ from ..categories.categorizer_rules import Categorizer
 from .dependencies import get_db
 from .schemas import CategoryCreate, CategoryResponse, CategoryRulesResponse, KeywordRequest
 
-router = APIRouter(prefix="/api/categories", tags=["categories"])
+router = APIRouter(prefix="/categories", tags=["categories"])
 
 
 # ==================== ENDPOINTS ====================

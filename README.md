@@ -210,12 +210,13 @@ Das API-Modul stellt die RESTful-Schnittstelle der Anwendung bereit. Es basiert 
 
 **Hauptendpunkte:**
 
-- `/transactions` – CRUD für Transaktionen
-- `/konten` – CRUD für Konten
-- `/categories` – Kategorieverwaltung
+- `/api/transactions` – CRUD für Transaktionen
+- `/api/konten` – CRUD für Konten
+- `/api/categories` – Kategorieverwaltung
 - `/api/chatbot` – Chatbot-Kommunikation
 - `/api/zinsrechner` – Zinsberechnungen
-- `/import/transactions` – CSV-Import
+- `/api/settings` – Einstellungen (API-Key)
+- `/api/transactions/import` – CSV-Import
 
 **Umgesetzt von:** _Emil Horstmann_
 
@@ -306,22 +307,24 @@ FastAPI-basierte REST-Schnittstelle mit Pydantic-Validierung. Das Modul stellt a
 | ------------------------------- | -------------------------------------------------------- |
 | `main.py`                       | App-Bootstrap, Router-Registrierung, Lifespan-Management |
 | `schemas.py`                    | Pydantic-Schemas für Request/Response                    |
-| `transactions_routes.py`        | Transaktions- und Konto-Endpunkte                        |
-| `category_routes.py`            | Kategorie-Endpunkte                                      |
-| `chatbot_routes.py`             | Chatbot-Endpunkte                                        |
-| `zinsrechner_routes.py`         | Zinsrechner-Endpunkte                                    |
+| `transactions_routes.py`        | Transaktions-Endpunkte (`/api/transactions`)             |
+| `konten_routes.py`              | Konten-Endpunkte (`/api/konten`)                         |
+| `category_routes.py`            | Kategorie-Endpunkte (`/api/categories`)                  |
+| `chatbot_routes.py`             | Chatbot-Endpunkte (`/api/chatbot`)                       |
+| `zinsrechner_routes.py`         | Zinsrechner-Endpunkte (`/api/zinsrechner`)               |
+| `settings_routes.py`            | Einstellungs-Endpunkte (`/api/settings`)                 |
+| `auto_categorization_routes.py` | Endpunkte für automatische Kategorisierung               |
 | `dependencies.py`               | Dependency Injection für Datenbank-Sessions              |
 | `helpers.py`                    | Hilfsfunktionen für API-Operationen                      |
-| `settings_routes.py`            | Einstellungs-Endpunkte                                   |
-| `auto_categorization_routes.py` | Endpunkte für automatische Kategorisierung               |
 
 **Hauptendpunkte:**
-- `GET/POST/PUT/DELETE /transactions` – CRUD für Transaktionen
-- `GET/POST/PUT/DELETE /konten` – CRUD für Konten
-- `GET/POST/DELETE /categories` – Kategorieverwaltung
-- `POST /api/chatbot` – Chatbot-Anfragen an Gemini
-- `POST /api/zinsrechner` – Zinsberechnungen speichern/laden
-- `POST /import/transactions` – CSV-Import
+- `GET/POST/PUT/DELETE /api/transactions` – CRUD für Transaktionen
+- `GET/POST/PUT/DELETE /api/konten` – CRUD für Konten
+- `GET/POST/DELETE /api/categories` – Kategorieverwaltung
+- `POST /api/chatbot/message` – Chatbot-Anfragen an Gemini
+- `GET/POST/DELETE /api/zinsrechner/vergleich` – Zinsberechnungen speichern/laden
+- `POST /api/transactions/import` – CSV-Import
+- `GET/POST /api/settings/api-key` – API-Key Verwaltung
 
 ---
 

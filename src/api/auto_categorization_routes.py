@@ -6,13 +6,13 @@ from sqlalchemy.orm import Session
 from ..categories.auto_categorizer_service import get_auto_categorizer_service
 from .dependencies import get_db
 
-router = APIRouter(tags=["Auto-Categorization"])
+router = APIRouter(prefix="/categories", tags=["Auto-Categorization"])
 
 # Globale Service-Instanz (Singleton kommt aus get_auto_categorizer_service)
 auto_categorizer = get_auto_categorizer_service()
 
 
-@router.post("/categories/auto-categorize")
+@router.post("/auto-categorize")
 def trigger_auto_categorization(
     max_iterations: Optional[int] = None,
     min_occurrences: int = 3,
@@ -34,7 +34,7 @@ def trigger_auto_categorization(
     return {"message": "Auto-Kategorisierung abgeschlossen", "statistics": stats}
 
 
-@router.get("/categories/auto-categorize/status")
+@router.get("/auto-categorize/status")
 def get_auto_categorization_status(db: Session = Depends(get_db)):
     """
     Gibt den Status der Auto-Kategorisierung zurück.

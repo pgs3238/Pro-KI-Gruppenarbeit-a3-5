@@ -28,6 +28,7 @@ except ImportError:
 
 from . import zinsrechner_routes
 from . import settings_routes
+from . import konten_routes
 
 # Globale Service-Instanz
 auto_categorizer = get_auto_categorizer_service()
@@ -130,14 +131,15 @@ def chatbot_page():
     return FileResponse(TEMPLATES_DIR / "finanz-buddy.html")
 
 
-# Router registrieren
-app.include_router(transactions_routes.router)
-app.include_router(auto_categorization_routes.router)
+# Router registrieren - alle mit /api Prefix (Prefixes sind in den Routern selbst definiert)
+app.include_router(transactions_routes.router, prefix="/api")
+app.include_router(konten_routes.router, prefix="/api")
+app.include_router(auto_categorization_routes.router, prefix="/api")
 if CHATBOT_AVAILABLE:
     app.include_router(chatbot_routes.router, prefix="/api")
 app.include_router(zinsrechner_routes.router, prefix="/api")
-app.include_router(settings_routes.router, prefix="/api/settings")
+app.include_router(settings_routes.router, prefix="/api")
 
 # Category-Router registrieren
 if CATEGORY_ROUTES_AVAILABLE:
-    app.include_router(category_routes.router)
+    app.include_router(category_routes.router, prefix="/api")

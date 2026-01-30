@@ -1,7 +1,7 @@
 // ============ GEMEINSAME UTILITY FUNKTIONEN ============
 
 // Zentrale API-Konfiguration (wird von allen JS-Dateien verwendet)
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'http://localhost:8000/api';
 
 // Toast-Benachrichtigungen
 function showToast(message, type = 'success', duration = 4000) {
@@ -127,5 +127,5 @@ async function fetchKontoSaldo(kontoId) {
 }
 
 async function fetchCategories() {
-    return await apiGetJson('/api/categories');
+    return await apiGetJson('/categories');
 }

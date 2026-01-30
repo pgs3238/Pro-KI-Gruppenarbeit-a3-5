@@ -7,7 +7,7 @@ import sqlite3
 from pathlib import Path
 import traceback
 
-router = APIRouter()
+router = APIRouter(prefix="/zinsrechner", tags=["Zinsrechner"])
 
 # Pfade
 DATA_DIR = Path(__file__).parent.parent.parent / "data"

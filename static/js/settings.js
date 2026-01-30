@@ -6,7 +6,7 @@
  */
 async function loadApiKeyStatus() {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/settings/api-key/status`);
+        const response = await fetch(`${API_BASE_URL}/settings/api-key/status`);
         if (!response.ok) throw new Error('Fehler beim Laden des API-Key Status');
         
         const data = await response.json();
@@ -29,7 +29,7 @@ async function loadApiKeyStatus() {
  */
 async function saveApiKey(apiKey) {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/settings/api-key`, {
+        const response = await fetch(`${API_BASE_URL}/settings/api-key`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

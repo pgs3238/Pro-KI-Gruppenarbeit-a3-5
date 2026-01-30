@@ -75,7 +75,7 @@ async function sendMessage(message) {
   showLoading();
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/chatbot/message`, {
+    const response = await fetch(`${API_BASE_URL}/chatbot/message`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -113,7 +113,7 @@ async function resetChat() {
 
   try {
     const response = await fetch(
-      `${API_BASE_URL}/api/chatbot/reset?session_id=${sessionId}`,
+      `${API_BASE_URL}/chatbot/reset?session_id=${sessionId}`,
       { method: "POST" }
     );
 

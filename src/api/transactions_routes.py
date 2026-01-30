@@ -26,7 +26,7 @@ from .schemas import (
 from .dependencies import get_db
 from .helpers import get_or_404
 
-router = APIRouter(tags=["Transactions"])
+router = APIRouter(prefix="/transactions", tags=["Transactions"])
 
 # Globale Service-Instanz (Singleton kommt aus get_auto_categorizer_service)
 auto_categorizer = get_auto_categorizer_service()
@@ -49,7 +49,7 @@ def get_konto_or_404(konto_id: int, db: Session):
 
 
 @router.get(
-    "/transactions",
+    "",
 )
 def get_transactions(
     skip: int = 0,
@@ -73,7 +73,7 @@ def get_transactions(
     return db.query(Transaktion).offset(skip).limit(limit).all()
 
 
-@router.get("/transactions/formatted/list")
+@router.get("/formatted/list")
 def get_transactions_formatted(
     skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ):
@@ -130,10 +130,10 @@ def get_transactions_formatted(
 
 
 # ==================== ENDPUNKTE: SANKEY DIAGRAMM ====================
-# WICHTIG: Muss vor /transactions/{transaction_id} stehen, sonst wird "sankey-data" als ID interpretiert
+# WICHTIG: Muss vor /{transaction_id} stehen, sonst wird "sankey-data" als ID interpretiert
 
 
-@router.get("/transactions/sankey-data")
+@router.get("/sankey-data")
 def get_sankey_data(
     year: Optional[int] = None,
     month: Optional[int] = None,
@@ -251,7 +251,7 @@ def get_sankey_data(
 
 
 @router.get(
-    "/transactions/{transaction_id}",
+    "/{transaction_id}",
     response_model=TransaktionResponse,
 )
 def get_transaction(transaction_id: int, db: Session = Depends(get_db)):
@@ -260,7 +260,7 @@ def get_transaction(transaction_id: int, db: Session = Depends(get_db)):
 
 
 @router.post(
-    "/transactions",
+    "",
     response_model=TransaktionResponse,
     status_code=201,
 )
@@ -282,7 +282,7 @@ def create_transaction(transaction: TransaktionCreate, db: Session = Depends(get
 
 
 @router.put(
-    "/transactions/{transaction_id}",
+    "/{transaction_id}",
     response_model=TransaktionResponse,
 )
 def update_transaction(
@@ -303,7 +303,7 @@ def update_transaction(
 
 
 @router.delete(
-    "/transactions/{transaction_id}",
+    "/{transaction_id}",
     status_code=204,
 )
 def delete_transaction(transaction_id: int, db: Session = Depends(get_db)):
@@ -317,7 +317,7 @@ def delete_transaction(transaction_id: int, db: Session = Depends(get_db)):
 
 
 @router.get(
-    "/transactions/filter/date-range",
+    "/filter/date-range",
     response_model=List[TransaktionResponse],
 )
 def get_transactions_by_date_range(
@@ -334,7 +334,7 @@ def get_transactions_by_date_range(
     )
 
 
-@router.get("/transactions/stats/summary")
+@router.get("/stats/summary")
 def get_transaction_summary(db: Session = Depends(get_db)):
     """Finanz-Zusammenfassung"""
     transactions = db.query(Transaktion).all()
@@ -354,7 +354,7 @@ def get_transaction_summary(db: Session = Depends(get_db)):
 
 
 @router.post(
-    "/transactions/search",
+    "/search",
     response_model=List[TransaktionResponse],
 )
 def search_transactions(
@@ -379,149 +379,10 @@ def search_transactions(
     )
 
 
-# ==================== ENDPUNKTE: KONTEN ====================
-
-
-@router.get(
-    "/konten",
-    response_model=List[KontoResponse],
-)
-def get_konten(db: Session = Depends(get_db)):
-    """Alle Konten abrufen (mit Initialstand)"""
-    konten = db.query(Konto).all()
-    return konten
-
-
-@router.get(
-    "/konten/{konto_id}",
-    response_model=KontoResponse,
-)
-def get_konto(konto_id: int, db: Session = Depends(get_db)):
-    """Ein einzelnes Konto abrufen (mit Initialstand)"""
-    konto = get_konto_or_404(konto_id, db)
-    return konto
-
-
-@router.post(
-    "/konten",
-    response_model=KontoResponse,
-    status_code=201,
-)
-def create_konto(konto: KontoCreate, db: Session = Depends(get_db)):
-    """Neues Konto erstellen"""
-    # Prüfe ob Kontoname schon existiert
-    existing = db.query(Konto).filter(Konto.kontoname == konto.kontoname).first()
-    if existing:
-        raise HTTPException(status_code=400, detail="Kontoname existiert bereits")
-
-    # Leere Kontonummer als None speichern (nicht als leerer String)
-    kontonummer = konto.kontonummer.strip() if konto.kontonummer else None
-    if kontonummer == "":
-        kontonummer = None
-
-    new_konto = KontoManager.erstelle_konto(
-        session=db,
-        kontoname=konto.kontoname,
-        kontonummer=kontonummer,
-        kontotyp=konto.kontotyp,
-        bankname=konto.bankname,
-        kontostand=konto.kontostand,
-        waehrung=konto.waehrung,
-        bic=konto.bic,
-    )
-
-    # Speichere die Farbe als zusätzliches Attribut
-    new_konto.farbe = konto.farbe
-    db.commit()
-    db.refresh(new_konto)
-    return new_konto
-
-
-@router.put(
-    "/konten/{konto_id}",
-    response_model=KontoResponse,
-)
-def update_konto(
-    konto_id: int,
-    konto_update: KontoUpdate,
-    db: Session = Depends(get_db),
-):
-    """Konto aktualisieren"""
-    db_konto = get_konto_or_404(konto_id, db)
-
-    # Prüfe ob neuer Kontoname schon existiert (falls er geändert wird)
-    if konto_update.kontoname and konto_update.kontoname != db_konto.kontoname:
-        existing = db.query(Konto).filter(
-            Konto.kontoname == konto_update.kontoname
-        ).first()
-        if existing:
-            raise HTTPException(status_code=400, detail="Kontoname existiert bereits")
-
-    update_data = konto_update.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(db_konto, key, value)
-
-    db.commit()
-    db.refresh(db_konto)
-    return db_konto
-
-
-@router.delete(
-    "/konten/{konto_id}",
-    status_code=204,
-)
-def delete_konto(konto_id: int, db: Session = Depends(get_db)):
-    """Konto löschen (mit allen zugehörigen Transaktionen)"""
-    success = KontoManager.lösche_konto(db, konto_id)
-
-    if not success:
-        raise HTTPException(status_code=404, detail="Konto nicht gefunden")
-
-
-@router.get("/konten/{konto_id}/saldo")
-def get_konto_saldo(konto_id: int, db: Session = Depends(get_db)):
-    """Aktuellen Kontostand eines Kontos abrufen (Initialstand + Transaktionen)"""
-    konto = get_konto_or_404(konto_id, db)
-
-    # Berechne aktuellen Kontostand aus Transaktionen
-    aktueller_saldo = KontoManager.berechne_kontostand_aus_transaktionen(
-        db, konto_id, initialstand=konto.kontostand
-    )
-
-    return {
-        "konto_id": konto_id,
-        "initialstand": konto.kontostand,
-        "aktueller_saldo": round(aktueller_saldo, 2),
-    }
-
-
-@router.get("/konten/stats/summary")
-def get_konto_summary(db: Session = Depends(get_db)):
-    """Konto-Zusammenfassung (Gesamtsaldo, Kontenanzahl, etc.)"""
-    konten = db.query(Konto).all()
-
-    if not konten:
-        return {"total_saldo": 0.0, "konto_count": 0, "konten": []}
-
-    return {
-        "total_saldo": round(sum(k.kontostand for k in konten), 2),
-        "konto_count": len(konten),
-        "konten": [
-            {
-                "id": k.id,
-                "kontoname": k.kontoname,
-                "kontostand": k.kontostand,
-                "waehrung": k.waehrung,
-            }
-            for k in konten
-        ],
-    }
-
-
 # ==================== ENDPUNKTE: IMPORT ====================
 
 
-@router.post("/transactions/import")
+@router.post("/import")
 async def import_transactions(
     file: UploadFile = File(...),
     header_row: int = Form(...),
