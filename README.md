@@ -1,5 +1,4 @@
-# FINLY – Persönlicher Ausgabenmanager 📊
-
+# 📊 FINLY – Persönlicher Ausgabenmanager 
 ## Inhaltsverzeichnis
 
 - [FINLY – Persönlicher Ausgabenmanager 📊](#finly--persönlicher-ausgabenmanager-)
@@ -41,10 +40,10 @@
 
 ## Projektübersicht
 
-**FINLY** ist ein persönlicher Ausgabenmanager zur Analyse, Verwaltung und Prognose finanzieller Daten.
+📊 **FINLY** ist ein persönlicher Ausgabenmanager zur Analyse, Verwaltung und Prognose finanzieller Daten.
 Das Projekt wurde von der **Gruppe a3–5** im Rahmen des Moduls „Programmieren für KI" im Wintersemester 2025/2026 an der Fachhochschule Südwestfalen entwickelt.
 
-Ziel von FINLY ist es, einen übersichtlichen Einblick in die eigenen Finanzen zu geben. Es bietet die Möglichkeit, diese zu verwalten, zu erfassen und zu visualisieren.
+Ziel von FINLY ist es, einen übersichtlichen Einblick in die eigenen Finanzen zu geben. Es bietet mit verschiedensten Features die Möglichkeit, diese zu verwalten, zu erfassen und zu visualisieren.
 
 ---
 
@@ -67,9 +66,23 @@ Ziel von FINLY ist es, einen übersichtlichen Einblick in die eigenen Finanzen z
 
 ## Funktionalitäten im Detail
 
-### Front-End
+### Frontend
 
-_Noch füllen_
+Das Frontend wurde als Single Page Application programmiert und besteht aus HTML für die Struktur, CSS für die Gestaltung und JavaScript. Mit einem modernen und dunklen Design soll eine intuitive Bedienung und ein professionelles Auftreten für ein besseres Verständnis ermöglicht werden. Für die Visualisierung wurden Chart.js (Linien- und Balkendiagramme) und Plotly.js (Sankey-Diagramme) eingesetzt.
+
+### Dashboard
+
+Das Dashboard ermöglicht eine Übersicht über die wichtigsten Finanz-Informationen zusammenfassend dargestellt. Alle Daten werden in Echtzeit aus der Datenbank geladen und verarbeitet.
+
+**Komponenten**
+
+- KPI-Karten (Kennzahlen des aktuellen Monats: Einnahmen und Ausgaben mit Veränderung zum Vormonat, Bilanz und Konten-Übersicht)
+- Sankey-Diagramm (Zur Geldfluss-Visualisierung nach Kategorien pro Monat)
+- Top Ausgaben Kategorien (Die größten Ausgabekategorien der letzten 30 Tage als Balkendiagramm mit Link zur vollständigen Kategorieverwaltung)
+- Ausgaben-Trend (Liniendiagramm der Ausgaben der letzten 6 Monate)
+- Letzte Transaktionen (Die 5 neusten Transaktionen mit Link zur vollständigen Transaktionsübersicht)
+
+
 
 **Umgesetzt von:** _Arienne Bertram_
 
@@ -577,3 +590,4 @@ _Noch zu dokumentieren_
 | **HTML5/CSS3** | Struktur und Styling              |
 | **JavaScript** | Interaktivität                    |
 | **Plotly.js**  | Interaktive Charts (Sankey, etc.) |
+| **Chart.js**  | Linien- und Balkendiagramme |
