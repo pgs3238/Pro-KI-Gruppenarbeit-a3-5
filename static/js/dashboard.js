@@ -294,7 +294,7 @@ async function loadCategoriesPreview() {
   }
 }
 
-// Ausgaben Trend Chart laden
+// Einnahmen & Ausgaben Trend Chart laden
 async function loadExpensesTrend() {
   try {
     const response = await fetch(`${API_BASE_URL}/transactions?days=180&limit=10000`);
@@ -303,6 +303,7 @@ async function loadExpensesTrend() {
     // Letzte 6 Monate
     const months = [];
     const expenses = [];
+    const income = [];
 
     for (let i = 5; i >= 0; i--) {
       const date = new Date();
@@ -313,6 +314,7 @@ async function loadExpensesTrend() {
       const monthName = date.toLocaleDateString("de-DE", { month: "short" });
       months.push(monthName);
 
+      // Ausgaben berechnen
       const monthExpenses = transactions
         .filter((t) => {
           const tDate = new Date(t.buchungstag);
@@ -325,6 +327,20 @@ async function loadExpensesTrend() {
         .reduce((sum, t) => sum + Math.abs(t.betrag), 0);
 
       expenses.push(monthExpenses);
+
+      // Einnahmen berechnen
+      const monthIncome = transactions
+        .filter((t) => {
+          const tDate = new Date(t.buchungstag);
+          return (
+            tDate.getMonth() === month &&
+            tDate.getFullYear() === year &&
+            t.betrag > 0
+          );
+        })
+        .reduce((sum, t) => sum + t.betrag, 0);
+
+      income.push(monthIncome);
     }
 
     const ctx = document.getElementById("expensesTrendChart").getContext("2d");
@@ -333,6 +349,19 @@ async function loadExpensesTrend() {
       data: {
         labels: months,
         datasets: [
+          {
+            label: "Einnahmen",
+            data: income,
+            borderColor: "#06d6a6",
+            backgroundColor: "rgba(6, 214, 166, 0.1)",
+            tension: 0.4,
+            fill: true,
+            pointBackgroundColor: "#06d6a6",
+            pointBorderColor: "#fff",
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+          },
           {
             label: "Ausgaben",
             data: expenses,
@@ -353,7 +382,13 @@ async function loadExpensesTrend() {
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            display: false,
+            display: true,
+            position: "top",
+            labels: {
+              color: "#888",
+              usePointStyle: true,
+              padding: 20,
+            },
           },
           tooltip: {
             backgroundColor: "#2a2a2a",
@@ -362,10 +397,10 @@ async function loadExpensesTrend() {
             borderColor: "#444",
             borderWidth: 1,
             padding: 12,
-            displayColors: false,
+            displayColors: true,
             callbacks: {
               label: function (context) {
-                return formatCurrency(context.parsed.y);
+                return `${context.dataset.label}: ${formatCurrency(context.parsed.y)}`;
               },
             },
           },
