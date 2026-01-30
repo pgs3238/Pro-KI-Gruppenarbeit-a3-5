@@ -104,32 +104,76 @@ async function sendMessage(message) {
 }
 
 /**
+ * Zeigt ein styled Bestätigungs-Modal an
+ * @param {string} message - Die anzuzeigende Nachricht
+ * @param {Function} onConfirm - Callback bei Bestätigung
+ */
+function showConfirmModal(message, onConfirm) {
+  // Erstelle Modal falls noch nicht vorhanden
+  let modal = document.getElementById('confirmModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'confirmModal';
+    modal.className = 'api-key-modal';
+    modal.innerHTML = `
+      <div class="api-modal-content" style="max-width: 400px;">
+        <div class="api-modal-header">
+          <h2>⚠️ Bestätigung</h2>
+          <button class="api-modal-close" id="confirmModalClose">&times;</button>
+        </div>
+        <div class="api-modal-body">
+          <p id="confirmModalMessage" style="color: #ccc; line-height: 1.6;"></p>
+        </div>
+        <div class="api-modal-footer">
+          <button class="api-btn api-btn-cancel" id="confirmModalCancel">Abbrechen</button>
+          <button class="api-btn api-btn-save" id="confirmModalOk">Bestätigen</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  // Setze Nachricht und zeige Modal
+  document.getElementById('confirmModalMessage').textContent = message;
+  modal.style.display = 'flex';
+
+  // Event Handlers
+  const closeModal = () => { modal.style.display = 'none'; };
+
+  document.getElementById('confirmModalClose').onclick = closeModal;
+  document.getElementById('confirmModalCancel').onclick = closeModal;
+  document.getElementById('confirmModalOk').onclick = () => {
+    closeModal();
+    onConfirm();
+  };
+}
+
+/**
  * Setzt den Chat-Verlauf zurück
  */
-async function resetChat() {
-  if (!confirm("Möchtest du den Chat-Verlauf wirklich löschen?")) {
-    return;
-  }
+function resetChat() {
+  showConfirmModal("Möchtest du den Chat-Verlauf wirklich löschen?", async () => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/chatbot/reset?session_id=${sessionId}`,
+        { method: "POST" }
+      );
 
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/chatbot/reset?session_id=${sessionId}`,
-      { method: "POST" }
-    );
+      if (!response.ok) {
+        throw new Error(`HTTP-Fehler: ${response.status}`);
+      }
 
-    if (!response.ok) {
-      throw new Error(`HTTP-Fehler: ${response.status}`);
+      // Chat leeren und Willkommensnachricht neu anzeigen
+      chatMessages.innerHTML = "";
+      showWelcomeMessage();
+
+      showToast("Chat-Verlauf wurde zurückgesetzt", "success");
+      console.log("Chat zurückgesetzt");
+    } catch (error) {
+      console.error("Fehler beim Zurücksetzen:", error);
+      showToast("Fehler beim Zurücksetzen des Chats", "error");
     }
-
-    // Chat leeren und Willkommensnachricht neu anzeigen
-    chatMessages.innerHTML = "";
-    showWelcomeMessage();
-
-    console.log("Chat zurückgesetzt");
-  } catch (error) {
-    console.error("Fehler beim Zurücksetzen:", error);
-    alert("Fehler beim Zurücksetzen des Chats.");
-  }
+  });
 }
 
 // ==================== EVENT LISTENERS ====================
