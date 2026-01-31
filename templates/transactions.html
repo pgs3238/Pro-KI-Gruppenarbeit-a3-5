@@ -323,10 +323,8 @@
           body: formData
         });
 
-
         const data = await response.json();
         console.log("Daten für Toast:", data);
-
 
         if (!response.ok) {
           const errorMessage = data.detail || data.message || "Unbekannter Fehler";
@@ -340,7 +338,6 @@
       }
     });
 
-    // Simple toast function (you already have toast container in HTML)
     function showToast(message, type="info") {
       const container = document.getElementById("toastContainer");
       const toast = document.createElement("div");

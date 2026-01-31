@@ -64,20 +64,25 @@ def search_transaktionen(
     # Verwende outerjoin statt join, um auch Transaktionen ohne Konto/Kategorie zu finden
     query = session.query(Transaktion).outerjoin(Konto, Transaktion.konto_id == Konto.id).outerjoin(Category, Transaktion.kategorie_id == Category.id)
 
+    # Filter by Buchungstag
     if buchungstag is not None:
         query = query.filter(Transaktion.buchungstag == buchungstag)
-
+    
+    # Filter by Beguenstigter
     if beguenstigter is not None:
         query = query.filter(Transaktion.beguenstigter.ilike(f"%{beguenstigter}%"))
 
+    # Filter by Verwendungszweck
     if verwendungszweck is not None:
         query = query.filter(Transaktion.verwendungszweck.ilike(f"%{verwendungszweck}%"))
 
+    # Filter by IBAN
     if iban_kontonummer is not None:
         iban_clean = iban_kontonummer.replace(' ', '')
         query = query.filter(func.replace(Transaktion.iban_kontonummer, ' ', '').like(f"%{iban_clean}%"))
-        #query = query.filter(Transaktion.iban_kontonummer == iban_kontonummer)
  
+    # Note: The following filters (typ, betrag_min, betrag_max) are not used
+    # in our current scope but are kept to avoid breaking other parts of the project.
     if betrag_min is not None and betrag_max is not None:
         if betrag_min > betrag_max:
             raise ValueError("betrag_min cannot be greater than betrag_max")
@@ -88,19 +93,22 @@ def search_transaktionen(
     if betrag_max is not None:
         query = query.filter(Transaktion.betrag <= betrag_max)
 
+    
     if typ == "expense":
         query = query.filter(Transaktion.betrag < 0)
     elif typ == "income":
         query = query.filter(Transaktion.betrag > 0)
 
+    # Check if Minimalbetrag absolut is not greater than Maximalbetrag absolut
     if betrag_min_abs is not None and betrag_max_abs is not None:
         if betrag_min_abs > betrag_max_abs:
             raise ValueError("betrag_min_abs cannot be greater than betrag_max_abs")
 
-    # Neue Abfrage. Um das Problem mit den negativen Zahlen zu beheben werden die Werte aus der SQL für die Abfrage in Absolute Werte umgewandelt.    
+    # Minimalbetrag in absoluten Zahlen    
     if betrag_min_abs is not None:
         query = query.filter(func.abs(Transaktion.betrag) >= betrag_min_abs)
 
+    # Maximalbetrag in absoluten Zahlen
     if betrag_max_abs is not None:
         query = query.filter(func.abs(Transaktion.betrag) <= betrag_max_abs)
 
