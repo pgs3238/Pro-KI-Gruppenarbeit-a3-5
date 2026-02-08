@@ -1,3 +1,4 @@
+<!-- Dashboard-Seite: Zeigt KPIs, Sankey-Diagramm und Finanzübersicht -->
 <!DOCTYPE html>
 <html lang="de">
 
@@ -27,7 +28,7 @@
           <p>Ihr Finanzüberblick auf einen Blick</p>
         </div>
 
-        <!-- KPI Cards inkl. Konten -->
+        <!-- KPI-Bereich: Zeigt monatliche Einnahmen, Ausgaben, Bilanz und Konten-Übersicht -->
         <div class="dashboard-kpis">
           <div class="kpi-card">
             <div class="kpi-icon">📊</div>
@@ -67,7 +68,7 @@
           </div>
         </div>
 
-        <!-- Sankey Diagramm -->
+        <!-- Sankey-Diagramm: Visualisiert den Geldfluss zwischen Einnahmen und Ausgaben-Kategorien -->
         <div class="card" style="margin-bottom: 20px;">
           <div class="card-header"
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -86,9 +87,9 @@
           <div id="sankeyChart" style="width: 100%; height: 500px;"></div>
         </div>
 
-        <!-- Top Ausgaben und Trend nebeneinander -->
+        <!-- Zwei-Spalten-Layout: Top Kategorien links, Ausgaben-Trend rechts -->
         <div class="dashboard-grid dashboard-grid-2col">
-          <!-- Top Kategorien -->
+          <!-- Top Kategorien: Zeigt die 5 grössten Ausgaben-Kategorien -->
           <div class="dashboard-card">
             <div class="dashboard-card-header">
               <h2>🏷️ Top Ausgaben-Kategorien</h2>
@@ -101,7 +102,7 @@
             </div>
           </div>
 
-          <!-- Ausgaben Trend -->
+          <!-- Ausgaben-Trend: Liniendiagramm der monatlichen Ausgaben -->
           <div class="dashboard-card">
             <div class="dashboard-card-header">
               <h2>📉 Ausgaben-Trend</h2>
@@ -112,7 +113,7 @@
           </div>
         </div>
 
-        <!-- Letzte Transaktionen in voller Breite -->
+        <!-- Letzte Transaktionen: Zeigt die 5 neuesten Buchungen als Vorschau -->
         <div class="dashboard-card" style="margin-top: 20px;">
           <div class="dashboard-card-header">
             <h2>💳 Letzte Transaktionen</h2>

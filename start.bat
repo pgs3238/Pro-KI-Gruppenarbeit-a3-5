@@ -3,6 +3,18 @@ echo ==============================================
 echo      FINLY - Finanzmanager wird gestartet
 echo ==============================================
 
+:: Pruefen ob Python installiert ist
+python --version >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo [FEHLER] Python ist nicht installiert oder nicht im PATH!
+    echo Bitte Python 3.9 - 3.13 installieren: https://www.python.org/downloads/
+    pause
+    exit /b 1
+)
+
+echo Python gefunden - OK
+echo.
+
 :: Pruefen ob venv existiert
 if exist "venv" (
     echo Aktiviere virtuelle Umgebung 'venv'...
@@ -11,9 +23,25 @@ if exist "venv" (
     echo Aktiviere virtuelle Umgebung '.venv'...
     call .venv\Scripts\activate
 ) else (
-    echo [ACHTUNG] Keine virtuelle Umgebung 'venv' oder '.venv' gefunden!
-    echo Bitte zuerst 'python -m venv venv' ausfuehren.
-    echo Versuche trotzdem globalen Python zu nutzen...
+    echo [ACHTUNG] Keine virtuelle Umgebung gefunden!
+    echo Erstelle neue virtuelle Umgebung...
+    python -m venv venv
+    call venv\Scripts\activate
+)
+
+:: Pruefen ob Dependencies installiert sind
+python -c "import uvicorn" >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo Installiere Abhaengigkeiten...
+    pip install -r requirements.txt
+    :: Nochmal pruefen ob uvicorn jetzt importiert werden kann
+    python -c "import uvicorn" >nul 2>&1
+    if %ERRORLEVEL% NEQ 0 (
+        echo [FEHLER] Installation der Abhaengigkeiten fehlgeschlagen!
+        pause
+        exit /b 1
+    )
+    echo Installation erfolgreich!
 )
 
 echo.

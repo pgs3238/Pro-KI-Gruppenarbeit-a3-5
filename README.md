@@ -254,21 +254,16 @@ Das Datenbank-Modul verwaltet die Datenpersistenz mit SQLAlchemy ORM und SQLite.
 
 ## Hinweise zur Ausführung
 
-### 🚀 Schnellstart (Windows)
+### Getestete Python-Versionen
 
-1. **Doppelklicke auf `start.bat`** im Hauptordner
-2. Das Skript prüft alles, startet den Server und öffnet deinen Browser automatisch
-3. Fertig! 🎉
+| Version | Status |
+|---------|--------|
+| Python 3.11 | ✅ Funktioniert |
+| Python 3.12.7 | ✅ Funktioniert |
+| Python 3.13.3 | ✅ Funktioniert |
+| Python 3.14.2 | ✅ Funktioniert |
 
-> 💡 **Tipp:** Unter Windows kann auch die portable Python-Version verwendet werden. Diese befindet sich im Ordner `portable/` und benötigt keine Installation.
-
-### 🍎 Schnellstart (Mac/Linux)
-
-1. **Terminal öffnen** und zum Projektordner navigieren
-2. `./start.sh` ausführen
-3. Browser öffnet sich automatisch
-
-### 🛠️ Manuelle Installation
+### �🛠️ Manuelle Installation
 
 ```powershell
 # 1. Umgebung erstellen & aktivieren
@@ -279,14 +274,24 @@ source venv/bin/activate # Mac/Linux
 # 2. Abhängigkeiten installieren
 pip install -r requirements.txt
 
-# 3. Optional: API-Key konfigurieren (.env Datei)
-GEMINI_API_KEY=dein_key_hier
-
-# 4. Server starten
+# 3. Server starten
 python -m uvicorn src.api.main:app --reload
 ```
 
 Browser öffnen: http://127.0.0.1:8000
+
+
+### 🚀 Schnellstart (Windows)
+
+1. **Doppelklicke auf `start.bat`** im Hauptordner
+2. Das Skript prüft alles, startet den Server und öffnet deinen Browser automatisch
+3. Fertig! 🎉
+
+### 🍎 Schnellstart (Mac/Linux)
+
+1. **Terminal öffnen** und zum Projektordner navigieren
+2. `./start.sh` ausführen
+3. Browser öffnet sich automatisch
 
 ---
 
@@ -454,7 +459,6 @@ Verwaltung von Bankkonten mit automatischer Kontostandsberechnung. Das Modul bie
 - IBAN/BIC-Verwaltung
 - Sicherheitsprüfung: Konten mit Transaktionen können nicht gelöscht werden
 
-**Umgesetzt von:** _Emil Horstmann_
 
 ---
 
